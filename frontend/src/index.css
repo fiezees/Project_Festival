@@ -1,0 +1,87 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+@theme {
+  --color-forest-950: #063F35;
+  --color-forest-900: #0B5D4B;
+  --color-forest-700: #2E8068;
+  --color-forest-600: #3d9b82;
+  --color-accent: #F4B91F;
+  --color-cream: #F7F5EF;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  }
+
+  body {
+    background-color: var(--color-cream);
+    color: #1a1a1a;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+  }
+}
+
+.fade-in {
+  opacity: 0;
+  transform: translateY(12px);
+  animation: fadeIn 0.6s ease forwards;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Custom leaflet popup styling overrides */
+.leaflet-popup-content-wrapper {
+  border-radius: 12px !important;
+  padding: 0.25rem !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+}
+
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  border-radius: 12px;
+}
+
+.webgis-marker-icon {
+  background: transparent;
+  border: 0;
+}
+
+.webgis-marker {
+  display: block;
+  width: 14px;
+  height: 14px;
+  background: var(--marker-color);
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+}
+
+.webgis-marker-circle {
+  border-radius: 999px;
+}
+
+.webgis-marker-square {
+  border-radius: 2px;
+}
+
+.webgis-marker-triangle {
+  width: 0;
+  height: 0;
+  background: transparent;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 15px solid var(--marker-color);
+  border-top: 0;
+  box-shadow: none;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.55));
+}
