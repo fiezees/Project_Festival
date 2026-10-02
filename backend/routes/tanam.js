@@ -29,7 +29,7 @@ router.get('/', async (req, res) => {
 
     const features = rows.map((row) => ({
       type: 'Feature',
-      geometry: JSON.parse(row.geom_json),
+      geometry: typeof row.geom_json === 'string' ? JSON.parse(row.geom_json) : row.geom_json,
       properties: {
         id: row.id,
         nama_peserta: row.nama_peserta,
