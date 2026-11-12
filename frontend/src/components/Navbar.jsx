@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Sprout, Menu, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Navbar({ activePage, setActivePage, onOpenProposal }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navItems = [
-    { id: 'home', label: 'Beranda' },
-    { id: 'peta', label: 'Peta WebGIS' },
+    { id: 'home',   label: 'Beranda' },
+    { id: 'peta',   label: 'Peta WebGIS' },
     { id: 'berita', label: 'Berita & Kabar' },
   ];
 
@@ -20,13 +21,13 @@ export default function Navbar({ activePage, setActivePage, onOpenProposal }) {
     <header className="sticky top-0 z-50 bg-[#063F35] border-b border-white/10 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
-          
+
           {/* Logo Brand */}
-          <div 
+          <div
             onClick={() => handleNavClick('home')}
             className="flex items-center gap-3 cursor-pointer group"
           >
-            <div className="w-10 h-10 bg-[#F4B91F] rounded flex items-center justify-center">
+            <div className="w-10 h-10 bg-[#F4B91F] rounded flex items-center justify-center transition-transform duration-200 group-hover:scale-105">
               <Sprout className="w-6 h-6 text-[#063F35]" />
             </div>
             <div>
@@ -47,13 +48,21 @@ export default function Navbar({ activePage, setActivePage, onOpenProposal }) {
                 <button
                   key={item.id}
                   onClick={() => handleNavClick(item.id)}
-                  className={`px-2 py-2 text-sm font-medium transition-colors ${
+                  className={`relative px-2 py-2 text-sm font-medium transition-colors duration-200 ${
                     isActive
-                      ? 'text-[#F4B91F] border-b-2 border-[#F4B91F]'
+                      ? 'text-[#F4B91F]'
                       : 'text-white hover:text-[#F4B91F]'
                   }`}
                 >
                   {item.label}
+                  {/* Animated underline */}
+                  <motion.span
+                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#F4B91F] rounded-full"
+                    initial={false}
+                    animate={{ scaleX: isActive ? 1 : 0 }}
+                    transition={{ duration: 0.25, ease: 'easeInOut' }}
+                    style={{ transformOrigin: 'left' }}
+                  />
                 </button>
               );
             })}
@@ -61,59 +70,111 @@ export default function Navbar({ activePage, setActivePage, onOpenProposal }) {
 
           {/* CTA & Mobile Menu Toggle */}
           <div className="flex items-center gap-4">
-            <button
+            {/* Desktop CTA with micro-interaction */}
+            <motion.button
               onClick={onOpenProposal}
-              className="hidden sm:flex items-center justify-center bg-[#F4B91F] hover:bg-[#e3a918] text-[#063F35] px-6 py-2.5 rounded-lg font-bold text-sm transition-colors"
+              whileHover={{ y: -2, boxShadow: '0 8px 20px rgba(244,185,31,0.35)' }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: 'spring', stiffness: 320, damping: 22 }}
+              className="hidden sm:flex items-center justify-center bg-[#F4B91F] hover:bg-[#e3a918] text-[#063F35] px-6 py-2.5 rounded-lg font-bold text-sm transition-colors duration-200"
             >
               Ajukan Proposal
-            </button>
+            </motion.button>
 
+            {/* Mobile hamburger toggle */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2 text-white hover:text-[#F4B91F] focus:outline-none"
+              className="md:hidden p-2 text-white hover:text-[#F4B91F] focus:outline-none transition-colors duration-200"
               aria-label="Toggle menu"
+              aria-expanded={isMobileMenuOpen}
             >
-              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              <AnimatePresence mode="wait" initial={false}>
+                {isMobileMenuOpen ? (
+                  <motion.span
+                    key="close"
+                    initial={{ rotate: -90, opacity: 0 }}
+                    animate={{ rotate: 0,   opacity: 1 }}
+                    exit={{   rotate:  90, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="block"
+                  >
+                    <X className="w-6 h-6" />
+                  </motion.span>
+                ) : (
+                  <motion.span
+                    key="open"
+                    initial={{ rotate: 90, opacity: 0 }}
+                    animate={{ rotate: 0,  opacity: 1 }}
+                    exit={{   rotate: -90, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="block"
+                  >
+                    <Menu className="w-6 h-6" />
+                  </motion.span>
+                )}
+              </AnimatePresence>
             </button>
           </div>
         </div>
       </div>
 
-      {/* Mobile Drawer Menu */}
-      {isMobileMenuOpen && (
-        <div className="md:hidden bg-[#063F35] border-t border-white/10 px-4 pt-4 pb-6 space-y-4">
-          <nav className="flex flex-col space-y-2">
-            {navItems.map((item) => {
-              const isActive = activePage === item.id;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => handleNavClick(item.id)}
-                  className={`text-left px-4 py-3 text-base font-medium transition-colors ${
-                    isActive
-                      ? 'bg-white/10 text-[#F4B91F] rounded-lg'
-                      : 'text-white hover:bg-white/5 rounded-lg'
-                  }`}
+      {/* ── Mobile Drawer Menu ── */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            key="mobile-menu"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{   opacity: 0, height: 0 }}
+            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            className="md:hidden overflow-hidden bg-[#063F35] border-t border-white/10"
+          >
+            <div className="px-4 pt-4 pb-6 space-y-4">
+              <nav className="flex flex-col space-y-1">
+                {navItems.map((item, idx) => {
+                  const isActive = activePage === item.id;
+                  return (
+                    <motion.button
+                      key={item.id}
+                      initial={{ opacity: 0, x: -16 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.06, duration: 0.25, ease: 'easeOut' }}
+                      onClick={() => handleNavClick(item.id)}
+                      className={`text-left px-4 py-3 text-base font-medium rounded-lg transition-colors duration-200 ${
+                        isActive
+                          ? 'bg-white/10 text-[#F4B91F]'
+                          : 'text-white hover:bg-white/5'
+                      }`}
+                    >
+                      {item.label}
+                    </motion.button>
+                  );
+                })}
+              </nav>
+
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.18, duration: 0.25, ease: 'easeOut' }}
+                className="pt-2 px-4"
+              >
+                <motion.button
+                  whileHover={{ y: -2, boxShadow: '0 8px 20px rgba(244,185,31,0.35)' }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: 'spring', stiffness: 320, damping: 22 }}
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    onOpenProposal();
+                  }}
+                  className="w-full bg-[#F4B91F] text-[#063F35] px-5 py-3 rounded-lg font-bold text-sm transition-colors duration-200"
                 >
-                  {item.label}
-                </button>
-              );
-            })}
-          </nav>
-          
-          <div className="pt-2 px-4">
-            <button
-              onClick={() => {
-                setIsMobileMenuOpen(false);
-                onOpenProposal();
-              }}
-              className="w-full bg-[#F4B91F] text-[#063F35] px-5 py-3 rounded-lg font-bold transition-colors"
-            >
-              Ajukan Proposal
-            </button>
-          </div>
-        </div>
-      )}
+                  Ajukan Proposal
+                </motion.button>
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 }
