@@ -62,7 +62,7 @@ export default function BeritaPage({ onNavigateHome, selectedArticle, setSelecte
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all shadow-sm ${
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 ease-in-out hover:-translate-y-0.5 active:scale-95 cursor-pointer shadow-sm ${
                   activeCategory === cat
                     ? 'bg-[#063F35] text-white border border-[#063F35]'
                     : 'bg-white border border-[#e5e7eb] text-[#374151] hover:bg-[#f3f4f6]'
@@ -198,7 +198,7 @@ export default function BeritaPage({ onNavigateHome, selectedArticle, setSelecte
                   </div>
                   <button
                     onClick={() => setSelectedArticle(null)}
-                    className="w-full sm:w-auto bg-[#063F35] hover:bg-[#0B5D4B] text-white font-semibold px-6 py-2.5 rounded-lg text-sm transition-colors"
+                    className="w-full sm:w-auto bg-[#063F35] hover:bg-[#0B5D4B] text-white font-semibold px-6 py-2.5 rounded-lg text-sm transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg active:scale-95 cursor-pointer"
                   >
                     Tutup Berita
                   </button>

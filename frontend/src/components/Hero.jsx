@@ -35,14 +35,14 @@ export default function Hero({ onOpenProposal, onNavigateToMap, onScrollToTimeli
           <div className="flex flex-wrap items-center gap-4 pt-4">
             <button
               onClick={onScrollToTimeline}
-              className="bg-[#F4B91F] hover:bg-[#e3a918] text-[#063F35] font-semibold px-6 py-3 rounded-lg transition-colors cursor-pointer"
+              className="bg-[#F4B91F] hover:bg-[#e3a918] text-[#063F35] font-semibold px-6 py-3 rounded-lg transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg hover:shadow-brand-yellow/30 active:scale-95 cursor-pointer"
             >
               Jelajahi Program
             </button>
 
             <button
               onClick={onNavigateToMap}
-              className="border border-white/40 hover:bg-white/10 text-white font-medium px-6 py-3 rounded-lg transition-colors cursor-pointer"
+              className="border border-white/40 hover:bg-white/10 text-white font-medium px-6 py-3 rounded-lg transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg active:scale-95 cursor-pointer"
             >
               Lihat WebGIS
             </button>

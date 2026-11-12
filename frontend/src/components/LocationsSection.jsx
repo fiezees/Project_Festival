@@ -244,7 +244,7 @@ export default function LocationsSection({ onSelectLocationMap }) {
                         <button
                           type="button"
                           onClick={() => onSelectLocationMap(loc)}
-                          className="w-full bg-[#063F35] hover:bg-[#0B5D4B] text-white font-medium text-xs py-2 rounded flex items-center justify-center gap-1 transition-colors"
+                          className="w-full bg-[#063F35] hover:bg-[#0B5D4B] text-white font-medium text-xs py-2 rounded flex items-center justify-center gap-1 transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-md active:scale-95 cursor-pointer"
                         >
                           <span>Buka di WebGIS</span>
                           <ArrowUpRight className="w-3 h-3" />
@@ -269,7 +269,7 @@ export default function LocationsSection({ onSelectLocationMap }) {
               <button
                 type="button"
                 onClick={() => onSelectLocationMap(activeLoc)}
-                className="bg-[#063F35] hover:bg-[#0B5D4B] text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-colors shrink-0"
+                className="bg-[#063F35] hover:bg-[#0B5D4B] text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg active:scale-95 cursor-pointer shrink-0"
               >
                 <span>Buka WebGIS</span>
                 <ArrowUpRight className="w-4 h-4 text-[#F4B91F]" />

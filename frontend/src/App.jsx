@@ -65,19 +65,16 @@ export default function App() {
 
       {/* Back to Yayasan Profile button — with micro-interaction */}
       <div className="fixed bottom-5 left-5 z-[9999]">
-        <motion.button
+        <button
           onClick={() => {
             setActivePage('yayasan');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
-          whileHover={{ y: -3, scale: 1.03 }}
-          whileTap={{ scale: 0.95 }}
-          transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-          className="flex items-center gap-2 text-sm font-bold px-4 py-2.5 rounded-full shadow-lg"
+          className="flex items-center gap-2 text-sm font-bold px-4 py-2.5 rounded-full shadow-lg transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-xl active:scale-95 cursor-pointer"
           style={{ background: '#1B3226', color: '#F7F3E8' }}
         >
           ← Profil Yayasan
-        </motion.button>
+        </button>
       </div>
 
       {/* Header Navigation */}

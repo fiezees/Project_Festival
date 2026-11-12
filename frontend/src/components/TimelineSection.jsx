@@ -83,7 +83,7 @@ export default function TimelineSection({ onOpenProposal }) {
                           <span className="text-sm text-[#374151] font-medium">Pendaftaran dibuka untuk umum</span>
                           <button
                             onClick={onOpenProposal}
-                            className="bg-[#F4B91F] hover:bg-[#F4B91F]/90 text-[#063F35] font-semibold px-4 py-2 rounded-lg text-sm flex items-center justify-center gap-1.5 transition-colors w-full sm:w-auto"
+                            className="bg-[#F4B91F] hover:bg-[#F4B91F]/90 text-[#063F35] font-semibold px-4 py-2 rounded-lg text-sm flex items-center justify-center gap-1.5 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg hover:shadow-brand-yellow/30 active:scale-95 cursor-pointer w-full sm:w-auto"
                           >
                             <span>Daftar Sekarang</span>
                             <ArrowRight className="w-4 h-4" />

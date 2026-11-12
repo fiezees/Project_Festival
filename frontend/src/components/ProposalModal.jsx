@@ -72,7 +72,7 @@ export default function ProposalModal({ isOpen, onClose }) {
             <button
               type="button"
               onClick={handleReset}
-              className="bg-[#F4B91F] hover:bg-[#e0a719] text-[#063F35] font-semibold px-8 py-3 rounded-lg text-sm transition-colors"
+              className="bg-[#F4B91F] hover:bg-[#e0a719] text-[#063F35] font-semibold px-8 py-3 rounded-lg text-sm transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg hover:shadow-brand-yellow/30 active:scale-95 cursor-pointer"
             >
               Tutup & Kembali
             </button>
@@ -174,7 +174,7 @@ export default function ProposalModal({ isOpen, onClose }) {
                     className="hidden"
                     id="proposal-file-upload"
                   />
-                  <label htmlFor="proposal-file-upload" className="inline-block mt-3 bg-white border border-[#d1d5db] text-[#374151] hover:bg-gray-50 text-sm px-4 py-1.5 rounded-lg cursor-pointer">
+                  <label htmlFor="proposal-file-upload" className="inline-block mt-3 bg-white border border-[#d1d5db] text-[#374151] hover:bg-gray-50 text-sm px-4 py-1.5 rounded-lg cursor-pointer transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-sm active:scale-95">
                     Pilih File
                   </label>
                 </div>
@@ -184,14 +184,14 @@ export default function ProposalModal({ isOpen, onClose }) {
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-5 py-2.5 rounded-lg text-sm font-medium text-[#6b7280] hover:text-[#1a1a1a] transition-colors"
+                  className="px-5 py-2.5 rounded-lg text-sm font-medium text-[#6b7280] hover:text-[#1a1a1a] transition-all duration-300 ease-in-out hover:-translate-y-0.5 active:scale-95 cursor-pointer"
                 >
                   Batal
                 </button>
 
                 <button
                   type="submit"
-                  className="bg-[#F4B91F] hover:bg-[#e0a719] text-[#063F35] font-semibold px-6 py-2.5 rounded-lg text-sm transition-colors"
+                  className="bg-[#F4B91F] hover:bg-[#e0a719] text-[#063F35] font-semibold px-6 py-2.5 rounded-lg text-sm transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg hover:shadow-brand-yellow/30 active:scale-95 cursor-pointer"
                 >
                   Kirim Proposal
                 </button>

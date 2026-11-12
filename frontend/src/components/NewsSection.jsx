@@ -98,7 +98,7 @@ export default function NewsSection({ onNavigateToNews, onSelectArticle }) {
           <div className="mt-12 flex justify-start">
             <button
               onClick={onNavigateToNews}
-              className="inline-flex items-center gap-2 text-[#2E8068] font-semibold border-b border-[#2E8068] pb-1 hover:text-[#063F35] hover:border-[#063F35] transition-colors"
+              className="inline-flex items-center gap-2 text-[#2E8068] font-semibold border-b border-[#2E8068] pb-1 hover:text-[#063F35] hover:border-[#063F35] transition-all duration-300 ease-in-out hover:-translate-y-0.5 active:scale-95 cursor-pointer"
             >
               <span>Lihat Semua Berita</span>
               <ArrowRight className="w-4 h-4" />

@@ -52,7 +52,7 @@ export default function PrizeSection({ onOpenProposal }) {
           <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto shrink-0">
             <button
               onClick={triggerConfetti}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#F4B91F] hover:bg-[#e0a719] text-[#063F35] font-semibold px-6 py-3 rounded-lg text-sm transition-colors"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#F4B91F] hover:bg-[#e0a719] text-[#063F35] font-semibold px-6 py-3 rounded-lg text-sm transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg hover:shadow-brand-yellow/30 active:scale-95 cursor-pointer"
             >
               <PartyPopper className="w-5 h-5" />
               <span>Rayakan Festival</span>
@@ -60,7 +60,7 @@ export default function PrizeSection({ onOpenProposal }) {
 
             <button
               onClick={onOpenProposal}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 bg-transparent hover:bg-white/10 border border-[#F4B91F] text-[#F4B91F] font-semibold px-6 py-3 rounded-lg text-sm transition-colors"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 bg-transparent hover:bg-white/10 border border-[#F4B91F] text-[#F4B91F] font-semibold px-6 py-3 rounded-lg text-sm transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg hover:shadow-brand-yellow/30 active:scale-95 cursor-pointer"
             >
               <Gift className="w-5 h-5" />
               <span>Daftar Tim</span>

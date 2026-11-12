@@ -71,15 +71,12 @@ export default function Navbar({ activePage, setActivePage, onOpenProposal }) {
           {/* CTA & Mobile Menu Toggle */}
           <div className="flex items-center gap-4">
             {/* Desktop CTA with micro-interaction */}
-            <motion.button
+            <button
               onClick={onOpenProposal}
-              whileHover={{ y: -2, boxShadow: '0 8px 20px rgba(244,185,31,0.35)' }}
-              whileTap={{ scale: 0.95 }}
-              transition={{ type: 'spring', stiffness: 320, damping: 22 }}
-              className="hidden sm:flex items-center justify-center bg-[#F4B91F] hover:bg-[#e3a918] text-[#063F35] px-6 py-2.5 rounded-lg font-bold text-sm transition-colors duration-200"
+              className="hidden sm:flex items-center justify-center bg-[#F4B91F] hover:bg-[#e3a918] text-[#063F35] px-6 py-2.5 rounded-lg font-bold text-sm transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg hover:shadow-brand-yellow/30 active:scale-95"
             >
               Ajukan Proposal
-            </motion.button>
+            </button>
 
             {/* Mobile hamburger toggle */}
             <button
@@ -158,18 +155,15 @@ export default function Navbar({ activePage, setActivePage, onOpenProposal }) {
                 transition={{ delay: 0.18, duration: 0.25, ease: 'easeOut' }}
                 className="pt-2 px-4"
               >
-                <motion.button
-                  whileHover={{ y: -2, boxShadow: '0 8px 20px rgba(244,185,31,0.35)' }}
-                  whileTap={{ scale: 0.95 }}
-                  transition={{ type: 'spring', stiffness: 320, damping: 22 }}
+                <button
                   onClick={() => {
                     setIsMobileMenuOpen(false);
                     onOpenProposal();
                   }}
-                  className="w-full bg-[#F4B91F] text-[#063F35] px-5 py-3 rounded-lg font-bold text-sm transition-colors duration-200"
+                  className="w-full bg-[#F4B91F] text-[#063F35] px-5 py-3 rounded-lg font-bold text-sm transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg hover:shadow-brand-yellow/30 active:scale-95"
                 >
                   Ajukan Proposal
-                </motion.button>
+                </button>
               </motion.div>
             </div>
           </motion.div>
