@@ -8,6 +8,29 @@
   --color-forest-600: #3d9b82;
   --color-accent: #F4B91F;
   --color-cream: #F7F5EF;
+
+  /* Galapagos Yayasan Design Tokens */
+  --color-bg-cream: #F7F3E8;
+  --color-bg-cream-dark: #EDE6D6;
+  --color-brand-yellow: #E5A93C;
+  --color-brand-yellow-hover: #D49424;
+  --color-forest-dark: #1B3226;
+  --color-sage-green: #5C7457;
+  --color-earth-brown: #4A443B;
+
+  /* Animation */
+  --animate-spin-slow: spin-slow 20s linear infinite;
+  --animate-marquee: marquee 30s linear infinite;
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
 }
 
 @layer base {
