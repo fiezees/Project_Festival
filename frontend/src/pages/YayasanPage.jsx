@@ -232,7 +232,7 @@ function HeroSection({ onNavigateTo }) {
             <FadeIn delay={0.1}>
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold"
                 style={{ background: `${C.sage}18`, color: C.forest, border: `1px solid ${C.sage}30` }}>
-                🌱 Dari Ranah Minang untuk Bumi Sejak 1986
+                Dari Ranah Minang untuk Bumi Sejak 1986
               </div>
             </FadeIn>
 
@@ -369,7 +369,7 @@ function HeroSection({ onNavigateTo }) {
                       onError={e => { e.currentTarget.src = 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=260&q=80'; }} />
                   </div>
                   <p className="mt-2 text-center text-[10px] font-black tracking-wide leading-tight" style={{ color: C.forest }}>
-                    🏕️ Basecamp '86
+                    Basecamp '86
                   </p>
                 </motion.div>
 
@@ -502,7 +502,7 @@ function BentoExplorer({ onNavigateTo }) {
           <div className="text-center mb-10">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold mb-3"
               style={{ background: `${C.sage}18`, color: C.forest, border: `1px solid ${C.sage}30` }}>
-              🏕️ Jelajahi Pos Galapagos
+              Jelajahi Pos Galapagos
             </div>
             <h2 className="text-3xl sm:text-4xl font-black tracking-tight" style={{ color: C.forest }}>
               Mau Mampir ke Pos Mana Hari Ini?
@@ -652,7 +652,7 @@ function StorySection() {
           <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold mb-4"
               style={{ background: `${C.yellow}25`, color: C.forest, border: `1px solid ${C.yellow}40` }}>
-              📖 Jurnal Perjalanan
+              Jurnal Perjalanan
             </div>
             <h2 className="text-4xl sm:text-5xl font-black tracking-tight" style={{ color: C.forest }}>
               Dari Gunung ke Desa,<br />
@@ -732,7 +732,7 @@ function ImpactSection() {
               <div className="text-center mb-12">
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold mb-4"
                   style={{ background: `${C.yellow}25`, color: C.yellow, border: `1px solid ${C.yellow}30` }}>
-                  📍 Jejak Langkah Kami
+                  Jejak Langkah Kami
                 </div>
                 <h2 className="text-3xl sm:text-4xl font-black tracking-tight" style={{ color: C.bgCream }}>
                   Angka-Angka yang<br /><span style={{ color: C.yellow }}>Bercerita Nyata.</span>
@@ -772,13 +772,13 @@ function ImpactSection() {
 // ═══════════════════════════════════════════════════════════════════════════════
 function ProgramsSection({ onNavigateTo }) {
   const programs = [
-    { icon: Trees,    emoji: '🌳', title: 'Konservasi & Rehabilitasi Hutan',
+    { icon: Trees, title: 'Konservasi & Rehabilitasi Hutan',
       desc: 'Pemulihan ekosistem hulu sungai seperti DAS Batang Kuranji, penghijauan lahan kritis, dan pemantauan pohon berkelanjutan bersama masyarakat lokal.',
       hasWebGIS: true, color: C.sage },
-    { icon: Shield,   emoji: '🛡️', title: 'Mitigasi & Tanggap Darurat Bencana',
+    { icon: Shield, title: 'Mitigasi & Tanggap Darurat Bencana',
       desc: 'Pelatihan kesiapsiagaan bencana, tim reaksi cepat kemanusiaan, dan pemetaan kawasan rawan bencana di Sumatera Barat untuk masyarakat yang lebih tangguh.',
       hasWebGIS: false, color: '#C0392B' },
-    { icon: BookOpen, emoji: '📚', title: 'Edukasi & Siswa Tanggap Bencana',
+    { icon: BookOpen, title: 'Edukasi & Siswa Tanggap Bencana',
       desc: 'Membina generasi muda dan pelajar di Kota Padang agar mencintai alam sekaligus memiliki keterampilan tanggap bencana sejak dini.',
       hasWebGIS: false, color: C.yellow },
   ];
@@ -789,7 +789,7 @@ function ProgramsSection({ onNavigateTo }) {
           <div className="text-center mb-14">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold mb-4"
               style={{ background: `${C.sage}18`, color: C.forest, border: `1px solid ${C.sage}30` }}>
-              🌿 Ruang Gerak
+              Ruang Gerak
             </div>
             <h2 className="text-4xl sm:text-5xl font-black tracking-tight" style={{ color: C.forest }}>
               Di Mana Kami Bergerak?
@@ -808,7 +808,6 @@ function ProgramsSection({ onNavigateTo }) {
                   transition={{ type: 'spring', stiffness: 300, damping: 25 }}
                   className="relative p-6 rounded-3xl cursor-pointer group"
                   style={{ background: C.bgCream, border: '1px solid rgba(27,50,38,0.08)' }}>
-                  <div className="text-4xl mb-4">{prog.emoji}</div>
                   <div className="w-10 h-10 rounded-2xl flex items-center justify-center mb-4"
                     style={{ background: `${prog.color}18`, border: `1px solid ${prog.color}30` }}>
                     <Icon size={20} style={{ color: prog.color }} />
@@ -882,7 +881,7 @@ function CommunitySection() {
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold mb-3"
                 style={{ background: `${C.yellow}22`, color: C.yellow, border: `1px solid ${C.yellow}35` }}>
-                🤝 Kawan Galapagos
+                Kawan Galapagos
               </div>
               <h2 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight italic"
                 style={{ color: C.bgCream }}>
@@ -1014,7 +1013,7 @@ function CommunitySection() {
               style={{ background: C.forest, transform: 'translate(30%,-30%)' }} />
             <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
               <div>
-                <p className="text-sm font-bold mb-2 opacity-70" style={{ color: C.forest }}>🌿 Mari Bergabung!</p>
+                <p className="text-sm font-bold mb-2 opacity-70" style={{ color: C.forest }}>Mari Bergabung!</p>
                 <h3 className="text-2xl sm:text-3xl font-black tracking-tight mb-3" style={{ color: C.forest }}>
                   Punya semangat yang sama<br />untuk menjaga alam?
                 </h3>
@@ -1080,7 +1079,7 @@ function NewsSection() {
             <div>
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold mb-4"
                 style={{ background: `${C.sage}18`, color: C.forest, border: `1px solid ${C.sage}30` }}>
-                📰 Kabar dari Alam
+                Kabar dari Alam
               </div>
               <h2 className="text-4xl sm:text-5xl font-black tracking-tight" style={{ color: C.forest }}>
                 Cerita Terbaru<br /><span style={{ color: C.sage }}>dari Lapangan.</span>
