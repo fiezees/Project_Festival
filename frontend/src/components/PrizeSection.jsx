@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Trophy, Crown, Medal, Award, Star, Sparkles, CheckCircle, PartyPopper, Gift } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { PRIZE_DATA, FESTIVAL_INFO } from '../data/mockData';
+import ScrollReveal from './ScrollReveal';
 
 export default function PrizeSection({ onOpenProposal }) {
   const [activeCategory, setActiveCategory] = useState(0);
@@ -19,22 +20,25 @@ export default function PrizeSection({ onOpenProposal }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-          <div className="text-[#2E8068] text-sm uppercase font-semibold tracking-wider">
-            Hadiah & Penghargaan
+        <ScrollReveal>
+          <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
+            <div className="text-[#2E8068] text-sm uppercase font-semibold tracking-wider">
+              Hadiah & Penghargaan
+            </div>
+
+            <h2 className="text-3xl lg:text-4xl font-bold text-[#063F35]">
+              Apresiasi untuk Peserta Terbaik
+            </h2>
+
+            <p className="text-[#374151] text-base sm:text-lg">
+              Apresiasi sebesar <strong>{FESTIVAL_INFO.totalPrizeFormatted}</strong> serta penghargaan resmi tingkat daerah bagi kelompok tani, sekolah, komunitas pemuda, dan peserta aksi konservasi terbaik.
+            </p>
           </div>
-
-          <h2 className="text-3xl lg:text-4xl font-bold text-[#063F35]">
-            Apresiasi untuk Peserta Terbaik
-          </h2>
-
-          <p className="text-[#374151] text-base sm:text-lg">
-            Apresiasi sebesar <strong>{FESTIVAL_INFO.totalPrizeFormatted}</strong> serta penghargaan resmi tingkat daerah bagi kelompok tani, sekolah, komunitas pemuda, dan peserta aksi konservasi terbaik.
-          </p>
-        </div>
+        </ScrollReveal>
 
         {/* Big Highlighted Banner for Total Prize */}
-        <div className="bg-[#063F35] text-white rounded-lg p-8 sm:p-12 mb-16 shadow-lg flex flex-col md:flex-row items-center justify-between gap-8">
+        <ScrollReveal delay={0.05}>
+          <div className="bg-[#063F35] text-white rounded-lg p-8 sm:p-12 mb-16 shadow-lg flex flex-col md:flex-row items-center justify-between gap-8">
           
           <div className="space-y-3 text-center md:text-left">
             <div className="text-4xl sm:text-5xl font-bold text-[#F4B91F] tracking-tight">
@@ -64,16 +68,17 @@ export default function PrizeSection({ onOpenProposal }) {
           </div>
 
         </div>
+        </ScrollReveal>
 
         {/* Prize Categories Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
           {PRIZE_DATA.categories.map((cat, idx) => {
             const isSelected = activeCategory === idx;
             return (
-              <div
-                key={idx}
-                onClick={() => {
-                  setActiveCategory(idx);
+              <ScrollReveal key={idx} delay={idx * 0.07}>
+                <div
+                  onClick={() => {
+                    setActiveCategory(idx);
                   triggerConfetti();
                 }}
                 className={`cursor-pointer bg-white border rounded-lg p-5 transition-all duration-300 flex flex-col justify-between ${
@@ -112,6 +117,7 @@ export default function PrizeSection({ onOpenProposal }) {
                 </div>
 
               </div>
+              </ScrollReveal>
             );
           })}
         </div>

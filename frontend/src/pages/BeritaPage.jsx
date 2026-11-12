@@ -33,14 +33,10 @@ export default function BeritaPage({ onNavigateHome, selectedArticle, setSelecte
           </button>
           
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-            <div className="space-y-2">
-              <span className="text-sm font-semibold text-[#2E8068] tracking-wide uppercase">Pusat Informasi</span>
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#063F35]">
-                Arsip Berita & Warta
+            <div className="space-y-1">
+              <h1 className="text-2xl sm:text-3xl font-bold text-[#063F35]">
+                Berita dan Kabar
               </h1>
-              <p className="text-[#374151] text-base max-w-2xl mt-2">
-                Kumpulan kabar, edukasi lingkungan, warta kegiatan, dan pembaruan seputar gerakan konservasi Festival Tanam Hulu.
-              </p>
             </div>
           </div>
         </div>

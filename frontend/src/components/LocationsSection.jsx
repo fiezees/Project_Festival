@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, Tooltip, useMap } from 'react-l
 import L from 'leaflet';
 import { MapPin, TreePine, ArrowUpRight } from 'lucide-react';
 import { LOCATIONS_DATA } from '../data/mockData';
+import ScrollReveal from './ScrollReveal';
 
 // Fallback image in case Unsplash or network link fails
 const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=1000&q=80";
@@ -67,17 +68,19 @@ export default function LocationsSection({ onSelectLocationMap }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         
         {/* Section Header */}
-        <div className="flex flex-col gap-2">
-          <div className="text-sm tracking-wide text-[#2E8068] uppercase font-semibold">
-            Lokasi Kegiatan
+        <ScrollReveal>
+          <div className="flex flex-col gap-2">
+            <div className="text-sm tracking-wide text-[#2E8068] uppercase font-semibold">
+              Lokasi Kegiatan
+            </div>
+            <h2 className="text-3xl lg:text-4xl font-bold text-[#063F35]">
+              Empat Lokasi, Satu Gerakan
+            </h2>
+            <p className="text-[#374151] max-w-2xl mt-2 text-base">
+              Festival Tanam Hulu difokuskan pada empat lokasi strategis di sekitar daerah aliran sungai untuk memaksimalkan dampak restorasi lingkungan. Arahkan kursor atau klik kartu untuk fokus pada peta interaktif.
+            </p>
           </div>
-          <h2 className="text-3xl lg:text-4xl font-bold text-[#063F35]">
-            Empat Lokasi, Satu Gerakan
-          </h2>
-          <p className="text-[#374151] max-w-2xl mt-2 text-base">
-            Festival Tanam Hulu difokuskan pada empat lokasi strategis di sekitar daerah aliran sungai untuk memaksimalkan dampak restorasi lingkungan. Arahkan kursor atau klik kartu untuk fokus pada peta interaktif.
-          </p>
-        </div>
+        </ScrollReveal>
 
         {/* 1. HORIZONTAL CARDS GRID */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -86,9 +89,9 @@ export default function LocationsSection({ onSelectLocationMap }) {
             const isActive = activeLocId === loc.id;
 
             return (
-              <div
-                key={loc.id}
-                onMouseEnter={() => setHoveredLocId(loc.id)}
+              <ScrollReveal key={loc.id} delay={LOCATIONS_DATA.indexOf(loc) * 0.08}>
+                <div
+                  onMouseEnter={() => setHoveredLocId(loc.id)}
                 onMouseLeave={() => setHoveredLocId(null)}
                 onClick={() => setActiveLocId(loc.id)}
                 className={`group cursor-pointer rounded-lg border bg-white transition-all duration-200 relative overflow-hidden flex flex-col justify-between ${
@@ -167,13 +170,15 @@ export default function LocationsSection({ onSelectLocationMap }) {
                 </div>
 
               </div>
+            </ScrollReveal>
             );
           })}
         </div>
 
         {/* 2. FULL-WIDTH MAP */}
-        <div className="space-y-2">
-          <div className="h-[300px] sm:h-[350px] lg:h-[370px] w-full rounded-lg overflow-hidden border border-[#d1d5db] shadow-sm relative z-0">
+        <ScrollReveal amount={0.08}>
+          <div className="space-y-2">
+            <div className="h-[300px] sm:h-[350px] lg:h-[370px] w-full rounded-lg overflow-hidden border border-[#d1d5db] shadow-sm relative z-0">
             <MapContainer
               center={defaultCenter}
               zoom={defaultZoom}
@@ -273,6 +278,7 @@ export default function LocationsSection({ onSelectLocationMap }) {
 
           </div>
         </div>
+        </ScrollReveal>
 
       </div>
     </section>

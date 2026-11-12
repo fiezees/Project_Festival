@@ -1,5 +1,6 @@
 import React from 'react';
 import { FESTIVAL_INFO } from '../data/mockData';
+import ScrollReveal from './ScrollReveal';
 
 export default function AboutSection() {
   const imageUrl = "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1000&q=80";
@@ -10,16 +11,16 @@ export default function AboutSection() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           
           {/* Image Left */}
-          <div className="order-2 lg:order-1">
+          <ScrollReveal className="order-2 lg:order-1" delay={0.1}>
             <img 
               src={imageUrl} 
               alt="Kawasan hulu sungai dan hutan yang dilindungi" 
               className="w-full h-auto rounded-lg shadow-sm object-cover"
             />
-          </div>
+          </ScrollReveal>
 
           {/* Content Right */}
-          <div className="order-1 lg:order-2 space-y-6">
+          <ScrollReveal className="order-1 lg:order-2 space-y-6" delay={0}>
             <span className="text-sm font-semibold text-[#2E8068] uppercase tracking-wide">
               Tentang Program
             </span>
@@ -39,7 +40,7 @@ export default function AboutSection() {
                 Melalui kolaborasi pemerintah, masyarakat, akademisi, dan pemuda, festival ini mengintegrasikan teknologi WebGIS untuk monitoring dan transparansi, memastikan setiap bibit yang ditanam dapat dipantau pertumbuhannya secara real-time.
               </p>
             </div>
-          </div>
+          </ScrollReveal>
 
         </div>
       </div>

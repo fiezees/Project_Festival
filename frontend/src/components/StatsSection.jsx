@@ -1,5 +1,6 @@
 import React from 'react';
 import { FESTIVAL_INFO } from '../data/mockData';
+import ScrollReveal from './ScrollReveal';
 
 export default function StatsSection() {
   const stats = [
@@ -14,8 +15,9 @@ export default function StatsSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-y-12">
           {stats.map((stat, index) => (
-            <div 
-              key={index} 
+            <ScrollReveal
+              key={index}
+              delay={index * 0.1}
               className={`flex flex-col text-center lg:text-left ${
                 index !== stats.length - 1 ? 'lg:border-r lg:border-white/15' : ''
               } lg:px-8 first:lg:pl-0 last:lg:pr-0`}
@@ -26,7 +28,7 @@ export default function StatsSection() {
               <span className="text-sm text-white/60 font-medium">
                 {stat.label}
               </span>
-            </div>
+            </ScrollReveal>
           ))}
         </div>
       </div>

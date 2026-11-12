@@ -1,6 +1,7 @@
 import React from 'react';
 import { Calendar, CheckCircle2, Users, Megaphone, FileText, Sprout, Award, Trophy, ArrowRight } from 'lucide-react';
 import { TIMELINE_DATA } from '../data/mockData';
+import ScrollReveal from './ScrollReveal';
 
 const iconMap = {
   Users: Users,
@@ -18,19 +19,21 @@ export default function TimelineSection({ onOpenProposal }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         {/* Section Title */}
-        <div className="max-w-3xl mb-12 space-y-3">
-          <div className="text-sm tracking-wide text-[#2E8068] uppercase font-semibold">
-            Agenda Kegiatan
+        <ScrollReveal>
+          <div className="max-w-3xl mb-12 space-y-3">
+            <div className="text-sm tracking-wide text-[#2E8068] uppercase font-semibold">
+              Agenda Kegiatan
+            </div>
+
+            <h2 className="text-3xl lg:text-4xl font-bold text-[#063F35]">
+              Timeline Festival Tanam Hulu
+            </h2>
+
+            <p className="text-[#374151] text-base lg:text-lg max-w-2xl">
+              Rangkaian tahapan pelaksanaan kegiatan dimulai dari Oktober 2026 hingga penganugerahan pemenang pada Desember 2026.
+            </p>
           </div>
-
-          <h2 className="text-3xl lg:text-4xl font-bold text-[#063F35]">
-            Timeline Festival Tanam Hulu
-          </h2>
-
-          <p className="text-[#374151] text-base lg:text-lg max-w-2xl">
-            Rangkaian tahapan pelaksanaan kegiatan dimulai dari Oktober 2026 hingga penganugerahan pemenang pada Desember 2026.
-          </p>
-        </div>
+        </ScrollReveal>
 
         {/* Timeline Stepper Component */}
         <div className="relative">
@@ -44,12 +47,12 @@ export default function TimelineSection({ onOpenProposal }) {
               const isEven = idx % 2 === 0;
 
               return (
-                <div
-                  key={item.step}
-                  className={`relative flex flex-col lg:flex-row items-center ${
-                    isEven ? 'lg:flex-row-reverse' : ''
-                  }`}
-                >
+                <ScrollReveal key={item.step} delay={idx * 0.08}>
+                  <div
+                    className={`relative flex flex-col lg:flex-row items-center ${
+                      isEven ? 'lg:flex-row-reverse' : ''
+                    }`}
+                  >
                   
                   {/* Content Box */}
                   <div className="w-full lg:w-1/2 lg:px-12">
@@ -102,6 +105,7 @@ export default function TimelineSection({ onOpenProposal }) {
                   <div className="hidden lg:block w-1/2" />
 
                 </div>
+                </ScrollReveal>
               );
             })}
           </div>
