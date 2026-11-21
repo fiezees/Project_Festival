@@ -88,6 +88,14 @@ export default function Footer({ setActivePage, onOpenProposal }) {
                   Ajukan Proposal Tim
                 </button>
               </li>
+              <li>
+                <button
+                  onClick={() => { setActivePage('admin'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                  className="hover:text-[#F4B91F] transition-colors text-left text-white/70"
+                >
+                  Panel Khusus Admin
+                </button>
+              </li>
             </ul>
           </div>
 
@@ -114,7 +122,13 @@ export default function Footer({ setActivePage, onOpenProposal }) {
         {/* Bottom copyright */}
         <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-white/60">
           <div>
-            © 2026 Festival Tanam Hulu Kota Padang. All Rights Reserved.
+            © 2026 Festival Tanam Hulu Kota Padang. All Rights Reserved. •{' '}
+            <button
+              onClick={() => { setActivePage('admin'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+              className="hover:text-white underline cursor-pointer"
+            >
+              Portal Admin
+            </button>
           </div>
           <div>
             Sumatera Barat

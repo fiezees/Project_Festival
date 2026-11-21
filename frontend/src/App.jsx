@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import YayasanPage from './pages/YayasanPage';
 
@@ -8,6 +8,7 @@ import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
 import PetaPage from './pages/PetaPage';
 import BeritaPage from './pages/BeritaPage';
+import AdminPage from './pages/AdminPage';
 import ProposalModal from './components/ProposalModal';
 
 // ── Page slide variant ────────────────────────────────────────────────────────
@@ -24,6 +25,21 @@ export default function App() {
   const [selectedLocationMap, setSelectedLocationMap] = useState(null);
   const [selectedArticle, setSelectedArticle] = useState(null);
 
+  // Check URL hash for direct links (e.g., /#admin)
+  useEffect(() => {
+    const handleHash = () => {
+      const hash = window.location.hash.replace('#', '').toLowerCase();
+      if (hash === 'admin') {
+        setActivePage('admin');
+      } else if (['yayasan', 'home', 'peta', 'berita'].includes(hash)) {
+        setActivePage(hash);
+      }
+    };
+    handleHash();
+    window.addEventListener('hashchange', handleHash);
+    return () => window.removeEventListener('hashchange', handleHash);
+  }, []);
+
   const handleSelectLocationMap = (loc) => {
     setSelectedLocationMap(loc);
     setActivePage('peta');
@@ -35,6 +51,29 @@ export default function App() {
     setActivePage('berita');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  // ── Dedicated Admin Portal ──────────────────────────────────────────────
+  if (activePage === 'admin') {
+    return (
+      <AnimatePresence mode="wait">
+        <motion.div
+          key="admin"
+          variants={pageVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          transition={pageTransition}
+        >
+          <AdminPage
+            onNavigateHome={() => {
+              setActivePage('home');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+          />
+        </motion.div>
+      </AnimatePresence>
+    );
+  }
 
   // ── Yayasan Landing Page ──────────────────────────────────────────────────
   if (activePage === 'yayasan') {

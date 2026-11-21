@@ -100,3 +100,42 @@ DELIMITER ;
 
 CALL seed_titik_tanam();
 DROP PROCEDURE seed_titik_tanam;
+
+
+-- --------------------------------------------------------
+-- Tabel Pendaftaran & Upload Proposal Festival
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS pendaftaran_proposal (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  nomor_registrasi VARCHAR(50) NOT NULL UNIQUE,
+  nama_tim VARCHAR(150) NOT NULL,
+  nama_ketua VARCHAR(150) NOT NULL,
+  email VARCHAR(150) NOT NULL,
+  telepon VARCHAR(50) NOT NULL,
+  nama_file VARCHAR(255) NULL,
+  file_path VARCHAR(255) NULL,
+  file_size INT UNSIGNED NULL,
+  catatan TEXT NULL,
+  status ENUM('Menunggu', 'Ditinjau', 'Diterima', 'Ditolak') NOT NULL DEFAULT 'Menunggu',
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  INDEX idx_pendaftaran_status (status),
+  INDEX idx_pendaftaran_email (email),
+  INDEX idx_pendaftaran_created (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+-- Tabel Akun Khusus Administrator
+-- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS admin_users (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  username VARCHAR(50) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  salt VARCHAR(64) NOT NULL,
+  nama_lengkap VARCHAR(100) NOT NULL,
+  role VARCHAR(50) NOT NULL DEFAULT 'admin',
+  last_login DATETIME NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

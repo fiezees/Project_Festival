@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sprout, Menu, X } from 'lucide-react';
+import { Sprout, Menu, X, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Navbar({ activePage, setActivePage, onOpenProposal }) {
@@ -48,7 +48,7 @@ export default function Navbar({ activePage, setActivePage, onOpenProposal }) {
                 <button
                   key={item.id}
                   onClick={() => handleNavClick(item.id)}
-                  className={`relative px-2 py-2 text-sm font-medium transition-colors duration-200 ${
+                  className={`relative px-2 py-2 text-sm font-medium transition-colors duration-200 cursor-pointer ${
                     isActive
                       ? 'text-[#F4B91F]'
                       : 'text-white hover:text-[#F4B91F]'
@@ -68,12 +68,22 @@ export default function Navbar({ activePage, setActivePage, onOpenProposal }) {
             })}
           </nav>
 
-          {/* CTA & Mobile Menu Toggle */}
-          <div className="flex items-center gap-4">
+          {/* CTA & Admin Button */}
+          <div className="flex items-center gap-3">
+            {/* Admin Portal Button */}
+            <button
+              onClick={() => handleNavClick('admin')}
+              className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg bg-emerald-950/60 hover:bg-emerald-900 border border-white/20 text-[#F4B91F] transition-all duration-200 cursor-pointer"
+              title="Panel Khusus Admin & Panitia"
+            >
+              <ShieldCheck className="w-4 h-4 text-[#F4B91F]" />
+              <span className="hidden sm:inline">Panel Admin</span>
+            </button>
+
             {/* Desktop CTA with micro-interaction */}
             <button
               onClick={onOpenProposal}
-              className="hidden sm:flex items-center justify-center bg-[#F4B91F] hover:bg-[#e3a918] text-[#063F35] px-6 py-2.5 rounded-lg font-bold text-sm transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg hover:shadow-brand-yellow/30 active:scale-95"
+              className="hidden sm:flex items-center justify-center bg-[#F4B91F] hover:bg-[#e3a918] text-[#063F35] px-5 py-2.5 rounded-lg font-bold text-sm transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg hover:shadow-brand-yellow/30 active:scale-95 cursor-pointer"
             >
               Ajukan Proposal
             </button>
@@ -147,12 +157,23 @@ export default function Navbar({ activePage, setActivePage, onOpenProposal }) {
                     </motion.button>
                   );
                 })}
+
+                <motion.button
+                  initial={{ opacity: 0, x: -16 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2, duration: 0.25, ease: 'easeOut' }}
+                  onClick={() => handleNavClick('admin')}
+                  className="flex items-center gap-2 text-left px-4 py-3 text-base font-semibold rounded-lg bg-emerald-950/60 text-[#F4B91F]"
+                >
+                  <ShieldCheck className="w-5 h-5 text-[#F4B91F]" />
+                  <span>Panel Admin</span>
+                </motion.button>
               </nav>
 
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.18, duration: 0.25, ease: 'easeOut' }}
+                transition={{ delay: 0.25, duration: 0.25, ease: 'easeOut' }}
                 className="pt-2 px-4"
               >
                 <button
@@ -160,7 +181,7 @@ export default function Navbar({ activePage, setActivePage, onOpenProposal }) {
                     setIsMobileMenuOpen(false);
                     onOpenProposal();
                   }}
-                  className="w-full bg-[#F4B91F] text-[#063F35] px-5 py-3 rounded-lg font-bold text-sm transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg hover:shadow-brand-yellow/30 active:scale-95"
+                  className="w-full bg-[#F4B91F] text-[#063F35] px-5 py-3 rounded-lg font-bold text-sm transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg hover:shadow-brand-yellow/30 active:scale-95 cursor-pointer"
                 >
                   Ajukan Proposal
                 </button>

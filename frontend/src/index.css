@@ -37,6 +37,12 @@
   html {
     scroll-behavior: smooth;
     font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    cursor: default;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    caret-color: transparent !important;
   }
 
   body {
@@ -45,9 +51,121 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     min-height: 100vh;
+    cursor: default;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    caret-color: transparent !important;
   }
 }
 
+/* ==========================================================================
+   GLOBAL CURSOR & CARET SUPPRESSION RULES
+   Completely removes text caret / blinking bar (|) on non-editable text
+   across the website and enforces clean default pointer behavior.
+   ========================================================================== */
+
+/* 1. Global Reset: Transparent caret and default cursor */
+*, *::before, *::after {
+  cursor: default;
+  caret-color: transparent !important;
+}
+
+/* 2. All text elements: Disable text selection and hide text caret */
+p, h1, h2, h3, h4, h5, h6, span, div, li, ul, ol, dl, dt, dd, 
+blockquote, figcaption, table, th, td, label, b, strong, i, em, mark, small, time,
+article, section, header, footer, main, aside, nav, svg {
+  cursor: default;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  caret-color: transparent !important;
+}
+
+/* 3. Clickable / interactive elements explicitly get pointer cursor */
+a, 
+a *, 
+button, 
+button *, 
+select, 
+option, 
+summary,
+[role="button"], 
+[role="button"] *, 
+.cursor-pointer, 
+.cursor-pointer *,
+input[type="checkbox"],
+input[type="radio"],
+input[type="submit"],
+input[type="button"],
+input[type="reset"],
+input[type="file"],
+label[for],
+label:has(input[type="file"]) {
+  cursor: pointer !important;
+  caret-color: transparent !important;
+}
+
+/* 4. Text inputs ONLY: Normal text cursor, visible caret, and editable text selection */
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="password"],
+input[type="number"],
+input[type="search"],
+input[type="url"],
+input:not([type]),
+textarea,
+[contenteditable="true"] {
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+  user-select: text !important;
+  cursor: text !important;
+  caret-color: auto !important;
+}
+
+/* 5. Disabled states */
+:disabled,
+:disabled *,
+[aria-disabled="true"],
+[aria-disabled="true"] *,
+.cursor-not-allowed,
+.cursor-not-allowed * {
+  cursor: not-allowed !important;
+}
+
+/* 6. Drag / Grab states */
+.cursor-grab {
+  cursor: grab !important;
+}
+.cursor-grabbing {
+  cursor: grabbing !important;
+}
+
+/* 7. Leaflet Map cursor integration */
+.leaflet-container {
+  cursor: grab !important;
+}
+.leaflet-container.leaflet-dragging,
+.leaflet-dragging .leaflet-grab {
+  cursor: grabbing !important;
+}
+.leaflet-interactive {
+  cursor: pointer !important;
+}
+.leaflet-popup-content,
+.leaflet-popup-content * {
+  cursor: default;
+}
+.leaflet-popup-content a,
+.leaflet-popup-content button {
+  cursor: pointer !important;
+}
+
+/* Animation utilities */
 .fade-in {
   opacity: 0;
   transform: translateY(12px);

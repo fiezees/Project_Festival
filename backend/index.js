@@ -1,10 +1,14 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 
 const wilayahRoutes = require('./routes/wilayah');
 const tanamRoutes = require('./routes/tanam');
 const statsRoutes = require('./routes/stats');
+const proposalsRoutes = require('./routes/proposals');
+const adminAuthRoutes = require('./routes/auth');
+const initDatabase = require('./init_db');
 
 const app = express();
 const port = Number(process.env.PORT) || 3001;
@@ -26,22 +30,41 @@ app.use(cors({
     callback(new Error(`CORS: origin ${origin} not allowed`));
   },
 }));
+
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Serve uploaded files statically
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.get('/', (req, res) => {
   res.json({
     status: 'ok',
     service: 'festival-pohon-api',
-    endpoints: ['/api/wilayah', '/api/tanam', '/api/stats'],
+    endpoints: [
+      '/api/wilayah',
+      '/api/tanam',
+      '/api/stats',
+      '/api/proposals',
+      '/api/admin/login',
+      '/api/admin/me',
+    ],
   });
 });
 
 app.use('/api/wilayah', wilayahRoutes);
 app.use('/api/tanam', tanamRoutes.router);
 app.use('/api/stats', statsRoutes);
+app.use('/api/proposals', proposalsRoutes);
+app.use('/api/admin', adminAuthRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Endpoint tidak ditemukan' });
+});
+
+// Auto initialize tables on server startup
+initDatabase().catch((err) => {
+  console.warn('[DB Init Warning] Auto init failed (MySQL mungkin belum siap):', err.message);
 });
 
 app.listen(port, () => {
