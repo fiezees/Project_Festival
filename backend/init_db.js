@@ -16,6 +16,7 @@ async function initDatabase() {
         file_path VARCHAR(255) NULL,
         file_size INT UNSIGNED NULL,
         catatan TEXT NULL,
+        catatan_admin TEXT NULL,
         status ENUM('Menunggu', 'Ditinjau', 'Diterima', 'Ditolak') NOT NULL DEFAULT 'Menunggu',
         created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -26,6 +27,14 @@ async function initDatabase() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
     console.log('[DB] Tabel pendaftaran_proposal siap.');
+
+    // Ensure column catatan_admin exists in pendaftaran_proposal (migration check)
+    try {
+      await pool.query('ALTER TABLE pendaftaran_proposal ADD COLUMN catatan_admin TEXT NULL AFTER catatan');
+      console.log('[DB] Kolom catatan_admin berhasil dipastikan.');
+    } catch (colErr) {
+      // Ignore if column already exists (ER_DUP_FIELDNAME)
+    }
 
     // 2. Create table admin_users
     await pool.query(`

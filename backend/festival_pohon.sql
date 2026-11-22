@@ -116,6 +116,7 @@ CREATE TABLE IF NOT EXISTS pendaftaran_proposal (
   file_path VARCHAR(255) NULL,
   file_size INT UNSIGNED NULL,
   catatan TEXT NULL,
+  catatan_admin TEXT NULL,
   status ENUM('Menunggu', 'Ditinjau', 'Diterima', 'Ditolak') NOT NULL DEFAULT 'Menunggu',
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

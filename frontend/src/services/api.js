@@ -91,15 +91,44 @@ export function getAdminProposals(token, params = {}) {
   });
 }
 
-export function updateProposalStatus(token, id, status) {
+export function updateProposalStatus(token, id, status, catatanAdmin = undefined) {
+  const payload = { status };
+  if (catatanAdmin !== undefined) payload.catatan_admin = catatanAdmin;
+
   return request(`/proposals/${id}/status`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ status }),
+    body: JSON.stringify(payload),
   });
+}
+
+export function updateProposalNotes(token, id, catatanAdmin) {
+  return request(`/proposals/${id}/notes`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ catatan_admin: catatanAdmin }),
+  });
+}
+
+export function bulkUpdateProposalStatus(token, ids, status) {
+  return request('/proposals/bulk-status', {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ ids, status }),
+  });
+}
+
+export function trackProposal(regId) {
+  return request(`/proposals/track/${encodeURIComponent(regId.trim())}`);
 }
 
 export function deleteProposal(token, id) {
@@ -113,4 +142,8 @@ export function deleteProposal(token, id) {
 
 export function getProposalDownloadUrl(id) {
   return `${API_BASE}/proposals/${id}/download`;
+}
+
+export function getProposalPreviewUrl(id) {
+  return `${API_BASE}/proposals/${id}/preview`;
 }
