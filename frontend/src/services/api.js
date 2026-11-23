@@ -297,3 +297,143 @@ export function deleteTimPlantingPoint(timToken, id) {
     },
   });
 }
+
+// ==========================================
+// Berita & Konten Publik & Admin
+// ==========================================
+export function getNews(params = {}) {
+  const searchParams = new URLSearchParams();
+  if (params.search) searchParams.append('search', params.search);
+  if (params.kategori && params.kategori !== 'Semua') searchParams.append('kategori', params.kategori);
+  if (params.page) searchParams.append('page', params.page);
+  if (params.limit) searchParams.append('limit', params.limit);
+  const query = searchParams.toString();
+  return request(`/berita${query ? `?${query}` : ''}`);
+}
+
+export function getNewsCategories() {
+  return request('/berita/kategori');
+}
+
+export function getNewsHeadline() {
+  return request('/berita/headline');
+}
+
+export function getNewsDetail(slugOrId) {
+  return request(`/berita/${slugOrId}`);
+}
+
+// Admin News Endpoints
+export function getAdminNews(token, params = {}) {
+  const searchParams = new URLSearchParams();
+  if (params.status && params.status !== 'all') searchParams.append('status', params.status);
+  if (params.kategori && params.kategori !== 'Semua') searchParams.append('kategori', params.kategori);
+  if (params.search) searchParams.append('search', params.search);
+  const query = searchParams.toString();
+  return request(`/berita/admin/list${query ? `?${query}` : ''}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
+
+export function createAdminNews(token, articleData) {
+  return request('/berita/admin', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(articleData),
+  });
+}
+
+export function updateAdminNews(token, id, articleData) {
+  return request(`/berita/admin/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(articleData),
+  });
+}
+
+export function updateAdminNewsStatus(token, id, status) {
+  return request(`/berita/admin/${id}/status`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ status }),
+  });
+}
+
+export function toggleAdminNewsFeature(token, id, is_featured) {
+  return request(`/berita/admin/${id}/feature`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ is_featured: is_featured ? 1 : 0 }),
+  });
+}
+
+export function deleteAdminNews(token, id, force = false) {
+  return request(`/berita/admin/${id}?force=${force ? 'true' : 'false'}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
+
+export async function uploadAdminNewsImage(token, formData) {
+  const response = await fetch(`${API_BASE}/berita/admin/upload-image`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    body: formData,
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data.error || 'Gagal mengunggah gambar berita');
+  }
+  return data;
+}
+
+export function createAdminNewsCategory(token, categoryData) {
+  return request('/berita/admin/kategori', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(categoryData),
+  });
+}
+
+export function updateAdminNewsCategory(token, id, categoryData) {
+  return request(`/berita/admin/kategori/${id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(categoryData),
+  });
+}
+
+export function deleteAdminNewsCategory(token, id) {
+  return request(`/berita/admin/kategori/${id}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
+

@@ -92,6 +92,146 @@ async function initDatabase() {
     `);
     console.log('[DB] Tabel admin_users siap.');
 
+    // 5. Create table kategori_berita
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS kategori_berita (
+        id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+        nama VARCHAR(100) NOT NULL UNIQUE,
+        slug VARCHAR(120) NOT NULL UNIQUE,
+        deskripsi TEXT NULL,
+        warna_badge VARCHAR(30) NOT NULL DEFAULT '#2E8068',
+        is_active TINYINT(1) NOT NULL DEFAULT 1,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        INDEX idx_kat_slug (slug)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+    console.log('[DB] Tabel kategori_berita siap.');
+
+    // Seed default categories if empty
+    const [existingCategories] = await pool.query('SELECT id FROM kategori_berita LIMIT 1');
+    if (existingCategories.length === 0) {
+      const defaultCategories = [
+        ['Persiapan', 'persiapan', 'Persiapan teknis & koordinasi lapangan penanaman', '#063F35'],
+        ['Edukasi', 'edukasi', 'Wawasan ekologi hulu sungai, DAS, dan botani pohon', '#2E8068'],
+        ['Pengumuman', 'pengumuman', 'Kabar resmi, jadwal seleksi, dan total hadiah', '#F4B91F'],
+        ['Konservasi', 'konservasi', 'Aksi restorasi lereng kritis dan resapan air', '#10b981'],
+        ['Inovasi', 'inovasi', 'Pemanfaatan WebGIS dan pemantauan vegetasi', '#3b82f6'],
+        ['Komunitas', 'komunitas', 'Kolaborasi pemuda, pegiat lingkungan, dan warga', '#8b5cf6'],
+      ];
+
+      for (const [nama, slug, deskripsi, warna] of defaultCategories) {
+        await pool.query(
+          'INSERT INTO kategori_berita (nama, slug, deskripsi, warna_badge) VALUES (?, ?, ?, ?)',
+          [nama, slug, deskripsi, warna]
+        );
+      }
+      console.log('[DB] 6 Kategori berita awal berhasil di-seed.');
+    }
+
+    // 6. Create table berita
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS berita (
+        id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+        slug VARCHAR(255) NOT NULL UNIQUE,
+        judul VARCHAR(255) NOT NULL,
+        ringkasan TEXT NOT NULL,
+        konten LONGTEXT NOT NULL,
+        gambar_url VARCHAR(500) NULL,
+        kategori VARCHAR(100) NOT NULL DEFAULT 'Umum',
+        penulis VARCHAR(150) NOT NULL DEFAULT 'Tim Redaksi Festival',
+        waktu_baca VARCHAR(50) NOT NULL DEFAULT '3 menit',
+        status ENUM('published', 'draft', 'archived') NOT NULL DEFAULT 'published',
+        is_featured TINYINT(1) NOT NULL DEFAULT 0,
+        views_count INT UNSIGNED NOT NULL DEFAULT 0,
+        published_at DATETIME NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        INDEX idx_berita_status (status),
+        INDEX idx_berita_kategori (kategori),
+        INDEX idx_berita_featured (is_featured),
+        INDEX idx_berita_slug (slug),
+        INDEX idx_berita_published (published_at)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+    console.log('[DB] Tabel berita siap.');
+
+    // Seed default articles if empty
+    const [existingArticles] = await pool.query('SELECT id FROM berita LIMIT 1');
+    if (existingArticles.length === 0) {
+      const defaultArticles = [
+        {
+          slug: 'persiapan-pemetaan-60000-titik-tanam-batu-busuak-pauh-padang',
+          judul: 'Persiapan Pemetaan 60.000 Titik Tanam di Pauh & Kuranji Resmi Dimulai',
+          ringkasan: 'Panitia Festival Tanam Hulu mematangkan persiapan pemetaan 60.000 titik penggalian di kawasan Batu Busuak, Lambung Bukit, Gunung Nago, dan Gunung Sarik.',
+          konten: `KOTA PADANG — Menjelang pembukaan Festival Tanam Hulu 2026 pada Oktober mendatang, panitia pelaksana bekerja sama dengan Dinas Lingkungan Hidup dan komunitas pemuda lokal telah memulai tahap awal validasi titik tanam.\n\nSebanyak 60.000 titik lubang tanam ditargetkan tersebar di 4 objek lokasi strategis, yaitu Batu Busuak (18.000 titik), Lambung Bukit (15.000 titik), Gunung Nago (14.000 titik), dan Gunung Sarik (13.000 titik).\n\nPenyiapan titik ini memanfaatkan teknologi geospasial WebGIS untuk memastikan penanaman tidak hanya sekadar formalitas, namun memperhatikan topografi, kesuburan tanah, serta keamanan lereng dari potensi tanah longsor.\n\n"Kami ingin memastikan setiap bibit yang ditanam memiliki koordinat yang tercatat dan umur tanam yang dapat dipantau secara berkala melalui sistem GIS," ungkap ketua pelaksana dalam rapat kooperatif.`,
+          gambar_url: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=1000&q=80',
+          kategori: 'Persiapan',
+          penulis: 'Dr. Hafiz Faqih',
+          waktu_baca: '4 menit',
+          status: 'published',
+          is_featured: 1,
+          views_count: 342,
+          published_at: '2026-09-20 10:00:00',
+        },
+        {
+          slug: 'kerapuhan-hulu-sungai-padang-mengapa-batu-busuak-jadi-fokus',
+          judul: 'Kerapuhan Hulu Sungai Padang: Mengapa Batu Busuak dan Lambung Bukit Jadi Fokus?',
+          ringkasan: 'Ulasan mendalam mengenai pentingnya tutupan vegetasi kayu keras di Daerah Aliran Sungai (DAS) Pauh untuk mencegah banjir bandang Kota Padang.',
+          konten: `Daerah Aliran Sungai (DAS) Pauh dan Kuranji merupakan dua benteng resapan air terpenting bagi Kota Padang. Namun, maraknya pembukaan lahan dan alih fungsi hutan di kawasan hulu seperti Batu Busuak dan Lambung Bukit menuntut perhatian ekstra.\n\nPohon-pohon spesifik seperti Surian, Mahoni, Kayu Manis, dan Bambu Betung memiliki sistem perakaran serabut dan tunggang yang sanggup mencengkeram tanah hingga kedalaman puluhan meter.\n\nDengan penanaman 60.000 bibit ini, diperkirakan tingkat retensi air hujan akan meningkat hingga 35%, mengurangi risiko debit limpasan ekstrem saat curah hujan tinggi di puncak musim penghujan.`,
+          gambar_url: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1000&q=80',
+          kategori: 'Edukasi',
+          penulis: 'Dr. Fachri',
+          waktu_baca: '6 menit',
+          status: 'published',
+          is_featured: 0,
+          views_count: 215,
+          published_at: '2026-09-15 08:30:00',
+        },
+        {
+          slug: 'total-hadiah-100-juta-siap-diperebutkan-komunitas-hijau-sekolah',
+          judul: 'Total Hadiah Rp 100 Juta Siap Diperebutkan Komunitas Hijau & Sekolah',
+          ringkasan: 'Ajang apresiasi terbesar bagi pegiat lingkungan Sumatera Barat kembali hadir dengan total hadiah Rp 100.000.000 dan trofi bergilir.',
+          konten: `Festival Tanam Hulu 2026 tidak hanya menjadi gerakan konservasi, tetapi juga ruang apresiasi dan kompetisi positif bagi seluruh elemen masyarakat. Panitia mengalokasikan total hadiah sebesar Rp 100.000.000 untuk kategori kelompok terbaik, sekolah hijau, dan inovasi pemeliharaan pohon.\n\nPenilaian tidak hanya diambil dari jumlah pohon yang ditanam, tetapi juga kerapihan pengorganisasian, persentase daya tumbuh hidup (survival rate) dalam kurun waktu pemantauan, serta keterlibatan warga lokal.\n\nPendaftaran proposal aksi tanam akan dibuka resmi mulai 25 Oktober 2026 mendatang melalui website resmi ini.`,
+          gambar_url: 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&w=1000&q=80',
+          kategori: 'Pengumuman',
+          penulis: 'Dr. Hafiz Faqih',
+          waktu_baca: '3 menit',
+          status: 'published',
+          is_featured: 0,
+          views_count: 489,
+          published_at: '2026-09-10 14:15:00',
+        },
+        {
+          slug: 'kolaborasi-pemuda-kuranji-dan-pauh-siapkan-pembibitan-pohon-endemik',
+          judul: 'Kolaborasi Pemuda Kuranji dan Pauh Siapkan Pembibitan Pohon Endemik',
+          ringkasan: 'Ratusan pemuda dari Gunung Nago dan Gunung Sarik bahu membahu menyiapkan rumah bibit swadaya untuk menyuplai bibit unggul berkualitas.',
+          konten: `Semangat gotong royong tampak menggelora di Kecamatan Pauh dan Kuranji. Pemuda karang taruna setempat telah mendirikan 4 titik persemaian bibit swadaya yang menampung jenis tanaman produktif dan kayu hutan.\n\nBibit buah seperti Durian Unggul, Alpukat, Manggis, dan Matoa dipilih agar selain berfungsi menjaga daya serap air, juga memberikan manfaat ekonomi berjangka bagi warga di masa mendatang.`,
+          gambar_url: 'https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=1000&q=80',
+          kategori: 'Konservasi',
+          penulis: 'Dr. Fachri',
+          waktu_baca: '5 menit',
+          status: 'published',
+          is_featured: 0,
+          views_count: 178,
+          published_at: '2026-09-02 09:00:00',
+        },
+      ];
+
+      for (const a of defaultArticles) {
+        await pool.query(`
+          INSERT INTO berita (slug, judul, ringkasan, konten, gambar_url, kategori, penulis, waktu_baca, status, is_featured, views_count, published_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `, [
+          a.slug, a.judul, a.ringkasan, a.konten, a.gambar_url,
+          a.kategori, a.penulis, a.waktu_baca, a.status, a.is_featured,
+          a.views_count, a.published_at,
+        ]);
+      }
+      console.log('[DB] 4 Artikel berita awal berhasil di-seed.');
+    }
+
     // 3. Seed default admin if table is empty
     const [existingAdmins] = await pool.query('SELECT id, username FROM admin_users LIMIT 1');
     if (existingAdmins.length === 0) {

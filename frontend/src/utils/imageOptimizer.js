@@ -276,3 +276,21 @@ function makeFallbackResult(file, originalSizeFormatted) {
     height: null,
   };
 }
+
+/**
+ * High-level wrapper for web image optimization
+ */
+export async function optimizeImageForWeb(file, options = {}) {
+  const maxDim = options.maxDimension || 1280;
+  const qual = options.quality || 0.82;
+  const res = await processAndCompressImage(file, maxDim, qual);
+  return {
+    file: res.file,
+    previewUrl: res.previewUrl,
+    stats: {
+      originalSize: file.size,
+      compressedSize: res.file.size,
+      compressionRatio: parseInt(res.savedPercentage, 10) || 0,
+    },
+  };
+}

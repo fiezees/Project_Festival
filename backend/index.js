@@ -10,6 +10,7 @@ const proposalsRoutes = require('./routes/proposals');
 const adminAuthRoutes = require('./routes/auth');
 const adminTeamsRoutes = require('./routes/adminTeams');
 const portalTimRoutes = require('./routes/portalTim');
+const beritaRoutes = require('./routes/berita');
 const initDatabase = require('./init_db');
 const { performDatabaseBackup } = require('./utils/backupService');
 
@@ -70,6 +71,7 @@ app.use('/api/proposals', proposalsRoutes);
 app.use('/api/admin', adminAuthRoutes);
 app.use('/api/admin', adminTeamsRoutes);
 app.use('/api/tim', portalTimRoutes);
+app.use('/api/berita', beritaRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Endpoint tidak ditemukan' });

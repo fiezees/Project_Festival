@@ -4,16 +4,21 @@ import {
   FileText, Download, CheckCircle2, Clock, XCircle, AlertCircle, 
   Trash2, Eye, ExternalLink, ArrowLeft, Mail,
   MessageCircle, X, FileSpreadsheet, CheckSquare, Save, ChevronDown,
-  Database, Key, Users, Sprout, Check, Copy, Compass, AlertTriangle
+  Database, Key, Users, Sprout, Check, Copy, Compass, AlertTriangle,
+  Newspaper, Pin, Archive, Plus, Edit, BookOpen, Sparkles, Upload, Tag
 } from 'lucide-react';
 import { 
   adminLogin, getAdminProposals, updateProposalStatus, 
   deleteProposal, getProposalDownloadUrl, getProposalPreviewUrl,
   updateProposalNotes, bulkUpdateProposalStatus, downloadDatabaseBackup,
   generateTeamAccount, getAdminTeams, getAdminPlantingPoints, verifyPlantingPoint,
-  getAssetUrl
+  getAssetUrl,
+  getAdminNews, createAdminNews, updateAdminNews, updateAdminNewsStatus,
+  toggleAdminNewsFeature, deleteAdminNews, uploadAdminNewsImage,
+  getNewsCategories, createAdminNewsCategory, updateAdminNewsCategory, deleteAdminNewsCategory
 } from '../services/api';
 import { validatePointGeofence } from '../utils/geofence';
+import { optimizeImageForWeb } from '../utils/imageOptimizer';
 
 // Dynamic WhatsApp Templates by Status (Energik, Natural, & Rapi)
 function getWhatsAppTemplate(proposal, type = null) {
@@ -124,6 +129,46 @@ export default function AdminPage({ onNavigateHome }) {
   const [verifyingPointId, setVerifyingPointId] = useState(null);
   const [previewCurPhoto, setPreviewCurPhoto] = useState(null);
 
+  // News & Articles Management State
+  const [adminNewsList, setAdminNewsList] = useState([]);
+  const [adminNewsStats, setAdminNewsStats] = useState({ total: 0, published: 0, draft: 0, archived: 0, totalViews: 0 });
+  const [loadingNews, setLoadingNews] = useState(false);
+  const [newsFilterStatus, setNewsFilterStatus] = useState('all');
+  const [newsFilterCategory, setNewsFilterCategory] = useState('Semua');
+  const [newsSearchQuery, setNewsSearchQuery] = useState('');
+  const [newsCategories, setNewsCategories] = useState([]);
+
+  // News Editor Modal
+  const [newsEditorModalOpen, setNewsEditorModalOpen] = useState(false);
+  const [editingNewsId, setEditingNewsId] = useState(null);
+  const [newsFormData, setNewsFormData] = useState({
+    judul: '',
+    ringkasan: '',
+    konten: '',
+    kategori: 'Persiapan',
+    penulis: '',
+    gambar_url: '',
+    waktu_baca: '',
+    status: 'published',
+    is_featured: 0,
+  });
+  const [newsThumbFile, setNewsThumbFile] = useState(null);
+  const [newsThumbPreview, setNewsThumbPreview] = useState('');
+  const [newsThumbMode, setNewsThumbMode] = useState('file'); // 'file' | 'url'
+  const [optimizingNewsThumb, setOptimizingNewsThumb] = useState(false);
+  const [newsThumbStats, setNewsThumbStats] = useState(null);
+  const [savingNews, setSavingNews] = useState(false);
+
+  // News Category Management Modal
+  const [categoryModalOpen, setCategoryModalOpen] = useState(false);
+  const [categoryForm, setCategoryForm] = useState({ nama: '', deskripsi: '', warna_badge: '#2E8068' });
+  const [editingCategoryId, setEditingCategoryId] = useState(null);
+  const [savingCategory, setSavingCategory] = useState(false);
+
+  // Live Article Reader Preview Modal & Delete
+  const [previewNewsModal, setPreviewNewsModal] = useState(null);
+  const [deleteNewsConfirmId, setDeleteNewsConfirmId] = useState(null);
+
   // Close export dropdown when clicking outside
   useEffect(() => {
     if (!exportDropdownOpen) return;
@@ -148,7 +193,11 @@ export default function AdminPage({ onNavigateHome }) {
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
-        if (previewCurPhoto) setPreviewCurPhoto(null);
+        if (previewNewsModal) setPreviewNewsModal(null);
+        else if (newsEditorModalOpen) setNewsEditorModalOpen(false);
+        else if (categoryModalOpen) setCategoryModalOpen(false);
+        else if (deleteNewsConfirmId) setDeleteNewsConfirmId(null);
+        else if (previewCurPhoto) setPreviewCurPhoto(null);
         else if (teamModalProposal) setTeamModalProposal(null);
         else if (previewPdfProposal) setPreviewPdfProposal(null);
         else if (selectedProposal) setSelectedProposal(null);
@@ -157,7 +206,10 @@ export default function AdminPage({ onNavigateHome }) {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [previewCurPhoto, teamModalProposal, previewPdfProposal, selectedProposal, deleteConfirmId]);
+  }, [
+    previewNewsModal, newsEditorModalOpen, categoryModalOpen, deleteNewsConfirmId,
+    previewCurPhoto, teamModalProposal, previewPdfProposal, selectedProposal, deleteConfirmId
+  ]);
 
   const handleLogout = () => {
     setToken('');
@@ -222,6 +274,38 @@ export default function AdminPage({ onNavigateHome }) {
     }
   }, [token, statusFilter]);
 
+  // Fetch news list & stats for admin
+  const fetchAdminNews = async () => {
+    if (!token) return;
+    try {
+      setLoadingNews(true);
+      const res = await getAdminNews(token, {
+        status: newsFilterStatus,
+        kategori: newsFilterCategory,
+        search: newsSearchQuery,
+      });
+      if (res && res.data) {
+        setAdminNewsList(res.data);
+        if (res.stats) setAdminNewsStats(res.stats);
+      }
+    } catch (err) {
+      console.warn('Gagal mengambil daftar berita admin:', err);
+    } finally {
+      setLoadingNews(false);
+    }
+  };
+
+  const fetchAdminNewsCategories = async () => {
+    try {
+      const res = await getNewsCategories();
+      if (res && res.data) {
+        setNewsCategories(res.data);
+      }
+    } catch (err) {
+      console.warn('Gagal mengambil kategori berita:', err);
+    }
+  };
+
   // Load data according to active tab
   useEffect(() => {
     if (token) {
@@ -229,9 +313,206 @@ export default function AdminPage({ onNavigateHome }) {
         fetchAdminTeams();
       } else if (activeAdminTab === 'curation') {
         fetchAdminPoints(pointsFilter);
+      } else if (activeAdminTab === 'news') {
+        fetchAdminNews();
+        fetchAdminNewsCategories();
       }
     }
-  }, [token, activeAdminTab, pointsFilter]);
+  }, [token, activeAdminTab, pointsFilter, newsFilterStatus, newsFilterCategory, newsSearchQuery]);
+
+  // Open Create News Modal
+  const handleOpenCreateNews = () => {
+    setEditingNewsId(null);
+    setNewsFormData({
+      judul: '',
+      ringkasan: '',
+      konten: '',
+      kategori: newsCategories[0]?.nama || 'Persiapan',
+      penulis: adminUser?.nama_lengkap || 'Admin Redaksi',
+      gambar_url: '',
+      waktu_baca: '',
+      status: 'published',
+      is_featured: 0,
+    });
+    setNewsThumbFile(null);
+    setNewsThumbPreview('');
+    setNewsThumbStats(null);
+    setNewsThumbMode('file');
+    setNewsEditorModalOpen(true);
+  };
+
+  // Open Edit News Modal
+  const handleOpenEditNews = (article) => {
+    setEditingNewsId(article.id);
+    setNewsFormData({
+      judul: article.judul || '',
+      ringkasan: article.ringkasan || '',
+      konten: article.konten || '',
+      kategori: article.kategori || 'Persiapan',
+      penulis: article.penulis || adminUser?.nama_lengkap || 'Admin Redaksi',
+      gambar_url: article.gambar_url || '',
+      waktu_baca: article.waktu_baca || '',
+      status: article.status || 'published',
+      is_featured: article.is_featured || 0,
+    });
+    setNewsThumbFile(null);
+    setNewsThumbPreview(article.gambar_url ? getAssetUrl(article.gambar_url) : '');
+    setNewsThumbStats(null);
+    setNewsThumbMode(article.gambar_url?.startsWith('http') ? 'url' : 'file');
+    setNewsEditorModalOpen(true);
+  };
+
+  // Handle image file selection with Universal Image Optimizer
+  const handleNewsThumbChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setOptimizingNewsThumb(true);
+      const optimized = await optimizeImageForWeb(file, {
+        maxDimension: 1280,
+        quality: 0.82,
+      });
+
+      setNewsThumbFile(optimized.file);
+      setNewsThumbPreview(optimized.previewUrl);
+      setNewsThumbStats(optimized.stats);
+    } catch (err) {
+      console.warn('Image optimization fallback:', err);
+      setNewsThumbFile(file);
+      setNewsThumbPreview(URL.createObjectURL(file));
+      setNewsThumbStats(null);
+    } finally {
+      setOptimizingNewsThumb(false);
+    }
+  };
+
+  // Save News (Create or Update)
+  const handleSaveNews = async (overrideStatus = null) => {
+    if (!newsFormData.judul.trim()) {
+      alert('Judul berita wajib diisi.');
+      return;
+    }
+    if (!newsFormData.konten.trim()) {
+      alert('Konten berita wajib diisi.');
+      return;
+    }
+
+    try {
+      setSavingNews(true);
+      let finalImageUrl = newsFormData.gambar_url;
+
+      // Upload optimized thumbnail file if provided
+      if (newsThumbFile) {
+        const uploadData = new FormData();
+        uploadData.append('image', newsThumbFile);
+        const uploadRes = await uploadAdminNewsImage(token, uploadData);
+        if (uploadRes && uploadRes.url) {
+          finalImageUrl = uploadRes.url;
+        }
+      }
+
+      const finalStatus = overrideStatus || newsFormData.status || 'published';
+      const payload = {
+        ...newsFormData,
+        gambar_url: finalImageUrl,
+        status: finalStatus,
+      };
+
+      if (editingNewsId) {
+        await updateAdminNews(token, editingNewsId, payload);
+        setActionSuccessMsg(`Artikel "${newsFormData.judul}" berhasil diperbarui!`);
+      } else {
+        await createAdminNews(token, payload);
+        setActionSuccessMsg(`Artikel baru "${newsFormData.judul}" berhasil diterbitkan!`);
+      }
+
+      setNewsEditorModalOpen(false);
+      fetchAdminNews();
+    } catch (err) {
+      alert(`Gagal menyimpan artikel: ${err.message}`);
+    } finally {
+      setSavingNews(false);
+    }
+  };
+
+  // Toggle Featured / Headline Pin
+  const handleToggleFeatureNews = async (article) => {
+    try {
+      const nextFeatured = article.is_featured ? 0 : 1;
+      await toggleAdminNewsFeature(token, article.id, nextFeatured);
+      setActionSuccessMsg(
+        nextFeatured
+          ? `Artikel "${article.judul}" disematkan sebagai Berita Utama (Headline)!`
+          : `Status Headline "${article.judul}" dilepas.`
+      );
+      fetchAdminNews();
+    } catch (err) {
+      alert(`Gagal mengubah headline: ${err.message}`);
+    }
+  };
+
+  // Change News Status (Published / Draft / Archived)
+  const handleChangeNewsStatus = async (article, newStatus) => {
+    try {
+      await updateAdminNewsStatus(token, article.id, newStatus);
+      setActionSuccessMsg(`Status artikel "${article.judul}" diubah menjadi "${newStatus}".`);
+      fetchAdminNews();
+    } catch (err) {
+      alert(`Gagal mengubah status: ${err.message}`);
+    }
+  };
+
+  // Delete / Archive News
+  const handleDeleteNews = async (id, force = false) => {
+    try {
+      await deleteAdminNews(token, id, force);
+      setActionSuccessMsg(
+        force ? 'Artikel berhasil dihapus permanen.' : 'Artikel dipindahkan ke Arsip.'
+      );
+      setDeleteNewsConfirmId(null);
+      fetchAdminNews();
+    } catch (err) {
+      alert(`Gagal menghapus artikel: ${err.message}`);
+    }
+  };
+
+  // Category Actions
+  const handleSaveCategory = async () => {
+    if (!categoryForm.nama.trim()) {
+      alert('Nama kategori wajib diisi.');
+      return;
+    }
+
+    try {
+      setSavingCategory(true);
+      if (editingCategoryId) {
+        await updateAdminNewsCategory(token, editingCategoryId, categoryForm);
+        setActionSuccessMsg(`Kategori "${categoryForm.nama}" berhasil diperbarui.`);
+      } else {
+        await createAdminNewsCategory(token, categoryForm);
+        setActionSuccessMsg(`Kategori "${categoryForm.nama}" berhasil ditambahkan.`);
+      }
+      setCategoryForm({ nama: '', deskripsi: '', warna_badge: '#2E8068' });
+      setEditingCategoryId(null);
+      fetchAdminNewsCategories();
+    } catch (err) {
+      alert(`Gagal menyimpan kategori: ${err.message}`);
+    } finally {
+      setSavingCategory(false);
+    }
+  };
+
+  const handleDeleteCategory = async (id, name) => {
+    if (!confirm(`Hapus kategori "${name}"?`)) return;
+    try {
+      await deleteAdminNewsCategory(token, id);
+      setActionSuccessMsg(`Kategori "${name}" berhasil dihapus.`);
+      fetchAdminNewsCategories();
+    } catch (err) {
+      alert(`Gagal menghapus kategori: ${err.message}`);
+    }
+  };
 
   // Open team account generator modal
   const handleOpenTeamModal = async (proposal) => {
@@ -925,6 +1206,24 @@ export default function AdminPage({ onNavigateHome }) {
             {adminPointsList.filter((p) => p.status_verifikasi === 'pending').length > 0 && (
               <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] bg-amber-400 text-amber-950 font-mono font-bold animate-pulse">
                 {adminPointsList.filter((p) => p.status_verifikasi === 'pending').length} Baru
+              </span>
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveAdminTab('news')}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all cursor-pointer whitespace-nowrap ${
+              activeAdminTab === 'news'
+                ? 'bg-[#063F35] text-white shadow-md'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100 bg-white border border-gray-200'
+            }`}
+          >
+            <Newspaper className="w-4 h-4 text-[#F4B91F]" />
+            <span>Manajemen Berita</span>
+            {adminNewsStats.total > 0 && (
+              <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] bg-white/20 text-white font-mono">
+                {adminNewsStats.total}
               </span>
             )}
           </button>
@@ -1715,6 +2014,360 @@ export default function AdminPage({ onNavigateHome }) {
           </div>
         )}
 
+        {/* TAB 4: NEWS & ARTICLES MANAGEMENT */}
+        {activeAdminTab === 'news' && (
+          <div className="space-y-6">
+            {/* KPI Summary Cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+              <div
+                onClick={() => setNewsFilterStatus('all')}
+                className={`p-4 rounded-xl border transition-all cursor-pointer ${
+                  newsFilterStatus === 'all'
+                    ? 'bg-white border-[#063F35] shadow-md ring-2 ring-[#063F35]/20'
+                    : 'bg-white border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <div className="text-xs font-semibold text-gray-500 uppercase">Total Artikel</div>
+                <div className="text-2xl font-black text-[#063F35] mt-1">{adminNewsStats.total}</div>
+                <div className="text-[11px] text-gray-400 mt-1">Semua status berita</div>
+              </div>
+
+              <div
+                onClick={() => setNewsFilterStatus('published')}
+                className={`p-4 rounded-xl border transition-all cursor-pointer ${
+                  newsFilterStatus === 'published'
+                    ? 'bg-white border-emerald-500 shadow-md ring-2 ring-emerald-500/20'
+                    : 'bg-white border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <div className="text-xs font-semibold text-emerald-700 uppercase flex items-center gap-1">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>Diterbitkan</span>
+                </div>
+                <div className="text-2xl font-black text-emerald-800 mt-1">{adminNewsStats.published}</div>
+                <div className="text-[11px] text-gray-400 mt-1">Tayang di portal publik</div>
+              </div>
+
+              <div
+                onClick={() => setNewsFilterStatus('draft')}
+                className={`p-4 rounded-xl border transition-all cursor-pointer ${
+                  newsFilterStatus === 'draft'
+                    ? 'bg-white border-amber-500 shadow-md ring-2 ring-amber-500/20'
+                    : 'bg-white border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <div className="text-xs font-semibold text-amber-700 uppercase flex items-center gap-1">
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>Draf</span>
+                </div>
+                <div className="text-2xl font-black text-amber-800 mt-1">{adminNewsStats.draft}</div>
+                <div className="text-[11px] text-gray-400 mt-1">Belum dipublikasi</div>
+              </div>
+
+              <div
+                onClick={() => setNewsFilterStatus('archived')}
+                className={`p-4 rounded-xl border transition-all cursor-pointer ${
+                  newsFilterStatus === 'archived'
+                    ? 'bg-white border-slate-500 shadow-md ring-2 ring-slate-500/20'
+                    : 'bg-white border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <div className="text-xs font-semibold text-slate-700 uppercase flex items-center gap-1">
+                  <Archive className="w-3.5 h-3.5" />
+                  <span>Diarsipkan</span>
+                </div>
+                <div className="text-2xl font-black text-slate-700 mt-1">{adminNewsStats.archived}</div>
+                <div className="text-[11px] text-gray-400 mt-1">Disembunyikan / ditarik</div>
+              </div>
+
+              <div className="p-4 rounded-xl border bg-white border-gray-200 col-span-2 sm:col-span-1">
+                <div className="text-xs font-semibold text-[#063F35] uppercase flex items-center gap-1">
+                  <Sparkles className="w-3.5 h-3.5 text-[#F4B91F]" />
+                  <span>Total Pembaca</span>
+                </div>
+                <div className="text-2xl font-black text-[#063F35] mt-1">{adminNewsStats.totalViews || 0}</div>
+                <div className="text-[11px] text-gray-400 mt-1">Akumulasi pembaca publik</div>
+              </div>
+            </div>
+
+            {/* Toolbar: Search, Filters, Category Modal & New Article */}
+            <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-2 flex-1">
+                {/* Search */}
+                <div className="relative flex-1 min-w-[200px] max-w-sm">
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="text"
+                    value={newsSearchQuery}
+                    onChange={(e) => setNewsSearchQuery(e.target.value)}
+                    placeholder="Cari judul, ringkasan, atau penulis..."
+                    className="w-full pl-9 pr-3 py-2 text-xs bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:border-[#063F35] focus:bg-white"
+                  />
+                  {newsSearchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setNewsSearchQuery('')}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Status Filter */}
+                <select
+                  value={newsFilterStatus}
+                  onChange={(e) => setNewsFilterStatus(e.target.value)}
+                  className="text-xs bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:border-[#063F35] cursor-pointer"
+                >
+                  <option value="all">Semua Status</option>
+                  <option value="published">Diterbitkan (Live)</option>
+                  <option value="draft">Draf</option>
+                  <option value="archived">Diarsipkan</option>
+                </select>
+
+                {/* Category Filter */}
+                <select
+                  value={newsFilterCategory}
+                  onChange={(e) => setNewsFilterCategory(e.target.value)}
+                  className="text-xs bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:outline-none focus:border-[#063F35] cursor-pointer"
+                >
+                  <option value="Semua">Semua Kategori</option>
+                  {newsCategories.map((c) => (
+                    <option key={c.id} value={c.nama}>
+                      {c.nama} ({c.jumlah_berita || 0})
+                    </option>
+                  ))}
+                </select>
+
+                {/* Reset Filters */}
+                {(newsSearchQuery || newsFilterStatus !== 'all' || newsFilterCategory !== 'Semua') && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNewsSearchQuery('');
+                      setNewsFilterStatus('all');
+                      setNewsFilterCategory('Semua');
+                    }}
+                    className="text-xs text-rose-600 hover:text-rose-800 font-medium px-2 py-1"
+                  >
+                    Reset Filter
+                  </button>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setCategoryModalOpen(true)}
+                  className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-lg transition-colors cursor-pointer"
+                  title="Kelola kategori artikel berita"
+                >
+                  <Tag className="w-3.5 h-3.5 text-gray-600" />
+                  <span>Kategori Berita</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleOpenCreateNews}
+                  className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-[#F4B91F] bg-[#063F35] hover:bg-[#084f43] rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Tulis Berita Baru</span>
+                </button>
+              </div>
+            </div>
+
+            {/* News List */}
+            {loadingNews ? (
+              <div className="p-12 text-center bg-white rounded-xl border border-gray-200">
+                <RefreshCw className="w-8 h-8 text-[#063F35] animate-spin mx-auto mb-2" />
+                <p className="text-xs text-gray-500">Memuat daftar berita...</p>
+              </div>
+            ) : adminNewsList.length === 0 ? (
+              <div className="p-12 text-center bg-white rounded-xl border border-gray-200 space-y-3">
+                <Newspaper className="w-12 h-12 text-gray-300 mx-auto" />
+                <h4 className="text-base font-bold text-gray-800">Belum Ada Artikel Berita</h4>
+                <p className="text-xs text-gray-500 max-w-sm mx-auto">
+                  Belum ada berita yang sesuai dengan filter pencarian ini. Buat berita pertama Anda untuk dipublikasikan ke portal publik!
+                </p>
+                <button
+                  type="button"
+                  onClick={handleOpenCreateNews}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-[#F4B91F] bg-[#063F35] hover:bg-[#084f43] rounded-lg shadow-sm"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Tulis Berita Sekarang</span>
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {adminNewsList.map((art) => {
+                  return (
+                    <div
+                      key={art.id}
+                      className={`bg-white rounded-xl border transition-all p-4 hover:shadow-md flex flex-col sm:flex-row gap-4 ${
+                        art.is_featured
+                          ? 'border-amber-300 ring-1 ring-amber-300/60 bg-amber-50/20'
+                          : art.status === 'archived'
+                          ? 'border-gray-200 opacity-75 bg-gray-50/50'
+                          : 'border-gray-200'
+                      }`}
+                    >
+                      {/* Thumbnail with fallbacks */}
+                      <div className="relative w-full sm:w-44 h-32 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100 border border-gray-200">
+                        <img
+                          src={getAssetUrl(art.gambar_url) || 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=600&auto=format&fit=crop&q=80'}
+                          alt={art.judul}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=600&auto=format&fit=crop&q=80';
+                          }}
+                        />
+                        {Boolean(art.is_featured) && (
+                          <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-amber-500 text-amber-950 font-bold text-[10px] shadow-sm flex items-center gap-1">
+                            <Pin className="w-3 h-3 fill-current" />
+                            <span>Headline</span>
+                          </div>
+                        )}
+                        <div className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded bg-black/60 text-white text-[10px] font-mono flex items-center gap-1">
+                          <Eye className="w-3 h-3" />
+                          <span>{art.views_count || 0}</span>
+                        </div>
+                      </div>
+
+                      {/* Content Info */}
+                      <div className="flex-1 flex flex-col justify-between space-y-2">
+                        <div>
+                          <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                            {/* Category Badge */}
+                            <span
+                              className="px-2 py-0.5 rounded-full text-[10px] font-bold text-white uppercase tracking-wider"
+                              style={{ backgroundColor: art.kategori_warna || '#2E8068' }}
+                            >
+                              {art.kategori || 'Berita'}
+                            </span>
+
+                            {/* Status Badge */}
+                            {art.status === 'published' ? (
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800">
+                                ● Diterbitkan
+                              </span>
+                            ) : art.status === 'draft' ? (
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-800">
+                                ⏳ Draf
+                              </span>
+                            ) : (
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-200 text-gray-700">
+                                📁 Diarsipkan
+                              </span>
+                            )}
+
+                            <span className="text-[11px] text-gray-400">
+                              {formatDate(art.created_at)}
+                            </span>
+                          </div>
+
+                          <h3 className="font-bold text-gray-900 text-base leading-snug hover:text-[#063F35] transition-colors">
+                            {art.judul}
+                          </h3>
+
+                          <p className="text-xs text-gray-600 line-clamp-2 mt-1 leading-relaxed">
+                            {art.ringkasan || (art.konten ? art.konten.slice(0, 140) + '...' : '-')}
+                          </p>
+                        </div>
+
+                        {/* Meta & Action Controls */}
+                        <div className="pt-2 border-t border-gray-100 flex flex-wrap items-center justify-between gap-2 text-xs">
+                          <div className="flex items-center gap-3 text-gray-500 text-[11px]">
+                            <span>Penulis: <strong className="text-gray-700">{art.penulis || 'Redaksi'}</strong></span>
+                            {art.waktu_baca && (
+                              <span>• {art.waktu_baca}</span>
+                            )}
+                          </div>
+
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            {/* Live Preview Button */}
+                            <button
+                              type="button"
+                              onClick={() => setPreviewNewsModal(art)}
+                              className="px-2.5 py-1 text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+                              title="Lihat tampilan artikel seperti yang dilihat pengunjung"
+                            >
+                              <Eye className="w-3.5 h-3.5 text-gray-600" />
+                              <span>Pratinjau</span>
+                            </button>
+
+                            {/* Pin / Headline Toggle Button */}
+                            <button
+                              type="button"
+                              onClick={() => handleToggleFeatureNews(art)}
+                              className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition-all flex items-center gap-1 cursor-pointer ${
+                                art.is_featured
+                                  ? 'bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300'
+                                  : 'bg-white hover:bg-amber-50 text-gray-600 border border-gray-200'
+                              }`}
+                              title={art.is_featured ? 'Lepas status headline' : 'Jadikan berita utama di beranda'}
+                            >
+                              <Pin className={`w-3.5 h-3.5 ${art.is_featured ? 'fill-current text-amber-700' : 'text-gray-400'}`} />
+                              <span>{art.is_featured ? 'Headline Aktif' : 'Pin Headline'}</span>
+                            </button>
+
+                            {/* Edit Button */}
+                            <button
+                              type="button"
+                              onClick={() => handleOpenEditNews(art)}
+                              className="px-2.5 py-1 text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+                            >
+                              <Edit className="w-3.5 h-3.5 text-emerald-700" />
+                              <span>Edit</span>
+                            </button>
+
+                            {/* Status Toggle / Archive Action */}
+                            {art.status === 'published' ? (
+                              <button
+                                type="button"
+                                onClick={() => handleChangeNewsStatus(art, 'archived')}
+                                className="px-2.5 py-1 text-xs font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+                                title="Sembunyikan artikel dari publik tanpa menghapusnya"
+                              >
+                                <Archive className="w-3.5 h-3.5 text-gray-500" />
+                                <span>Arsipkan</span>
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => handleChangeNewsStatus(art, 'published')}
+                                className="px-2.5 py-1 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+                                title="Terbitkan artikel ini agar tayang kembali ke publik"
+                              >
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                <span>Terbitkan</span>
+                              </button>
+                            )}
+
+                            {/* Delete Confirmation Button */}
+                            <button
+                              type="button"
+                              onClick={() => setDeleteNewsConfirmId(art)}
+                              className="p-1 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                              title="Hapus atau kelola arsip artikel ini"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
       </main>
 
       {/* ─────────────────────────────────────────────────────────────
@@ -2317,6 +2970,696 @@ export default function AdminPage({ onNavigateHome }) {
             >
               ✕
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          MODAL 1: News Editor (Create / Edit Article with Universal Image Optimizer)
+      ───────────────────────────────────────────────────────────── */}
+      {newsEditorModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/60 backdrop-blur-xs animate-fade-in text-left"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !savingNews) setNewsEditorModalOpen(false);
+          }}
+        >
+          <div
+            className="relative w-full max-w-3xl bg-white rounded-2xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden border border-gray-100"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50 flex-shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-emerald-100 text-[#063F35] flex items-center justify-center font-bold">
+                  <Newspaper className="w-5 h-5 text-[#2E8068]" />
+                </div>
+                <div>
+                  <h3 className="text-base sm:text-lg font-black text-[#063F35]">
+                    {editingNewsId ? 'Edit Artikel Berita' : 'Tulis Berita Baru'}
+                  </h3>
+                  <p className="text-xs text-gray-500">
+                    Publikasikan kabar terbaru aksi pelestarian ke portal publik Festival Tanam Hulu
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setNewsEditorModalOpen(false)}
+                disabled={savingNews}
+                className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-800 flex items-center justify-center transition-colors cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Modal Body (Scrollable) */}
+            <div className="overflow-y-auto flex-1 p-6 space-y-4 text-xs sm:text-sm">
+              {/* Judul Berita */}
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
+                  Judul Artikel <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={newsFormData.judul}
+                  onChange={(e) => setNewsFormData({ ...newsFormData, judul: e.target.value })}
+                  placeholder="Contoh: Ratusan Bibit Beringin Ditanam di Hulu Sungai Batang Kuranji"
+                  className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-300 rounded-xl font-bold text-gray-900 text-sm focus:outline-none focus:border-[#063F35] focus:bg-white"
+                />
+              </div>
+
+              {/* Kategori & Penulis Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-bold text-gray-700 uppercase">
+                      Kategori Berita <span className="text-rose-500">*</span>
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setCategoryModalOpen(true)}
+                      className="text-[11px] text-[#2E8068] hover:underline font-semibold"
+                    >
+                      + Kelola Kategori
+                    </button>
+                  </div>
+                  <select
+                    value={newsFormData.kategori}
+                    onChange={(e) => setNewsFormData({ ...newsFormData, kategori: e.target.value })}
+                    className="w-full px-3.5 py-2 bg-gray-50 border border-gray-300 rounded-xl text-gray-800 focus:outline-none focus:border-[#063F35] cursor-pointer"
+                  >
+                    {newsCategories.map((c) => (
+                      <option key={c.id} value={c.nama}>
+                        {c.nama}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
+                    Nama Penulis / Redaksi
+                  </label>
+                  <input
+                    type="text"
+                    value={newsFormData.penulis}
+                    onChange={(e) => setNewsFormData({ ...newsFormData, penulis: e.target.value })}
+                    placeholder="Contoh: Tim Humas Yayasan Galapagos"
+                    className="w-full px-3.5 py-2 bg-gray-50 border border-gray-300 rounded-xl text-gray-800 focus:outline-none focus:border-[#063F35]"
+                  />
+                </div>
+              </div>
+
+              {/* Ringkasan Singkat / Lead */}
+              <div>
+                <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
+                  Ringkasan / Sinopsis Artikel (Excerpt)
+                </label>
+                <textarea
+                  value={newsFormData.ringkasan}
+                  onChange={(e) => setNewsFormData({ ...newsFormData, ringkasan: e.target.value })}
+                  rows={2}
+                  placeholder="Ringkasan singkat 1-2 kalimat yang tampil di kartu berita dan pratinjau media sosial..."
+                  className="w-full px-3.5 py-2 bg-gray-50 border border-gray-300 rounded-xl text-gray-800 focus:outline-none focus:border-[#063F35] resize-none text-xs leading-relaxed"
+                />
+              </div>
+
+              {/* Konten Lengkap Berita */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-bold text-gray-700 uppercase">
+                    Konten Lengkap Berita <span className="text-rose-500">*</span>
+                  </label>
+                  <span className="text-[11px] text-gray-400">
+                    {(newsFormData.konten || '').trim().split(/\s+/).filter(Boolean).length} kata
+                  </span>
+                </div>
+                <textarea
+                  value={newsFormData.konten}
+                  onChange={(e) => setNewsFormData({ ...newsFormData, konten: e.target.value })}
+                  rows={10}
+                  placeholder="Tulis isi berita secara lengkap di sini. Gunakan paragraf baru dengan menekan Enter dua kali..."
+                  className="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-300 rounded-xl text-gray-800 focus:outline-none focus:border-[#063F35] leading-relaxed font-sans text-xs sm:text-sm"
+                />
+              </div>
+
+              {/* Thumbnail / Gambar Sampul */}
+              <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <label className="block text-xs font-bold text-gray-700 uppercase">
+                    Foto Sampul / Thumbnail Berita
+                  </label>
+
+                  <div className="flex items-center gap-1 bg-white p-0.5 rounded-lg border border-gray-300 self-start">
+                    <button
+                      type="button"
+                      onClick={() => setNewsThumbMode('file')}
+                      className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-colors ${
+                        newsThumbMode === 'file'
+                          ? 'bg-[#063F35] text-white shadow-xs'
+                          : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                    >
+                      Unggah File
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setNewsThumbMode('url')}
+                      className={`px-2.5 py-1 text-xs font-semibold rounded-md transition-colors ${
+                        newsThumbMode === 'url'
+                          ? 'bg-[#063F35] text-white shadow-xs'
+                          : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                    >
+                      Tautan URL
+                    </button>
+                  </div>
+                </div>
+
+                {newsThumbMode === 'file' ? (
+                  <div className="space-y-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                      <label className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-white border-2 border-dashed border-gray-300 hover:border-[#063F35] rounded-xl cursor-pointer transition-colors group">
+                        <Upload className="w-5 h-5 text-gray-400 group-hover:text-[#063F35]" />
+                        <span className="text-xs font-semibold text-gray-700 group-hover:text-[#063F35]">
+                          Pilih foto (JPG, PNG, WEBP, HEIC dari HP/Kamera)
+                        </span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleNewsThumbChange}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+
+                    {optimizingNewsThumb && (
+                      <div className="flex items-center gap-2 text-xs text-emerald-700 animate-pulse bg-emerald-50 p-2 rounded-lg">
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        <span>Mengompresi dan merapikan format foto otomatis untuk performa web terbaik...</span>
+                      </div>
+                    )}
+
+                    {newsThumbStats && (
+                      <div className="text-[11px] text-emerald-800 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg flex items-center justify-between">
+                        <span>
+                          Ukuran awal: <strong>{(newsThumbStats.originalSize / 1024).toFixed(0)} KB</strong> → Terkompres: <strong>{(newsThumbStats.compressedSize / 1024).toFixed(0)} KB</strong>
+                        </span>
+                        <span className="font-bold bg-emerald-200 px-1.5 py-0.5 rounded text-emerald-900">
+                          Hemat {newsThumbStats.compressionRatio}%
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div>
+                    <input
+                      type="text"
+                      value={newsFormData.gambar_url}
+                      onChange={(e) => {
+                        setNewsFormData({ ...newsFormData, gambar_url: e.target.value });
+                        setNewsThumbPreview(e.target.value);
+                      }}
+                      placeholder="https://images.unsplash.com/photo-..."
+                      className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-xs text-gray-800 focus:outline-none focus:border-[#063F35]"
+                    />
+                  </div>
+                )}
+
+                {/* Pratinjau Thumbnail Terpilih */}
+                {(newsThumbPreview || newsFormData.gambar_url) && (
+                  <div className="relative w-full sm:w-60 h-32 rounded-lg overflow-hidden border border-gray-200 bg-black/5 mt-2">
+                    <img
+                      src={newsThumbPreview || getAssetUrl(newsFormData.gambar_url)}
+                      alt="Pratinjau Thumbnail"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=600&auto=format&fit=crop&q=80';
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Opsi Penerbitan & Waktu Baca */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                {/* Waktu Baca */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-bold text-gray-700 uppercase">
+                      Estimasi Waktu Baca
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const wordCount = (newsFormData.konten || '').trim().split(/\s+/).filter(Boolean).length;
+                        const minutes = Math.max(1, Math.ceil(wordCount / 180));
+                        setNewsFormData({ ...newsFormData, waktu_baca: `${minutes} menit baca` });
+                      }}
+                      className="text-[11px] text-emerald-800 hover:underline font-semibold"
+                    >
+                      ⚡ Hitung Otomatis
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    value={newsFormData.waktu_baca}
+                    onChange={(e) => setNewsFormData({ ...newsFormData, waktu_baca: e.target.value })}
+                    placeholder="Contoh: 3 menit baca"
+                    className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-xs text-gray-800 focus:outline-none focus:border-[#063F35]"
+                  />
+                </div>
+
+                {/* Status Publikasi */}
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase mb-1">
+                    Status Publikasi
+                  </label>
+                  <select
+                    value={newsFormData.status}
+                    onChange={(e) => setNewsFormData({ ...newsFormData, status: e.target.value })}
+                    className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-xs text-gray-800 focus:outline-none focus:border-[#063F35] cursor-pointer"
+                  >
+                    <option value="published">Diterbitkan (Langsung Live)</option>
+                    <option value="draft">Simpan sebagai Draf</option>
+                    <option value="archived">Arsipkan</option>
+                  </select>
+                </div>
+
+                {/* Checkbox Headline / Featured */}
+                <div className="sm:col-span-2 pt-2 border-t border-gray-200">
+                  <label className="flex items-center gap-2.5 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(newsFormData.is_featured)}
+                      onChange={(e) =>
+                        setNewsFormData({ ...newsFormData, is_featured: e.target.checked ? 1 : 0 })
+                      }
+                      className="w-4 h-4 text-[#063F35] rounded border-gray-300 focus:ring-[#063F35]"
+                    />
+                    <span className="text-xs font-bold text-gray-800 flex items-center gap-1.5">
+                      <Pin className="w-3.5 h-3.5 text-amber-500 fill-current" />
+                      <span>Sematkan sebagai Berita Utama / Headline di Halaman Depan & Berita</span>
+                    </span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-3.5 border-t border-gray-100 bg-gray-50 flex items-center justify-between flex-shrink-0">
+              <button
+                type="button"
+                onClick={() => setNewsEditorModalOpen(false)}
+                disabled={savingNews}
+                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+              >
+                Batal
+              </button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleSaveNews('draft')}
+                  disabled={savingNews}
+                  className="px-4 py-2 bg-white hover:bg-gray-100 text-gray-800 border border-gray-300 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                >
+                  Simpan Draf
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleSaveNews('published')}
+                  disabled={savingNews || optimizingNewsThumb}
+                  className="flex items-center gap-1.5 px-5 py-2 bg-[#063F35] hover:bg-[#084f43] text-[#F4B91F] font-bold rounded-xl text-xs shadow-md transition-all active:scale-95 cursor-pointer disabled:opacity-50"
+                >
+                  {savingNews ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <span>Menyimpan...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-3.5 h-3.5" />
+                      <span>{editingNewsId ? 'Simpan Perubahan' : 'Terbitkan Artikel'}</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          MODAL 2: Category Management Modal
+      ───────────────────────────────────────────────────────────── */}
+      {categoryModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/60 backdrop-blur-xs animate-fade-in text-left"
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !savingCategory) setCategoryModalOpen(false);
+          }}
+        >
+          <div
+            className="relative w-full max-w-xl bg-white rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden border border-gray-100"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50 flex-shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-emerald-100 text-[#063F35] flex items-center justify-center font-bold">
+                  <Tag className="w-4 h-4 text-[#2E8068]" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-[#063F35]">Kelola Kategori Berita</h3>
+                  <p className="text-xs text-gray-500">Kategori membantu pengunjung memfilter artikel berita</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCategoryModalOpen(false)}
+                className="w-7 h-7 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-500 flex items-center justify-center"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="overflow-y-auto flex-1 p-6 space-y-5 text-xs sm:text-sm">
+              {/* Form Input Kategori Baru / Edit */}
+              <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-3">
+                <span className="font-bold text-gray-800 text-xs block uppercase">
+                  {editingCategoryId ? '✏️ Edit Kategori' : '➕ Tambah Kategori Baru'}
+                </span>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-gray-600 uppercase mb-1">
+                      Nama Kategori
+                    </label>
+                    <input
+                      type="text"
+                      value={categoryForm.nama}
+                      onChange={(e) => setCategoryForm({ ...categoryForm, nama: e.target.value })}
+                      placeholder="Contoh: Edukasi, Aksi Lapangan"
+                      className="w-full px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs text-gray-800 focus:outline-none focus:border-[#063F35]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-gray-600 uppercase mb-1">
+                      Warna Badge
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={categoryForm.warna_badge}
+                        onChange={(e) => setCategoryForm({ ...categoryForm, warna_badge: e.target.value })}
+                        className="w-9 h-8 p-0.5 rounded border border-gray-300 cursor-pointer bg-white"
+                      />
+                      <input
+                        type="text"
+                        value={categoryForm.warna_badge}
+                        onChange={(e) => setCategoryForm({ ...categoryForm, warna_badge: e.target.value })}
+                        className="flex-1 px-2.5 py-1.5 bg-white border border-gray-300 rounded-lg font-mono text-xs text-gray-800 uppercase"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-gray-600 uppercase mb-1">
+                    Deskripsi Singkat (Opsional)
+                  </label>
+                  <input
+                    type="text"
+                    value={categoryForm.deskripsi}
+                    onChange={(e) => setCategoryForm({ ...categoryForm, deskripsi: e.target.value })}
+                    placeholder="Deskripsi tema artikel kategori ini"
+                    className="w-full px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-xs text-gray-800 focus:outline-none focus:border-[#063F35]"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-2 pt-1">
+                  {editingCategoryId && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingCategoryId(null);
+                        setCategoryForm({ nama: '', deskripsi: '', warna_badge: '#2E8068' });
+                      }}
+                      className="px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg text-xs font-semibold"
+                    >
+                      Batal
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleSaveCategory}
+                    disabled={savingCategory}
+                    className="px-4 py-1.5 bg-[#063F35] hover:bg-[#084f43] text-[#F4B91F] font-bold rounded-lg text-xs transition-all active:scale-95 disabled:opacity-50"
+                  >
+                    {savingCategory ? 'Menyimpan...' : editingCategoryId ? 'Simpan Perubahan' : 'Tambah Kategori'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Daftar Kategori */}
+              <div>
+                <span className="font-bold text-gray-800 text-xs block uppercase mb-2">
+                  Daftar Kategori Terdaftar ({newsCategories.length})
+                </span>
+                <div className="divide-y divide-gray-100 border border-gray-200 rounded-xl overflow-hidden bg-white">
+                  {newsCategories.map((c) => (
+                    <div key={c.id} className="p-3 flex items-center justify-between gap-3 hover:bg-gray-50 transition-colors">
+                      <div className="flex items-center gap-2.5">
+                        <span
+                          className="px-2.5 py-0.5 rounded-full text-[10px] font-bold text-white uppercase"
+                          style={{ backgroundColor: c.warna_badge || '#2E8068' }}
+                        >
+                          {c.nama}
+                        </span>
+                        {c.deskripsi && (
+                          <span className="text-xs text-gray-500 hidden sm:inline">• {c.deskripsi}</span>
+                        )}
+                        <span className="text-[11px] text-gray-400 font-mono">
+                          ({c.jumlah_berita || 0} artikel)
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingCategoryId(c.id);
+                            setCategoryForm({
+                              nama: c.nama,
+                              deskripsi: c.deskripsi || '',
+                              warna_badge: c.warna_badge || '#2E8068',
+                            });
+                          }}
+                          className="p-1 text-gray-500 hover:text-emerald-700 hover:bg-emerald-50 rounded"
+                          title="Edit kategori"
+                        >
+                          <Edit className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteCategory(c.id, c.nama)}
+                          className="p-1 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded"
+                          title="Hapus kategori"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-3 border-t border-gray-100 bg-gray-50 flex justify-end flex-shrink-0">
+              <button
+                type="button"
+                onClick={() => setCategoryModalOpen(false)}
+                className="px-4 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg text-xs font-bold"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          MODAL 3: Reader Live Preview Modal
+      ───────────────────────────────────────────────────────────── */}
+      {previewNewsModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/75 backdrop-blur-xs animate-fade-in text-left"
+          onClick={() => setPreviewNewsModal(null)}
+        >
+          <div
+            className="relative w-full max-w-3xl bg-white rounded-2xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden border border-gray-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-3 border-b border-gray-200 bg-gray-50 flex-shrink-0">
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-xs bg-[#063F35] text-[#F4B91F] px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                  Pratinjau Pembaca Publik
+                </span>
+                <span className="text-xs text-gray-500 hidden sm:inline">• Sesuai tampilan web publik</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPreviewNewsModal(null)}
+                className="w-7 h-7 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-600 flex items-center justify-center font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="overflow-y-auto flex-1 p-6 sm:p-8 space-y-6">
+              <div className="space-y-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span
+                    className="px-3 py-1 rounded-full text-xs font-bold text-white uppercase tracking-wider"
+                    style={{ backgroundColor: previewNewsModal.kategori_warna || '#2E8068' }}
+                  >
+                    {previewNewsModal.kategori || 'Berita'}
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    {formatDate(previewNewsModal.created_at)}
+                  </span>
+                  {previewNewsModal.waktu_baca && (
+                    <span className="text-xs text-gray-400">• {previewNewsModal.waktu_baca}</span>
+                  )}
+                  {Boolean(previewNewsModal.is_featured) && (
+                    <span className="text-xs font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
+                      📌 Berita Utama
+                    </span>
+                  )}
+                </div>
+
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-black text-gray-900 leading-tight">
+                  {previewNewsModal.judul}
+                </h1>
+
+                <p className="text-xs text-gray-500">
+                  Ditulis oleh: <strong className="text-gray-800">{previewNewsModal.penulis || 'Redaksi'}</strong>
+                </p>
+              </div>
+
+              {/* Cover Photo */}
+              <div className="w-full h-64 sm:h-80 rounded-2xl overflow-hidden bg-gray-100 border border-gray-200">
+                <img
+                  src={getAssetUrl(previewNewsModal.gambar_url) || 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=1200&auto=format&fit=crop&q=80'}
+                  alt={previewNewsModal.judul}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+
+              {/* Excerpt */}
+              {previewNewsModal.ringkasan && (
+                <div className="p-4 rounded-xl bg-emerald-50/60 border-l-4 border-[#2E8068] text-gray-800 font-medium text-sm leading-relaxed italic">
+                  "{previewNewsModal.ringkasan}"
+                </div>
+              )}
+
+              {/* Content Body */}
+              <div className="text-gray-800 text-sm sm:text-base leading-relaxed space-y-4">
+                {(previewNewsModal.konten || '').split('\n\n').map((para, idx) => (
+                  <p key={idx}>{para}</p>
+                ))}
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-3 border-t border-gray-100 bg-gray-50 flex items-center justify-between flex-shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  const targetArt = previewNewsModal;
+                  setPreviewNewsModal(null);
+                  handleOpenEditNews(targetArt);
+                }}
+                className="flex items-center gap-1.5 px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 font-bold rounded-xl text-xs transition-colors"
+              >
+                <Edit className="w-3.5 h-3.5" />
+                <span>Edit Artikel Ini</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPreviewNewsModal(null)}
+                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold rounded-xl text-xs transition-colors"
+              >
+                Tutup Pratinjau
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          MODAL 4: Delete / Archive Confirmation Modal
+      ───────────────────────────────────────────────────────────── */}
+      {deleteNewsConfirmId && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 animate-fade-in text-left"
+          onClick={() => setDeleteNewsConfirmId(null)}
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full space-y-4 border border-gray-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto">
+              <Trash2 className="w-6 h-6" />
+            </div>
+
+            <div className="text-center space-y-1">
+              <h4 className="text-base font-bold text-gray-900">Hapus atau Arsipkan Berita?</h4>
+              <p className="text-xs text-gray-600">
+                Anda memilih artikel: <strong className="text-gray-900">"{deleteNewsConfirmId.judul}"</strong>
+              </p>
+              <p className="text-[11px] text-gray-500 pt-1">
+                Pilih <strong>Arsipkan</strong> untuk menyembunyikan artikel dari publik tanpa menghapusnya, atau <strong>Hapus Permanen</strong> untuk menghapusnya selamanya dari database.
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setDeleteNewsConfirmId(null)}
+                className="flex-1 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-xs font-semibold transition-colors"
+              >
+                Batal
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleDeleteNews(deleteNewsConfirmId.id, false)}
+                className="flex-1 py-2 bg-slate-700 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1"
+              >
+                <Archive className="w-3.5 h-3.5" />
+                <span>Arsipkan</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleDeleteNews(deleteNewsConfirmId.id, true)}
+                className="flex-1 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Hapus Permanen</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
