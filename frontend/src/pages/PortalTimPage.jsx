@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Sprout, MapPin, Camera, CheckCircle2, Clock, XCircle, 
   LogOut, Plus, Trash2, ArrowLeft, RefreshCw, AlertCircle,
-  User, Lock, Compass, Sparkles, AlertTriangle, ShieldAlert
+  User, Lock, Compass, AlertTriangle, ShieldAlert
 } from 'lucide-react';
 import { 
   timLogin, getTimProfile, getTimPlantingPoints, 
@@ -888,7 +888,7 @@ export default function PortalTimPage({ onNavigateHome }) {
                       <span className="font-semibold text-gray-700 block">📷 Foto Lahan (Before)</span>
                       {beforeStats && (
                         <span className="inline-flex items-center text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">
-                          <Sparkles className="w-2.5 h-2.5 mr-1 text-emerald-600" />
+                          <CheckCircle2 className="w-2.5 h-2.5 mr-1 text-emerald-700" />
                           Hemat {beforeStats.savedPercentage}
                         </span>
                       )}

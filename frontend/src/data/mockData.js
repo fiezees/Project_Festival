@@ -187,7 +187,7 @@ export const PRIZE_DATA = {
         "Plakat Khusus Dewan Juri"
       ],
       color: "from-indigo-600 to-purple-700",
-      icon: "Sparkles"
+      icon: "Trophy"
     }
   ]
 };

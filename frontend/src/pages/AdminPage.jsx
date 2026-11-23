@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  ShieldCheck, Lock, User, LogOut, Search, Filter, RefreshCw, 
+  Lock, User, LogOut, Search, Filter, RefreshCw, 
   FileText, Download, CheckCircle2, Clock, XCircle, AlertCircle, 
   Trash2, Eye, ExternalLink, ArrowLeft, Mail,
   MessageCircle, X, FileSpreadsheet, CheckSquare, Save, ChevronDown,
   Database, Key, Users, Sprout, Check, Copy, Compass, AlertTriangle,
-  Newspaper, Pin, Archive, Plus, Edit, BookOpen, Sparkles, Upload, Tag
+  Newspaper, Pin, Archive, Plus, Edit, BookOpen, Upload, Tag
 } from 'lucide-react';
 import { 
   adminLogin, getAdminProposals, updateProposalStatus, 
@@ -30,15 +30,15 @@ function getWhatsAppTemplate(proposal, type = null) {
 
   switch (st) {
     case 'Diterima':
-      return `*SELAMAT! TIM ANDA RESMI TERPILIH* 🌿✨\n*Festival Tanam Hulu 2026 — Yayasan Galapagos*\n\nHalo Kak *${ketua}* & kawan-kawan dari *"${tim}"*! 👋🔥\n\nKeren banget! Proposal tim kalian (No. Reg: *${regId}*) resmi dinyatakan *DITERIMA* pada seleksi kurasi Festival Tanam Hulu 2026!\n\nMohon konfirmasi kesiapan tim Anda untuk tahap persiapan aksi lapangan & technical meeting yaa. Mari kita hijaukan kembali hulu sungai kita! Semangat lestari! 🌳💪\n\nSalam hangat,\n*Panitia Festival Tanam Hulu 2026*`;
+      return `*PENGUMUMAN SELEKSI PROPOSAL: DITERIMA*\n*Festival Tanam Hulu 2026 — Yayasan Galapagos*\n\nHalo Kak *${ketua}* & tim *"${tim}"*,\n\nSelamat! Berdasarkan hasil kurasi dewan juri, proposal tim Anda (No. Reg: *${regId}*) resmi dinyatakan *DITERIMA* untuk menjadi tim penanaman Festival Tanam Hulu 2026.\n\nMohon konfirmasi kesiapan tim Anda untuk tahap persiapan aksi lapangan dan technical meeting berikutnya. Terima kasih atas partisipasi dan komitmennya menjaga hulu sungai kita.\n\nSalam lestari,\n*Panitia Festival Tanam Hulu 2026*`;
     case 'Ditinjau':
-      return `*UPDATE PROSES SELEKSI PROPOSAL* 📋✨\n*Festival Tanam Hulu 2026 — Yayasan Galapagos*\n\nHalo Kak *${ketua}* dari tim *"${tim}"*! 👋🌿\n\nKabar dari panitia: Berkas proposal tim Anda (No. Reg: *${regId}*) saat ini sedang dalam proses *PENINJAUAN MENDALAM* oleh tim kurator dewan juri.\n\nMohon pastikan kontak WhatsApp ini selalu aktif untuk koordinasi dan pengumuman berikutnya yaa. Tetap semangat! 🍃🔥\n\nSalam lestari,\n*Panitia Festival Tanam Hulu 2026*`;
+      return `*INFORMASI PROSES SELEKSI PROPOSAL*\n*Festival Tanam Hulu 2026 — Yayasan Galapagos*\n\nHalo Kak *${ketua}* dari tim *"${tim}"*,\n\nBerkas proposal tim Anda (No. Reg: *${regId}*) saat ini sedang dalam proses peninjauan oleh dewan juri.\n\nMohon pastikan kontak WhatsApp ini tetap aktif untuk menerima informasi hasil kurasi dan jadwal pengumuman selanjutnya.\n\nSalam lestari,\n*Panitia Festival Tanam Hulu 2026*`;
     case 'Ditolak':
-      return `*PENGUMUMAN SELEKSI PROPOSAL* 🌿\n*Festival Tanam Hulu 2026 — Yayasan Galapagos*\n\nHalo Kak *${ketua}* & seluruh tim *"${tim}"*. 🙏\n\nTerima kasih banyak atas partisipasi dan ide luar biasa yang telah diajukan (No. Reg: *${regId}*). Setelah proses kurasi mendalam, dengan berat hati kami sampaikan bahwa proposal tim Anda belum dapat diterima pada periode kali ini karena kuota penanaman yang sangat terbatas.\n\nTetap semangat bergerak untuk bumi dan terus berkarya yaa kawan-kawan! Aksi nyata menjaga lingkungan tidak pernah berhenti di sini. 🌳✨\n\nSalam lestari,\n*Panitia Festival Tanam Hulu 2026*`;
+      return `*PENGUMUMAN SELEKSI PROPOSAL*\n*Festival Tanam Hulu 2026 — Yayasan Galapagos*\n\nHalo Kak *${ketua}* & seluruh tim *"${tim}"*,\n\nTerima kasih banyak atas partisipasi dan kepedulian yang telah diajukan melalui proposal No. Reg: *${regId}*. Mengingat kuota lokasi penanaman yang sangat terbatas, dengan berat hati kami sampaikan bahwa proposal tim Anda belum dapat terpilih pada periode penanaman tahun ini.\n\nKami sangat mengapresiasi semangat konservasi kawan-kawan sekalian. Mari terus bergerak bersama menjaga kelestarian lingkungan dan bumi kita.\n\nSalam lestari,\n*Panitia Festival Tanam Hulu 2026*`;
     case 'Revisi':
-      return `*KONFIRMASI BERKAS PROPOSAL* 📝\n*Festival Tanam Hulu 2026 — Yayasan Galapagos*\n\nHalo Kak *${ketua}* dari tim *"${tim}"*! 👋🌿\n\nTerkait proposal tim Anda (No. Reg: *${regId}*), dewan juri melihat potensi yang sangat menarik, namun ada beberapa kelengkapan data/berkas yang perlu dikonfirmasi atau disesuaikan.\n\nMohon kesediaannya membalas pesan ini agar kami bisa bantu memandu proses perbaikannya yaa. Terima kasih banyak! 🍃\n\nSalam hangat,\n*Panitia Festival Tanam Hulu 2026*`;
+      return `*KONFIRMASI KELENGKAPAN BERKAS PROPOSAL*\n*Festival Tanam Hulu 2026 — Yayasan Galapagos*\n\nHalo Kak *${ketua}* dari tim *"${tim}"*,\n\nTerkait proposal tim Anda (No. Reg: *${regId}*), tim kurator telah meninjau dokumen yang dikirimkan. Terdapat beberapa data atau berkas yang perlu dikonfirmasi atau diperbaiki.\n\nMohon membalas pesan ini agar panitia dapat memandu proses penyesuaian berkasnya. Terima kasih banyak.\n\nSalam hangat,\n*Panitia Festival Tanam Hulu 2026*`;
     default:
-      return `Halo Kak *${ketua}* dari tim *"${tim}"*! 👋🌿\n\nKami dari Panitia Festival Tanam Hulu 2026 ingin mengonfirmasi terkait pendaftaran proposal tim Anda (No. Reg: *${regId}*). Mohon kabari jika pesan ini sudah diterima yaa. Salam lestari! 🌳`;
+      return `Halo Kak *${ketua}* dari tim *"${tim}"*,\n\nKami dari Panitia Festival Tanam Hulu 2026 ingin mengonfirmasi terkait pendaftaran proposal tim Anda (No. Reg: *${regId}*). Mohon informasikan jika pesan ini telah diterima. Terima kasih.\n\nSalam lestari,\n*Panitia Festival Tanam Hulu 2026*`;
   }
 }
 
@@ -982,11 +982,11 @@ export default function AdminPage({ onNavigateHome }) {
 
         <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-100 p-8 space-y-6">
           <div className="text-center space-y-2">
-            <div className="inline-flex p-3.5 bg-[#063F35] text-[#F4B91F] rounded-2xl shadow-md">
-              <ShieldCheck className="w-8 h-8" />
+            <div className="w-20 h-20 mx-auto mb-3 bg-white rounded-full p-1.5 shadow-md border-2 border-[#F4B91F]/40 flex items-center justify-center overflow-hidden">
+              <img src="/logo-festival.png" alt="Logo Festival Tanam Hulu" className="w-full h-full object-contain" />
             </div>
             <h1 className="text-2xl font-bold text-[#063F35]">
-              Panel Khusus Admin
+              Panel Administrasi Panitia
             </h1>
             <p className="text-sm text-gray-600">
               Masuk untuk mengelola pendaftar & dokumen proposal Festival Tanam Hulu 2026
@@ -1082,18 +1082,18 @@ export default function AdminPage({ onNavigateHome }) {
             
             {/* Title & Brand */}
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-[#F4B91F] text-[#063F35] rounded-lg">
-                <ShieldCheck className="w-6 h-6" />
+              <div className="w-10 h-10 rounded-full bg-white p-1 shadow-sm border border-[#F4B91F]/50 flex items-center justify-center overflow-hidden shrink-0">
+                <img src="/logo-festival.png" alt="Logo Festival" className="w-full h-full object-contain" />
               </div>
               <div>
                 <h1 className="text-base sm:text-lg font-bold leading-tight flex items-center gap-2">
-                  <span>Panel Admin Festival</span>
+                  <span>Panel Administrasi</span>
                   <span className="text-[10px] uppercase font-bold tracking-wider bg-white/20 text-[#F4B91F] px-2 py-0.5 rounded">
-                    Khusus Panitia
+                    Panitia
                   </span>
                 </h1>
                 <p className="text-xs text-white/70">
-                  Data Pendaftar & Berkas Proposal Tim
+                  Data Pendaftar &amp; Berkas Proposal Tim
                 </p>
               </div>
             </div>
@@ -2081,12 +2081,12 @@ export default function AdminPage({ onNavigateHome }) {
               </div>
 
               <div className="p-4 rounded-xl border bg-white border-gray-200 col-span-2 sm:col-span-1">
-                <div className="text-xs font-semibold text-[#063F35] uppercase flex items-center gap-1">
-                  <Sparkles className="w-3.5 h-3.5 text-[#F4B91F]" />
+                <div className="text-xs font-semibold text-gray-500 uppercase flex items-center gap-1">
+                  <Eye className="w-3.5 h-3.5 text-[#2E8068]" />
                   <span>Total Pembaca</span>
                 </div>
                 <div className="text-2xl font-black text-[#063F35] mt-1">{adminNewsStats.totalViews || 0}</div>
-                <div className="text-[11px] text-gray-400 mt-1">Akumulasi pembaca publik</div>
+                <div className="text-[11px] text-gray-400 mt-1">Akumulasi pembaca artikel</div>
               </div>
             </div>
 

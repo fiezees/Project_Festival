@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Trophy, Crown, Medal, Award, Star, Sparkles, CheckCircle, PartyPopper, Gift } from 'lucide-react';
+import { Trophy, Crown, Medal, Award, Star, CheckCircle, FileText } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { PRIZE_DATA, FESTIVAL_INFO } from '../data/mockData';
 import ScrollReveal from './ScrollReveal';
@@ -54,16 +54,16 @@ export default function PrizeSection({ onOpenProposal }) {
               onClick={triggerConfetti}
               className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#F4B91F] hover:bg-[#e0a719] text-[#063F35] font-semibold px-6 py-3 rounded-lg text-sm transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg hover:shadow-brand-yellow/30 active:scale-95 cursor-pointer"
             >
-              <PartyPopper className="w-5 h-5" />
-              <span>Rayakan Festival</span>
+              <Trophy className="w-5 h-5" />
+              <span>Rincian Apresiasi</span>
             </button>
 
             <button
               onClick={onOpenProposal}
               className="w-full sm:w-auto flex items-center justify-center gap-2 bg-transparent hover:bg-white/10 border border-[#F4B91F] text-[#F4B91F] font-semibold px-6 py-3 rounded-lg text-sm transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-lg hover:shadow-brand-yellow/30 active:scale-95 cursor-pointer"
             >
-              <Gift className="w-5 h-5" />
-              <span>Daftar Tim</span>
+              <FileText className="w-5 h-5" />
+              <span>Daftarkan Tim</span>
             </button>
           </div>
 
@@ -94,7 +94,7 @@ export default function PrizeSection({ onOpenProposal }) {
                     {idx === 1 && <Medal className="w-5 h-5" />}
                     {idx === 2 && <Award className="w-5 h-5" />}
                     {idx === 3 && <Star className="w-5 h-5" />}
-                    {idx === 4 && <Sparkles className="w-5 h-5" />}
+                    {idx === 4 && <Trophy className="w-5 h-5" />}
                   </div>
 
                   <h3 className="text-base font-semibold text-[#063F35] mb-1">

@@ -11,7 +11,6 @@ import {
   Layers,
   MapPin,
   Search,
-  ShieldCheck,
   Sprout,
   X,
 } from 'lucide-react';
@@ -423,10 +422,13 @@ export default function PetaPage({ onNavigateHome, selectedLocation }) {
 
             {/* Status Badge */}
             <div className="flex items-center gap-3 bg-white border border-[#e5e7eb] px-4 py-2.5 rounded-xl shadow-xs text-xs sm:text-sm shrink-0">
-              <ShieldCheck className="w-5 h-5 text-[#2E8068] shrink-0" />
+              <span className="relative flex h-2.5 w-2.5 shrink-0">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-600"></span>
+              </span>
               <div>
-                <div className="font-bold text-[#063F35]">WebGIS Monitoring Aktif</div>
-                <div className="text-[11px] text-[#6b7280]">Sinkronisasi GPS &amp; Citra Satelit</div>
+                <div className="font-bold text-[#063F35]">Data WebGIS Terverifikasi</div>
+                <div className="text-[11px] text-[#6b7280]">Titik Tanam Pauh &amp; Kuranji</div>
               </div>
             </div>
           </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Newspaper, Search, ArrowLeft, Calendar, User, Clock, 
-  ChevronRight, X, Tag, Share2, Eye, Check, ExternalLink, Sparkles
+  ChevronRight, X, Tag, Share2, Eye, Check, ExternalLink
 } from 'lucide-react';
 import { getNews, getNewsCategories, getNewsDetail, getAssetUrl } from '../services/api';
 import { NEWS_DATA } from '../data/mockData';
@@ -189,7 +189,7 @@ export default function BeritaPage({ onNavigateHome, selectedArticle, setSelecte
             </div>
 
             <div className="text-xs text-gray-500 bg-white border border-gray-200 px-3.5 py-2 rounded-xl shadow-xs shrink-0 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-[#F4B91F]" />
+              <Newspaper className="w-4 h-4 text-[#2E8068]" />
               <span>{newsList.length} Artikel Resmi Terpublikasi</span>
             </div>
           </div>

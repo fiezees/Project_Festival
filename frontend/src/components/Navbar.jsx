@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sprout, Menu, X, ShieldCheck } from 'lucide-react';
+import { Sprout, Menu, X, Lock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Navbar({ activePage, setActivePage, onOpenProposal }) {
@@ -89,10 +89,10 @@ export default function Navbar({ activePage, setActivePage, onOpenProposal }) {
             <button
               onClick={() => handleNavClick('admin')}
               className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg bg-emerald-950/60 hover:bg-emerald-900 border border-white/20 text-[#F4B91F] transition-all duration-200 cursor-pointer"
-              title="Panel Khusus Admin & Panitia"
+              title="Panel Masuk Panitia"
             >
-              <ShieldCheck className="w-4 h-4 text-[#F4B91F]" />
-              <span className="hidden sm:inline">Panel Admin</span>
+              <Lock className="w-3.5 h-3.5 text-[#F4B91F]" />
+              <span className="hidden sm:inline">Admin</span>
             </button>
 
             {/* Desktop CTA with micro-interaction */}
@@ -191,7 +191,7 @@ export default function Navbar({ activePage, setActivePage, onOpenProposal }) {
                   onClick={() => handleNavClick('admin')}
                   className="flex items-center gap-2 text-left px-4 py-3 text-base font-semibold rounded-lg bg-emerald-950/60 text-[#F4B91F]"
                 >
-                  <ShieldCheck className="w-5 h-5 text-[#F4B91F]" />
+                  <Lock className="w-4 h-4 text-[#F4B91F]" />
                   <span>Panel Admin</span>
                 </motion.button>
               </nav>

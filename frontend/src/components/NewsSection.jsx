@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, Calendar, Clock, Sparkles } from 'lucide-react';
+import { ArrowRight, Calendar, Clock } from 'lucide-react';
 import { NEWS_DATA } from '../data/mockData';
 import { getNews, getAssetUrl } from '../services/api';
 import ScrollReveal from './ScrollReveal';
@@ -58,9 +58,8 @@ export default function NewsSection({ onNavigateToNews, onSelectArticle }) {
         {/* Section Header */}
         <ScrollReveal>
           <div className="mb-12 space-y-2">
-            <div className="text-[#2E8068] text-sm uppercase font-semibold tracking-wider flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-[#F4B91F]" />
-              <span>Berita &amp; Kegiatan Konservasi</span>
+            <div className="text-[#2E8068] text-sm uppercase font-semibold tracking-wider">
+              Berita &amp; Kegiatan Konservasi
             </div>
             <h2 className="text-3xl lg:text-4xl font-bold text-[#063F35]">
               Kabar Terbaru
