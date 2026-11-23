@@ -13,6 +13,7 @@ export default function Navbar({ activePage, setActivePage, onOpenProposal }) {
 
   const handleNavClick = (id) => {
     setActivePage(id);
+    window.location.hash = id;
     setIsMobileMenuOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };

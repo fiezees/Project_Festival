@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import YayasanPage from './pages/YayasanPage';
+import { setTabBranding } from './utils/tabBranding';
 
 // ─── WebGIS Festival Tanam Hulu ───────────────────────────────────────────────
 import Navbar from './components/Navbar';
@@ -42,6 +43,11 @@ export default function App() {
     window.addEventListener('hashchange', handleHash);
     return () => window.removeEventListener('hashchange', handleHash);
   }, []);
+
+  // Dynamically sync browser tab favicon, title, & theme with zero delay
+  useEffect(() => {
+    setTabBranding(activePage);
+  }, [activePage]);
 
   const handleSelectLocationMap = (loc) => {
     setSelectedLocationMap(loc);
@@ -116,6 +122,7 @@ export default function App() {
           <YayasanPage
             onNavigateTo={(page) => {
               setActivePage(page);
+              window.location.hash = page;
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
           />
@@ -133,6 +140,7 @@ export default function App() {
         <button
           onClick={() => {
             setActivePage('yayasan');
+            window.location.hash = 'yayasan';
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
           className="flex items-center gap-2 text-sm font-bold px-4 py-2.5 rounded-full shadow-lg transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-xl active:scale-95 cursor-pointer"
