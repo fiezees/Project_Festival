@@ -27,8 +27,12 @@ export default function Navbar({ activePage, setActivePage, onOpenProposal }) {
             onClick={() => handleNavClick('home')}
             className="flex items-center gap-3 cursor-pointer group"
           >
-            <div className="w-10 h-10 bg-[#F4B91F] rounded flex items-center justify-center transition-transform duration-200 group-hover:scale-105">
-              <Sprout className="w-6 h-6 text-[#063F35]" />
+            <div className="w-11 h-11 md:w-12 md:h-12 bg-white rounded-full p-1 shadow-md border-2 border-[#F4B91F]/50 flex items-center justify-center transition-transform duration-200 group-hover:scale-105 shrink-0 overflow-hidden">
+              <img
+                src="/logo-festival.png"
+                alt="Logo Festival Tanam Hulu"
+                className="w-full h-full object-contain"
+              />
             </div>
             <div>
               <span className="text-lg md:text-xl font-bold tracking-tight text-white block leading-tight">

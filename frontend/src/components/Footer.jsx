@@ -12,8 +12,12 @@ export default function Footer({ setActivePage, onOpenProposal }) {
           {/* Col 1: Brand & Tagline */}
           <div className="space-y-4 md:col-span-1">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-[#F4B91F] flex items-center justify-center text-[#063F35] rounded-lg">
-                <Sprout className="w-6 h-6" />
+              <div className="w-12 h-12 bg-white rounded-full p-1 shadow-md border-2 border-[#F4B91F]/50 flex items-center justify-center shrink-0 overflow-hidden">
+                <img
+                  src="/logo-festival.png"
+                  alt="Logo Festival Tanam Hulu"
+                  className="w-full h-full object-contain"
+                />
               </div>
               <span className="text-lg font-bold text-white">
                 Festival Tanam Hulu

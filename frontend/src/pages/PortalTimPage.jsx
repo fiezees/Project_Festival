@@ -311,8 +311,12 @@ export default function PortalTimPage({ onNavigateHome }) {
 
         <div className="max-w-md mx-auto w-full bg-white rounded-2xl shadow-xl border border-gray-200/80 p-6 sm:p-8 my-auto">
           <div className="text-center space-y-2 mb-6">
-            <div className="inline-flex p-3 bg-emerald-50 rounded-2xl text-[#063F35] mb-1">
-              <Sprout className="w-8 h-8 text-emerald-700" />
+            <div className="inline-flex p-1.5 bg-white rounded-full shadow-lg border-2 border-[#F4B91F]/40 mb-2 w-20 h-20 items-center justify-center overflow-hidden mx-auto">
+              <img
+                src="/logo-festival.png"
+                alt="Logo Festival Tanam Hulu"
+                className="w-full h-full object-contain"
+              />
             </div>
             <h1 className="text-2xl font-black text-[#063F35] tracking-tight">
               Portal Tim Penanaman
@@ -419,8 +423,8 @@ export default function PortalTimPage({ onNavigateHome }) {
       <header className="sticky top-0 z-40 bg-[#063F35] text-white shadow-md border-b border-[#F4B91F]/20">
         <div className="max-w-3xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-emerald-600/40 border border-white/20 flex items-center justify-center text-[#F4B91F]">
-              <Sprout className="w-4 h-4" />
+            <div className="w-9 h-9 rounded-full bg-white p-0.5 shadow-sm border border-[#F4B91F]/50 flex items-center justify-center overflow-hidden shrink-0">
+              <img src="/logo-festival.png" alt="Logo Festival Tanam Hulu" className="w-full h-full object-contain" />
             </div>
             <div>
               <div className="text-xs uppercase tracking-wider text-[#F4B91F] font-bold">

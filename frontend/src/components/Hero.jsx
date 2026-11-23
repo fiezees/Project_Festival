@@ -18,9 +18,12 @@ export default function Hero({ onOpenProposal, onNavigateToMap, onScrollToTimeli
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full py-20 lg:py-0">
         <div className="max-w-2xl space-y-8">
           
-          <div className="inline-block">
-            <span className="text-sm font-semibold text-[#F4B91F] uppercase tracking-wide">
-              FESTIVAL TANAM HULU 2026
+          <div className="inline-flex items-center gap-2.5 bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/20">
+            <div className="w-6 h-6 rounded-full bg-white p-0.5 shrink-0 overflow-hidden">
+              <img src="/logo-festival.png" alt="Logo Festival Tanam Hulu" className="w-full h-full object-contain" />
+            </div>
+            <span className="text-xs sm:text-sm font-bold text-[#F4B91F] uppercase tracking-wider">
+              Festival Tanam Hulu 2026
             </span>
           </div>
 
