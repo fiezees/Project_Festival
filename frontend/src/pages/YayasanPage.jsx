@@ -4,8 +4,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
 import {
   MapPin, Trees, ArrowUpRight, Menu, X, ChevronRight, ChevronLeft,
-  Leaf, Mountain, Heart, Users, Shield, BookOpen,
-  Mail, Phone, Globe, Star, Sprout, User,
+  Leaf, Heart, Users,
+  Mail, Phone, Globe, User,
 } from 'lucide-react';
 import galapagosLogo from '../assets/logo-galapagos.png';
 
@@ -384,10 +384,6 @@ function HeroSection({ onNavigateTo }) {
                     border: `2px solid rgba(27,50,38,0.15)`,
                   }}>
                   <div className="flex items-center gap-2 mb-2">
-                    <span className="w-6 h-6 rounded-full flex items-center justify-center shrink-0"
-                      style={{ background: `${C.sage}22`, border: `1px solid ${C.sage}40` }}>
-                      <Leaf size={12} style={{ color: C.sage }} />
-                    </span>
                     <span className="text-[10px] font-black tracking-wider uppercase" style={{ color: C.sage }}>
                       Prinsip Galapagos
                     </span>
@@ -621,7 +617,7 @@ function StorySection() {
     {
       year: '1986', phase: 'Langkah Pertama di Kaki Gunung',
       desc: 'Lahir dari semangat persaudaraan dan cinta alam para siswa pecinta alam (Sispala) di SMA 1 Padang. Pada 31 Agustus 1986, KPA Galapagos resmi berdiri — nama yang terinspirasi dari kepulauan purba yang penuh keanekaragaman hayati.',
-      icon: Mountain, color: C.sage,
+      color: C.sage,
       img: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=400&q=80',
       fallback: 'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=400&q=80',
       rotate: '2deg',
@@ -629,15 +625,15 @@ function StorySection() {
     {
       year: '2000-an', phase: 'Hadir Saat Bencana Menyapa',
       desc: 'Sumatera Barat dilanda berbagai bencana. Galapagos tak hanya mendaki gunung — mereka turun ke lapangan untuk evakuasi, pemulihan, dan edukasi mitigasi bencana bagi masyarakat yang membutuhkan.',
-      icon: Shield, color: '#C0392B',
-      img: 'https://images.unsplash.com/photo-1587302912306-cf1ed9c33146?w=400&q=80',
-      fallback: 'https://images.unsplash.com/photo-1534361960057-19f4434a327d?w=400&q=80',
+      color: '#C0392B',
+      img: 'https://images.unsplash.com/photo-1593113598332-cd288d649433?w=600&q=80',
+      fallback: 'https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?w=600&q=80',
       rotate: '-2deg',
     },
     {
       year: 'Kini', phase: 'Menjaga Hulu & Masa Depan',
       desc: 'Bertransformasi menjadi Yayasan Galapagos Lestari Indonesia, kini bersinergi dengan masyarakat, pemerintah, dan kaum muda dalam rehabilitasi hutan, pembinaan Siswa Tanggap Bencana, dan pelestarian DAS Batang Kuranji.',
-      icon: Sprout, color: C.forest,
+      color: C.forest,
       img: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&q=80',
       fallback: 'https://images.unsplash.com/photo-1573489235842-05dddb86e5f7?w=400&q=80',
       rotate: '1.5deg',
@@ -666,18 +662,13 @@ function StorySection() {
 
         <div className="space-y-16">
           {milestones.map((m, i) => {
-            const Icon = m.icon;
             const isEven = i % 2 === 0;
             return (
               <FadeIn key={m.year} delay={i * 0.15} dir={isEven ? 'right' : 'left'}>
                 <div className={`flex flex-col ${isEven ? 'lg:flex-row' : 'lg:flex-row-reverse'} items-center gap-10`}>
                   <div className="flex-1 space-y-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full flex items-center justify-center"
-                        style={{ background: `${m.color}20`, border: `2px solid ${m.color}40` }}>
-                        <Icon size={18} style={{ color: m.color }} />
-                      </div>
-                      <span className="text-xs font-black px-3 py-1 rounded-full"
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-black px-3.5 py-1.5 rounded-full shadow-sm"
                         style={{ background: m.color, color: '#fff', letterSpacing: '0.08em' }}>{m.year}</span>
                     </div>
                     <h3 className="text-2xl font-black tracking-tight" style={{ color: C.forest }}>{m.phase}</h3>
@@ -716,10 +707,10 @@ function StorySection() {
 // ═══════════════════════════════════════════════════════════════════════════════
 function ImpactSection() {
   const stats = [
-    { value: '38+',     unit: 'Tahun',   desc: 'Mengabdi & Menjaga Alam (Sejak 1986)', icon: Star },
-    { value: '60.000+', unit: 'Pohon',   desc: 'Ditanam di Kawasan Hulu DAS',          icon: Trees },
-    { value: '500+',    unit: 'Orang',   desc: 'Kawan Relawan & Siswa Tanggap Bencana',icon: Users },
-    { value: 'Puluhan', unit: 'Nagari',  desc: 'Komunitas Lokal Diberdayakan',          icon: Heart },
+    { value: '38+',     unit: 'Tahun',   desc: 'Mengabdi & Menjaga Alam (Sejak 1986)' },
+    { value: '60.000+', unit: 'Pohon',   desc: 'Ditanam di Kawasan Hulu DAS' },
+    { value: '500+',    unit: 'Orang',   desc: 'Kawan Relawan & Siswa Tanggap Bencana' },
+    { value: 'Puluhan', unit: 'Nagari',  desc: 'Komunitas Lokal Diberdayakan' },
   ];
   return (
     <section id="dampak" className="scroll-mt-28 py-24 px-4 sm:px-6" style={{ background: C.bgCream }}>
@@ -739,25 +730,18 @@ function ImpactSection() {
                 </h2>
               </div>
               <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {stats.map((s, i) => {
-                  const Icon = s.icon;
-                  return (
-                    <FadeIn key={s.unit} delay={i * 0.12}>
-                      <motion.div whileHover={{ scale: 1.04, y: -4 }}
-                        transition={{ type: 'spring', stiffness: 300 }}
-                        className="p-6 rounded-3xl"
-                        style={{ background: 'rgba(247,243,232,0.06)', border: '1px solid rgba(247,243,232,0.12)' }}>
-                        <div className="w-10 h-10 rounded-2xl flex items-center justify-center mb-4"
-                          style={{ background: `${C.yellow}20` }}>
-                          <Icon size={20} style={{ color: C.yellow }} />
-                        </div>
-                        <div className="text-3xl font-black" style={{ color: C.yellow }}>{s.value}</div>
-                        <div className="text-base font-bold mt-0.5" style={{ color: C.bgCream }}>{s.unit}</div>
-                        <p className="text-sm mt-2 leading-snug opacity-70" style={{ color: C.bgCream }}>{s.desc}</p>
-                      </motion.div>
-                    </FadeIn>
-                  );
-                })}
+                {stats.map((s, i) => (
+                  <FadeIn key={s.unit} delay={i * 0.12}>
+                    <motion.div whileHover={{ scale: 1.04, y: -4 }}
+                      transition={{ type: 'spring', stiffness: 300 }}
+                      className="p-6 rounded-3xl"
+                      style={{ background: 'rgba(247,243,232,0.06)', border: '1px solid rgba(247,243,232,0.12)' }}>
+                      <div className="text-4xl font-black" style={{ color: C.yellow }}>{s.value}</div>
+                      <div className="text-base font-bold mt-1" style={{ color: C.bgCream }}>{s.unit}</div>
+                      <p className="text-sm mt-3 leading-snug opacity-75" style={{ color: C.bgCream }}>{s.desc}</p>
+                    </motion.div>
+                  </FadeIn>
+                ))}
               </div>
             </div>
           </div>
@@ -772,15 +756,15 @@ function ImpactSection() {
 // ═══════════════════════════════════════════════════════════════════════════════
 function ProgramsSection({ onNavigateTo }) {
   const programs = [
-    { icon: Trees, title: 'Konservasi & Rehabilitasi Hutan',
+    { title: 'Konservasi & Rehabilitasi Hutan',
       desc: 'Pemulihan ekosistem hulu sungai seperti DAS Batang Kuranji, penghijauan lahan kritis, dan pemantauan pohon berkelanjutan bersama masyarakat lokal.',
-      hasWebGIS: true, color: C.sage },
-    { icon: Shield, title: 'Mitigasi & Tanggap Darurat Bencana',
+      hasWebGIS: true, color: C.sage, tag: 'Pilar 01' },
+    { title: 'Mitigasi & Tanggap Darurat Bencana',
       desc: 'Pelatihan kesiapsiagaan bencana, tim reaksi cepat kemanusiaan, dan pemetaan kawasan rawan bencana di Sumatera Barat untuk masyarakat yang lebih tangguh.',
-      hasWebGIS: false, color: '#C0392B' },
-    { icon: BookOpen, title: 'Edukasi & Siswa Tanggap Bencana',
+      hasWebGIS: false, color: '#C0392B', tag: 'Pilar 02' },
+    { title: 'Edukasi & Siswa Tanggap Bencana',
       desc: 'Membina generasi muda dan pelajar di Kota Padang agar mencintai alam sekaligus memiliki keterampilan tanggap bencana sejak dini.',
-      hasWebGIS: false, color: C.yellow },
+      hasWebGIS: false, color: C.yellow, tag: 'Pilar 03' },
   ];
   return (
     <section id="ruang-gerak" className="scroll-mt-28 py-24 relative overflow-hidden" style={{ background: C.bgDark }}>
@@ -800,35 +784,32 @@ function ProgramsSection({ onNavigateTo }) {
           </div>
         </FadeIn>
         <div className="grid md:grid-cols-3 gap-6">
-          {programs.map((prog, i) => {
-            const Icon = prog.icon;
-            return (
-              <FadeIn key={prog.title} delay={i * 0.12}>
-                <motion.div whileHover={{ y: -6 }}
-                  transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-                  className="relative p-6 rounded-3xl cursor-pointer group"
-                  style={{ background: C.bgCream, border: '1px solid rgba(27,50,38,0.08)' }}>
-                  <div className="w-10 h-10 rounded-2xl flex items-center justify-center mb-4"
-                    style={{ background: `${prog.color}18`, border: `1px solid ${prog.color}30` }}>
-                    <Icon size={20} style={{ color: prog.color }} />
+          {programs.map((prog, i) => (
+            <FadeIn key={prog.title} delay={i * 0.12}>
+              <motion.div whileHover={{ y: -6 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                className="relative p-7 rounded-3xl cursor-pointer group flex flex-col justify-between"
+                style={{ background: C.bgCream, border: '1px solid rgba(27,50,38,0.08)' }}>
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-[11px] font-black uppercase tracking-wider px-3 py-1 rounded-full"
+                      style={{ background: `${prog.color}20`, color: prog.color }}>
+                      {prog.tag}
+                    </span>
                   </div>
                   <h3 className="text-lg font-black mb-3 tracking-tight" style={{ color: C.forest }}>{prog.title}</h3>
                   <p className="text-sm leading-relaxed" style={{ color: C.brown }}>{prog.desc}</p>
-                  {prog.hasWebGIS && (
-                    <motion.button whileHover={{ x: 3 }} onClick={() => onNavigateTo('peta')}
-                      className="mt-4 flex items-center gap-1.5 text-xs font-bold py-2 px-3 rounded-full"
-                      style={{ color: C.forest, background: `${C.yellow}30`, border: `1px solid ${C.yellow}50` }}>
-                      <MapPin size={12} /> Lihat di Peta WebGIS <ArrowUpRight size={12} />
-                    </motion.button>
-                  )}
-                  <div className="absolute top-5 right-5 w-8 h-8 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                    style={{ background: C.yellow }}>
-                    <ChevronRight size={14} style={{ color: C.forest }} />
-                  </div>
-                </motion.div>
-              </FadeIn>
-            );
-          })}
+                </div>
+                {prog.hasWebGIS && (
+                  <motion.button whileHover={{ x: 3 }} onClick={() => onNavigateTo('peta')}
+                    className="mt-6 inline-flex items-center gap-1.5 text-xs font-bold py-2 px-3 rounded-full self-start"
+                    style={{ color: C.forest, background: `${C.yellow}30`, border: `1px solid ${C.yellow}50` }}>
+                    <MapPin size={12} /> Lihat di Peta WebGIS <ArrowUpRight size={12} />
+                  </motion.button>
+                )}
+              </motion.div>
+            </FadeIn>
+          ))}
         </div>
       </div>
     </section>
