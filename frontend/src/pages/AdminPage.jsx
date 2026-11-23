@@ -4,7 +4,7 @@ import {
   FileText, Download, CheckCircle2, Clock, XCircle, AlertCircle, 
   Trash2, Eye, ExternalLink, ArrowLeft, Mail,
   MessageCircle, X, FileSpreadsheet, CheckSquare, Save, ChevronDown,
-  Database, Key, Users, Sprout, Check, Copy, Compass
+  Database, Key, Users, Sprout, Check, Copy, Compass, AlertTriangle
 } from 'lucide-react';
 import { 
   adminLogin, getAdminProposals, updateProposalStatus, 
@@ -13,6 +13,7 @@ import {
   generateTeamAccount, getAdminTeams, getAdminPlantingPoints, verifyPlantingPoint,
   getAssetUrl
 } from '../services/api';
+import { validatePointGeofence } from '../utils/geofence';
 
 // Dynamic WhatsApp Templates by Status (Energik, Natural, & Rapi)
 function getWhatsAppTemplate(proposal, type = null) {
@@ -1555,13 +1556,30 @@ export default function AdminPage({ onNavigateHome }) {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
-                  {adminPointsList.map((pt) => (
-                    <div key={pt.id} className="p-4 rounded-xl border border-gray-200 bg-white shadow-xs space-y-3">
+                  {adminPointsList.map((pt) => {
+                    const geo = validatePointGeofence(pt.latitude, pt.longitude, pt.lokasi_id || pt.lokasi_nama);
+                    return (
+                    <div 
+                      key={pt.id} 
+                      className={`p-4 rounded-xl border bg-white shadow-xs space-y-3 transition-all ${
+                        geo.status === 'out_of_bounds' 
+                          ? 'border-rose-300 ring-1 ring-rose-200' 
+                          : 'border-gray-200'
+                      }`}
+                    >
                       <div className="flex items-start justify-between gap-2">
                         <div>
-                          <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">
-                            {pt.nama_tim || pt.nama_peserta}
-                          </span>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">
+                              {pt.nama_tim || pt.nama_peserta}
+                            </span>
+                            {geo.status === 'out_of_bounds' && (
+                              <span className="text-[10px] font-black text-rose-800 bg-rose-100 border border-rose-300 px-2 py-0.5 rounded-full flex items-center gap-1 animate-pulse">
+                                <AlertTriangle className="w-3 h-3 text-rose-600" />
+                                <span>Di Luar Zona ({geo.distanceFormatted})</span>
+                              </span>
+                            )}
+                          </div>
                           <h4 className="text-sm font-black text-[#063F35] mt-1">{pt.jenis_pohon}</h4>
                           <p className="text-xs text-gray-500 flex items-center gap-1">
                             <Compass className="w-3 h-3 text-gray-400" />
@@ -1585,11 +1603,25 @@ export default function AdminPage({ onNavigateHome }) {
                         </div>
                       </div>
 
-                      {/* Before / After Photos */}
+                      {/* Geofence Alert Banner if point is far outside zone */}
+                      {geo.status === 'out_of_bounds' && (
+                        <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-lg text-[11px] text-rose-900 space-y-1">
+                          <div className="flex items-center gap-1.5 font-bold">
+                            <AlertTriangle className="w-3.5 h-3.5 text-rose-600 flex-shrink-0" />
+                            <span>Peringatan Geofence (Titik Di Luar Zona Konservasi)</span>
+                          </div>
+                          <p className="text-rose-800 leading-relaxed text-[10px]">
+                            Titik ini terdeteksi berada <strong>{geo.distanceFormatted}</strong> di luar batas resmi polygon {pt.lokasi_nama}. Kemungkinan direkam dari rumah/kosan, bukan di hulu sungai lokasi penanaman.
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Before / After Photos (Portrait 3:4) */}
                       <div className="grid grid-cols-2 gap-2">
                         <div 
                           onClick={() => setPreviewCurPhoto(pt.foto_before_url)}
-                          className="relative rounded-lg overflow-hidden bg-gray-100 aspect-video border border-gray-200 cursor-pointer group"
+                          className="relative rounded-lg overflow-hidden bg-gray-100 aspect-[3/4] border border-gray-200 cursor-pointer group shadow-xs"
+                          title="Klik untuk melihat foto kondisi lahan penuh"
                         >
                           <img 
                             src={getAssetUrl(pt.foto_before_url)} 
@@ -1597,14 +1629,16 @@ export default function AdminPage({ onNavigateHome }) {
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform" 
                             onError={(e) => {
                               e.currentTarget.onerror = null;
-                              e.currentTarget.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300" fill="%23f1f5f9"><rect width="400" height="300" fill="%23f1f5f9"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="12" fill="%2394a3b8">🌱 Foto Belum Tersedia</text></svg>';
+                              e.currentTarget.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="400" viewBox="0 0 300 400" fill="%23f1f5f9"><rect width="300" height="400" fill="%23f1f5f9"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="12" fill="%2394a3b8">🌱 Foto Belum Tersedia</text></svg>';
                             }}
                           />
-                          <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[9px] font-bold px-1 rounded">Before</span>
+                          <span className="absolute bottom-1.5 left-1.5 bg-black/65 backdrop-blur-xs text-white text-[9px] font-bold px-1.5 py-0.5 rounded">Before</span>
+                          <span className="absolute top-1.5 right-1.5 bg-black/50 text-white text-[8px] px-1 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity">🔍</span>
                         </div>
                         <div 
                           onClick={() => setPreviewCurPhoto(pt.foto_after_url)}
-                          className="relative rounded-lg overflow-hidden bg-gray-100 aspect-video border border-gray-200 cursor-pointer group"
+                          className="relative rounded-lg overflow-hidden bg-gray-100 aspect-[3/4] border border-gray-200 cursor-pointer group shadow-xs"
+                          title="Klik untuk melihat foto bibit tertanam penuh"
                         >
                           <img 
                             src={getAssetUrl(pt.foto_after_url)} 
@@ -1612,23 +1646,26 @@ export default function AdminPage({ onNavigateHome }) {
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform" 
                             onError={(e) => {
                               e.currentTarget.onerror = null;
-                              e.currentTarget.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300" fill="%23f1f5f9"><rect width="400" height="300" fill="%23f1f5f9"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="12" fill="%2394a3b8">🌱 Foto Belum Tersedia</text></svg>';
+                              e.currentTarget.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="400" viewBox="0 0 300 400" fill="%23f1f5f9"><rect width="300" height="400" fill="%23f1f5f9"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="12" fill="%2394a3b8">🌱 Foto Belum Tersedia</text></svg>';
                             }}
                           />
-                          <span className="absolute bottom-1 left-1 bg-emerald-950/80 text-[#F4B91F] text-[9px] font-bold px-1 rounded">After</span>
+                          <span className="absolute bottom-1.5 left-1.5 bg-emerald-950/85 backdrop-blur-xs text-[#F4B91F] text-[9px] font-bold px-1.5 py-0.5 rounded">After</span>
+                          <span className="absolute top-1.5 right-1.5 bg-black/50 text-white text-[8px] px-1 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity">🔍</span>
                         </div>
                       </div>
 
                       {/* Coordinates */}
                       <div className="flex items-center justify-between text-xs text-gray-500 pt-1 border-t border-gray-100">
                         <a
-                          href={`https://www.google.com/maps?q=${pt.latitude},${pt.longitude}`}
+                          href={`https://www.google.com/maps/search/?api=1&query=${pt.latitude},${pt.longitude}`}
                           target="_blank"
                           rel="noreferrer"
                           className="flex items-center gap-1 text-[11px] font-mono text-emerald-700 hover:underline"
+                          title="Buka titik koordinat di Google Maps (Citra Satelit)"
                         >
                           <Compass className="w-3.5 h-3.5" />
                           <span>{pt.latitude}, {pt.longitude}</span>
+                          <ExternalLink className="w-3 h-3 text-gray-400" />
                         </a>
                         <span className="text-[10px] text-gray-400">{formatDate(pt.created_at)}</span>
                       </div>
@@ -1657,7 +1694,10 @@ export default function AdminPage({ onNavigateHome }) {
                             type="button"
                             disabled={verifyingPointId === pt.id}
                             onClick={() => {
-                              const note = prompt('Masukkan catatan revisi / penolakan untuk tim:', pt.catatan_verifikasi || '');
+                              const defaultReason = geo.status === 'out_of_bounds'
+                                ? `Ditolak: Koordinat terdeteksi berjarak ${geo.distanceFormatted} di luar batas resmi ${pt.lokasi_nama}. Mohon catat titik saat berada di lokasi penanaman langsung.`
+                                : (pt.catatan_verifikasi || '');
+                              const note = prompt('Masukkan catatan revisi / penolakan untuk tim:', defaultReason);
                               if (note !== null) handleVerifyPoint(pt.id, 'rejected', note);
                             }}
                             className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-md text-xs font-bold transition-colors cursor-pointer"
@@ -1667,7 +1707,8 @@ export default function AdminPage({ onNavigateHome }) {
                         )}
                       </div>
                     </div>
-                  ))}
+                  );
+                })}
                 </div>
               )}
             </div>

@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Sprout, MapPin, Camera, CheckCircle2, Clock, XCircle, 
   LogOut, Plus, Trash2, ArrowLeft, RefreshCw, AlertCircle,
-  User, Lock, Compass, Sparkles
+  User, Lock, Compass, Sparkles, AlertTriangle, ShieldAlert
 } from 'lucide-react';
 import { 
   timLogin, getTimProfile, getTimPlantingPoints, 
@@ -10,6 +10,7 @@ import {
   getAssetUrl
 } from '../services/api';
 import { processAndCompressImage, IMAGE_FALLBACK_SVG } from '../utils/imageOptimizer';
+import { validatePointGeofence } from '../utils/geofence';
 
 const LOKASI_OPTIONS = [
   { id: 'batu-busuak', nama: 'Batu Busuak, Pauh' },
@@ -76,6 +77,15 @@ export default function PortalTimPage({ onNavigateHome }) {
   const [optimizingAfter, setOptimizingAfter] = useState(false);
   const [beforeStats, setBeforeStats] = useState(null);
   const [afterStats, setAfterStats] = useState(null);
+
+  // Geofence confirmation state
+  const [overrideOutOfZone, setOverrideOutOfZone] = useState(false);
+
+  // Evaluasi geofence realtime
+  const geofenceCheck = useMemo(() => {
+    if (!formData.latitude || !formData.longitude) return null;
+    return validatePointGeofence(formData.latitude, formData.longitude, formData.lokasi_id);
+  }, [formData.latitude, formData.longitude, formData.lokasi_id]);
 
   // Photo viewer modal
   const [previewPhotoUrl, setPreviewPhotoUrl] = useState(null);
@@ -218,6 +228,7 @@ export default function PortalTimPage({ onNavigateHome }) {
     setAfterStats(null);
     setOptimizingBefore(false);
     setOptimizingAfter(false);
+    setOverrideOutOfZone(false);
     setFormError('');
     setGpsAccuracy(null);
     setIsModalOpen(true);
@@ -229,6 +240,11 @@ export default function PortalTimPage({ onNavigateHome }) {
 
     if (!formData.latitude || !formData.longitude) {
       setFormError('Koordinat GPS wajib diisi. Tekan tombol "Ambil Lokasi Saya" di atas.');
+      return;
+    }
+
+    if (geofenceCheck && geofenceCheck.status === 'out_of_bounds' && !overrideOutOfZone) {
+      setFormError(`🚨 Peringatan Geofence: Koordinat GPS Anda terdeteksi berjarak ${geofenceCheck.distanceFormatted} di luar area penanaman resmi ${geofenceCheck.zoneName}. Silakan centang kotak konfirmasi di bawah jika ini adalah lokasi khusus yang disetujui panitia.`);
       return;
     }
 
@@ -577,11 +593,12 @@ export default function PortalTimPage({ onNavigateHome }) {
                     </div>
                   </div>
 
-                  {/* Photos Thumbnail Before & After */}
-                  <div className="grid grid-cols-2 gap-2 pt-1">
+                  {/* Photos Thumbnail Before & After (Portrait 3:4) */}
+                  <div className="grid grid-cols-2 gap-2.5 pt-1">
                     <div 
                       onClick={() => setPreviewPhotoUrl(pt.foto_before_url)}
-                      className="relative rounded-xl overflow-hidden bg-gray-100 aspect-video border border-gray-200 cursor-pointer group"
+                      className="relative rounded-xl overflow-hidden bg-gray-100 aspect-[3/4] border border-gray-200 cursor-pointer group shadow-xs"
+                      title="Klik untuk melihat foto kondisi lahan penuh"
                     >
                       <img 
                         src={getAssetUrl(pt.foto_before_url)} 
@@ -592,14 +609,18 @@ export default function PortalTimPage({ onNavigateHome }) {
                           e.currentTarget.src = IMAGE_FALLBACK_SVG;
                         }}
                       />
-                      <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
+                      <span className="absolute bottom-1.5 left-1.5 bg-black/65 backdrop-blur-xs text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
                         Kondisi Lahan (Before)
+                      </span>
+                      <span className="absolute top-1.5 right-1.5 bg-black/50 text-white text-[8px] px-1 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                        🔍 Perbesar
                       </span>
                     </div>
 
                     <div 
                       onClick={() => setPreviewPhotoUrl(pt.foto_after_url)}
-                      className="relative rounded-xl overflow-hidden bg-gray-100 aspect-video border border-gray-200 cursor-pointer group"
+                      className="relative rounded-xl overflow-hidden bg-gray-100 aspect-[3/4] border border-gray-200 cursor-pointer group shadow-xs"
+                      title="Klik untuk melihat foto bibit tertanam penuh"
                     >
                       <img 
                         src={getAssetUrl(pt.foto_after_url)} 
@@ -610,8 +631,11 @@ export default function PortalTimPage({ onNavigateHome }) {
                           e.currentTarget.src = IMAGE_FALLBACK_SVG;
                         }}
                       />
-                      <span className="absolute bottom-1 left-1 bg-emerald-950/80 text-[#F4B91F] text-[9px] font-bold px-1.5 py-0.5 rounded">
+                      <span className="absolute bottom-1.5 left-1.5 bg-emerald-950/85 backdrop-blur-xs text-[#F4B91F] text-[9px] font-bold px-1.5 py-0.5 rounded">
                         Bibit Tertanam (After)
+                      </span>
+                      <span className="absolute top-1.5 right-1.5 bg-black/50 text-white text-[8px] px-1 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                        🔍 Perbesar
                       </span>
                     </div>
                   </div>
@@ -731,6 +755,55 @@ export default function PortalTimPage({ onNavigateHome }) {
                     />
                   </div>
                 </div>
+
+                {/* Realtime Geofence Validation Badge */}
+                {geofenceCheck && formData.latitude && formData.longitude && (
+                  <div className={`mt-2 p-3 rounded-xl border text-xs space-y-1.5 transition-all ${
+                    geofenceCheck.status === 'valid'
+                      ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
+                      : geofenceCheck.status === 'warning'
+                      ? 'bg-amber-50 border-amber-300 text-amber-900'
+                      : 'bg-rose-50 border-rose-300 text-rose-900'
+                  }`}>
+                    <div className="flex items-center gap-1.5 font-bold">
+                      {geofenceCheck.status === 'valid' ? (
+                        <>
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                          <span>✅ Koordinat Valid di Dalam Zona {geofenceCheck.zoneName}</span>
+                        </>
+                      ) : geofenceCheck.status === 'warning' ? (
+                        <>
+                          <AlertTriangle className="w-4 h-4 text-amber-600" />
+                          <span>⚠️ Perbatasan Zona (Jarak: ~{geofenceCheck.distanceFormatted})</span>
+                        </>
+                      ) : (
+                        <>
+                          <ShieldAlert className="w-4 h-4 text-rose-600" />
+                          <span>🚨 Di Luar Zona Konservasi ({geofenceCheck.distanceFormatted})</span>
+                        </>
+                      )}
+                    </div>
+                    <p className="text-[11px] leading-relaxed text-gray-700">
+                      {geofenceCheck.status === 'out_of_bounds'
+                        ? `Posisi GPS Anda terdeteksi berjarak ${geofenceCheck.distanceFormatted} di luar batas resmi ${geofenceCheck.zoneName}. Mohon pastikan Anda mengambil foto dan merekam titik saat berada langsung di lokasi aksi penanaman di lapangan.`
+                        : geofenceCheck.message}
+                    </p>
+
+                    {geofenceCheck.status === 'out_of_bounds' && (
+                      <label className="flex items-start gap-2 pt-1 border-t border-rose-200 mt-1 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={overrideOutOfZone}
+                          onChange={(e) => setOverrideOutOfZone(e.target.checked)}
+                          className="mt-0.5 rounded text-rose-600"
+                        />
+                        <span className="text-[10px] text-rose-800 font-semibold leading-tight">
+                          Saya konfirmasi titik ini adalah area tanam khusus yang telah dikoordinasikan dengan panitia (akan ditandai untuk kurasi).
+                        </span>
+                      </label>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Step 2: Location & Tree Species */}
@@ -826,7 +899,7 @@ export default function PortalTimPage({ onNavigateHome }) {
 
                     {fotoBeforePreview ? (
                       <div className="space-y-1.5">
-                        <div className="relative rounded-lg overflow-hidden aspect-video bg-gray-200">
+                        <div className="relative rounded-lg overflow-hidden aspect-[3/4] max-h-64 mx-auto bg-gray-200">
                           <img src={fotoBeforePreview} alt="Before Preview" className="w-full h-full object-cover" />
                           <button
                             type="button"
@@ -885,7 +958,7 @@ export default function PortalTimPage({ onNavigateHome }) {
 
                     {fotoAfterPreview ? (
                       <div className="space-y-1.5">
-                        <div className="relative rounded-lg overflow-hidden aspect-video bg-gray-200">
+                        <div className="relative rounded-lg overflow-hidden aspect-[3/4] max-h-64 mx-auto bg-gray-200">
                           <img src={fotoAfterPreview} alt="After Preview" className="w-full h-full object-cover" />
                           <button
                             type="button"

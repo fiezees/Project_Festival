@@ -1,14 +1,19 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { GeoJSON, MapContainer, TileLayer, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import {
   ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
+  ExternalLink,
+  Eye,
   Filter,
   Layers,
   MapPin,
   Search,
   ShieldCheck,
   Sprout,
+  X,
 } from 'lucide-react';
 import { getStats, getTanam, getWilayah, getAssetUrl } from '../services/api';
 import { LOCATIONS_DATA } from '../data/mockData';
@@ -31,6 +36,41 @@ const TREE_LABELS = {
   C: 'Kelas C',
 };
 
+const BASEMAP_OPTIONS = [
+  {
+    id: 'google_hybrid',
+    name: 'Google Satelit',
+    icon: '🛰️',
+    url: 'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
+    attribution: '&copy; Google Maps Satelit & Label',
+    maxZoom: 20,
+  },
+  {
+    id: 'google_streets',
+    name: 'Google Jalan',
+    icon: '🗺️',
+    url: 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+    attribution: '&copy; Google Maps Streets',
+    maxZoom: 20,
+  },
+  {
+    id: 'google_terrain',
+    name: 'Topografi',
+    icon: '⛰️',
+    url: 'https://mt1.google.com/vt/lyrs=p&x={x}&y={y}&z={z}',
+    attribution: '&copy; Google Maps Terrain',
+    maxZoom: 20,
+  },
+  {
+    id: 'osm',
+    name: 'OSM',
+    icon: '🌐',
+    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    attribution: '&copy; OpenStreetMap contributors',
+    maxZoom: 19,
+  },
+];
+
 function markerIcon(treeClass) {
   const color = TREE_COLORS[treeClass] || '#2E8068';
   const shape = TREE_SHAPES[treeClass] || 'circle';
@@ -40,6 +80,59 @@ function markerIcon(treeClass) {
     iconSize: [18, 18],
     iconAnchor: [9, 9],
   });
+}
+
+function createPointPopupHtml(p) {
+  const treeLabel = TREE_LABELS[p.jenis_pohon] || p.jenis_pohon || 'Kelas A';
+  const treeColor = TREE_COLORS[p.jenis_pohon] || '#2E8068';
+  const beforeUrl = getAssetUrl(p.foto_before_url);
+  const afterUrl = getAssetUrl(p.foto_after_url);
+
+  return `
+    <div style="font-family: system-ui, -apple-system, sans-serif; padding: 4px 2px; min-width: 210px; max-width: 250px; color: #1e293b;">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 5px;">
+        <span style="font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; background: ${treeColor}20; color: ${treeColor}; padding: 2px 6px; border-radius: 4px;">
+          Kelas ${p.jenis_pohon} · ${treeLabel}
+        </span>
+        <span style="font-size: 10px; font-weight: 700; color: #94a3b8;">
+          #TP-${String(p.id).padStart(3, '0')}
+        </span>
+      </div>
+
+      <div style="font-weight: 800; font-size: 13px; color: #063F35; margin-bottom: 2px; line-height: 1.3;">
+        ${p.nama_peserta || 'Tim Penanam'}
+      </div>
+
+      <div style="font-size: 11px; color: #64748b; margin-bottom: 8px;">
+        📍 ${p.lokasi_nama || 'Padang'}
+      </div>
+
+      <!-- Side-by-side Portrait Thumbnails -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 6px;">
+        <div style="position: relative; border-radius: 6px; overflow: hidden; aspect-ratio: 3/4; background: #f1f5f9; border: 1px solid #e2e8f0;">
+          <img src="${beforeUrl}" alt="Before" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'100\\' height=\\'133\\' fill=\\'%23f1f5f9\\'><text x=\\'50%\\' y=\\'50%\\' dominant-baseline=\\'middle\\' text-anchor=\\'middle\\' font-size=\\'10\\' fill=\\'%2394a3b8\\'>Before</text></svg>'" />
+          <span style="position: absolute; bottom: 2px; left: 2px; background: rgba(0,0,0,0.65); color: #fff; font-size: 8px; font-weight: 700; padding: 1px 4px; border-radius: 3px;">Before</span>
+        </div>
+        <div style="position: relative; border-radius: 6px; overflow: hidden; aspect-ratio: 3/4; background: #f1f5f9; border: 1px solid #e2e8f0;">
+          <img src="${afterUrl}" alt="After" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'100\\' height=\\'133\\' fill=\\'%23f1f5f9\\'><text x=\\'50%\\' y=\\'50%\\' dominant-baseline=\\'middle\\' text-anchor=\\'middle\\' font-size=\\'10\\' fill=\\'%2394a3b8\\'>After</text></svg>'" />
+          <span style="position: absolute; bottom: 2px; left: 2px; background: rgba(6,63,53,0.85); color: #F4B91F; font-size: 8px; font-weight: 700; padding: 1px 4px; border-radius: 3px;">After</span>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; font-size: 10px; color: #64748b; padding-top: 4px; border-top: 1px solid #f1f5f9;">
+        <span>Umur: <strong>${p.umur_tanam_bulan || 3} bln</strong></span>
+        <span>Estimasi: <strong>${p.jangka_hidup_tahun || 50} thn</strong></span>
+      </div>
+    </div>
+  `;
+}
+
+function MapController({ setMapInstance }) {
+  const map = useMap();
+  useEffect(() => {
+    if (map) setMapInstance(map);
+  }, [map, setMapInstance]);
+  return null;
 }
 
 function FitBounds({ data, hasSelectedLocation }) {
@@ -64,6 +157,123 @@ function FocusLocation({ location }) {
   return null;
 }
 
+function AdaptivePhotoPair({
+  beforeUrl,
+  afterUrl,
+  inspectorMode,
+  onZoomBefore,
+  onZoomAfter,
+}) {
+  const [beforeRatio, setBeforeRatio] = useState('portrait'); // 'portrait' | 'landscape'
+  const [afterRatio, setAfterRatio] = useState('portrait');
+
+  // Measure natural dimensions on image load
+  const handleBeforeLoad = (e) => {
+    const { naturalWidth, naturalHeight } = e.currentTarget;
+    if (naturalWidth && naturalHeight) {
+      setBeforeRatio(naturalWidth > naturalHeight * 1.15 ? 'landscape' : 'portrait');
+    }
+  };
+
+  const handleAfterLoad = (e) => {
+    const { naturalWidth, naturalHeight } = e.currentTarget;
+    if (naturalWidth && naturalHeight) {
+      setAfterRatio(naturalWidth > naturalHeight * 1.15 ? 'landscape' : 'portrait');
+    }
+  };
+
+  const isDetail = inspectorMode === 'detail';
+  const bothPortrait = beforeRatio === 'portrait' && afterRatio === 'portrait';
+  const bothLandscape = beforeRatio === 'landscape' && afterRatio === 'landscape';
+
+  // Dynamic styling based on orientation & inspector mode
+  const getCardClasses = (ratio) => {
+    if (isDetail) {
+      if (ratio === 'portrait') {
+        return 'aspect-[3/4] h-52 sm:h-64 shrink-0';
+      }
+      return 'aspect-[4/3] flex-1 max-h-52 sm:max-h-64';
+    }
+
+    // Normal split view:
+    if (bothPortrait) {
+      // Both portrait: uniform height, tight 12px gap in the center, zero awkward void
+      return 'aspect-[3/4] h-36 sm:h-40 shrink-0';
+    }
+    if (bothLandscape) {
+      // Both landscape: share half width, 4:3 landscape ratio, 10px gap
+      return 'aspect-[4/3] flex-1 max-h-36';
+    }
+    // Mixed orientation:
+    if (ratio === 'portrait') {
+      return 'aspect-[3/4] h-32 sm:h-36 shrink-0';
+    }
+    return 'aspect-[4/3] h-32 sm:h-36 shrink-0';
+  };
+
+  return (
+    <div
+      className={`flex items-center justify-center w-full my-1 transition-all ${
+        bothLandscape ? 'gap-2.5' : 'gap-3'
+      }`}
+    >
+      {/* Before Photo */}
+      <div
+        onClick={onZoomBefore}
+        className={`relative rounded-xl overflow-hidden bg-gray-100 border border-gray-200 cursor-pointer group shadow-2xs transition-all ${getCardClasses(
+          beforeRatio
+        )}`}
+        title="Klik untuk melihat foto kondisi lahan resolusi penuh"
+      >
+        <img
+          src={getAssetUrl(beforeUrl)}
+          alt="Before Lahan"
+          onLoad={handleBeforeLoad}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+          onError={(e) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src =
+              'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="400" viewBox="0 0 300 400" fill="%23f1f5f9"><rect width="300" height="400" fill="%23f1f5f9"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="12" fill="%2394a3b8">🌱 Foto Belum Ada</text></svg>';
+          }}
+        />
+        <span className="absolute bottom-1.5 left-1.5 bg-black/70 backdrop-blur-xs text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
+          Before (Lahan)
+        </span>
+        <span className="absolute top-1.5 right-1.5 bg-black/60 text-white text-[8px] px-1 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5">
+          <Eye className="w-2.5 h-2.5" /> Zoom
+        </span>
+      </div>
+
+      {/* After Photo */}
+      <div
+        onClick={onZoomAfter}
+        className={`relative rounded-xl overflow-hidden bg-gray-100 border border-gray-200 cursor-pointer group shadow-2xs transition-all ${getCardClasses(
+          afterRatio
+        )}`}
+        title="Klik untuk melihat foto bibit tertanam resolusi penuh"
+      >
+        <img
+          src={getAssetUrl(afterUrl)}
+          alt="After Bibit"
+          onLoad={handleAfterLoad}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+          onError={(e) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src =
+              'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="400" viewBox="0 0 300 400" fill="%23f1f5f9"><rect width="300" height="400" fill="%23f1f5f9"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="12" fill="%2394a3b8">🌱 Foto Belum Ada</text></svg>';
+          }}
+        />
+        <span className="absolute bottom-1.5 left-1.5 bg-emerald-950/85 backdrop-blur-xs text-[#F4B91F] text-[9px] font-bold px-1.5 py-0.5 rounded">
+          After (Bibit)
+        </span>
+        <span className="absolute top-1.5 right-1.5 bg-black/60 text-white text-[8px] px-1 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5">
+          <Eye className="w-2.5 h-2.5" /> Zoom
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export default function PetaPage({ onNavigateHome, selectedLocation }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterJenis, setFilterJenis] = useState('Semua');
@@ -74,7 +284,19 @@ export default function PetaPage({ onNavigateHome, selectedLocation }) {
   const [tanam, setTanam] = useState(null);
   const [stats, setStats] = useState(null);
   const [error, setError] = useState('');
+  const [activeBasemap, setActiveBasemap] = useState('google_hybrid');
+  const [legendOpen, setLegendOpen] = useState(true);
+  const [previewModalPhoto, setPreviewModalPhoto] = useState(null);
 
+  // Layout View Modes: 'split' (detail on top + list below), 'detail' (maximized detail), 'list' (maximized list)
+  const [inspectorMode, setInspectorMode] = useState('split');
+
+  // Map instance & references for 2-way sync
+  const [mapInstance, setMapInstance] = useState(null);
+  const markerLayersRef = useRef(new Map());
+  const listContainerRef = useRef(null);
+
+  const currentBasemap = BASEMAP_OPTIONS.find((b) => b.id === activeBasemap) || BASEMAP_OPTIONS[0];
   const defaultCenter = selectedLocation ? selectedLocation.coordinates : [-0.9124, 100.435];
   const defaultZoom = selectedLocation ? 14 : 12;
   const selectedArea = LOCATIONS_DATA.find((l) => l.id === selectedAreaId) || null;
@@ -93,6 +315,7 @@ export default function PetaPage({ onNavigateHome, selectedLocation }) {
       .catch((e) => setError(e.message));
   }, []);
 
+  // Filter features based on search, tree class, and region
   const filteredFeatures = useMemo(() => {
     const query = searchTerm.trim().toLowerCase();
     return (tanam?.features || []).filter((feature) => {
@@ -113,53 +336,114 @@ export default function PetaPage({ onNavigateHome, selectedLocation }) {
 
   const filteredData = tanam ? { ...tanam, features: filteredFeatures } : null;
 
+  // Clear marker layer references on filter change to avoid stale layers
+  useEffect(() => {
+    markerLayersRef.current.clear();
+  }, [selectedAreaId, filterJenis, searchTerm]);
+
+  // Two-way Selection Handler: Synchronizes Map, Popup, and List
+  const handleSelectPoint = (feature, { fly = true, openPopup = true } = {}) => {
+    if (!feature) return;
+    setSelectedFeature(feature);
+    setSelectedRegion(null);
+
+    // If currently in 'list' mode, automatically switch to 'split' so detail is instantly visible
+    if (inspectorMode === 'list') {
+      setInspectorMode('split');
+    }
+
+    const coords = feature.geometry?.coordinates; // [lng, lat]
+    if (coords && mapInstance && fly) {
+      mapInstance.flyTo([coords[1], coords[0]], 15, { animate: true, duration: 0.8 });
+    }
+
+    if (openPopup) {
+      const layer = markerLayersRef.current.get(feature.properties.id);
+      if (layer) {
+        setTimeout(() => {
+          layer.openPopup();
+        }, 320);
+      }
+    }
+  };
+
+  // Auto-scroll the Point List to keep active item in view without page scrolling
+  useEffect(() => {
+    if (selectedFeature && listContainerRef.current) {
+      const activeEl = listContainerRef.current.querySelector(
+        `[data-point-id="${selectedFeature.properties.id}"]`
+      );
+      if (activeEl) {
+        activeEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+  }, [selectedFeature]);
+
+  // Point Index for Next & Previous Stepping
+  const currentPointIndex = useMemo(() => {
+    if (!selectedFeature) return -1;
+    return filteredFeatures.findIndex((f) => f.properties.id === selectedFeature.properties.id);
+  }, [selectedFeature, filteredFeatures]);
+
+  const handlePrevPoint = () => {
+    if (currentPointIndex > 0) {
+      handleSelectPoint(filteredFeatures[currentPointIndex - 1]);
+    }
+  };
+
+  const handleNextPoint = () => {
+    if (currentPointIndex >= 0 && currentPointIndex < filteredFeatures.length - 1) {
+      handleSelectPoint(filteredFeatures[currentPointIndex + 1]);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#F7F5EF] text-[#1a1a1a]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
 
         {/* ── Header ── */}
         <ScrollReveal>
-          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6 pb-8 border-b border-[#e5e7eb]">
-            <div className="space-y-2">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-6 border-b border-[#e5e7eb]">
+            <div className="space-y-1.5">
               <button
                 onClick={onNavigateHome}
-                className="inline-flex items-center gap-1.5 text-[#2E8068] hover:text-[#063F35] text-xs font-semibold uppercase tracking-wide mb-3 transition-colors"
+                className="inline-flex items-center gap-1.5 text-[#2E8068] hover:text-[#063F35] text-xs font-semibold uppercase tracking-wide mb-2 transition-colors cursor-pointer"
               >
                 <ArrowLeft className="w-3.5 h-3.5" />
                 Kembali ke Beranda
               </button>
 
               <h1 className="text-2xl sm:text-3xl font-bold text-[#063F35] leading-tight">
-                Peta WebGIS
+                Peta WebGIS Konservasi
               </h1>
-              <p className="text-[#6b7280] text-sm max-w-xl">
-                Sistem Informasi Geografis 100 titik tanam di Kecamatan Pauh &amp; Kuranji, Kota Padang.
+              <p className="text-[#6b7280] text-xs sm:text-sm max-w-xl">
+                Sistem Informasi Geografis pemantauan titik tanam pohon di Kecamatan Pauh &amp; Kuranji, Kota Padang.
               </p>
             </div>
 
             {/* Status Badge */}
-            <div className="flex items-center gap-3 bg-white border border-[#e5e7eb] px-4 py-3 rounded-lg shadow-sm text-sm shrink-0">
+            <div className="flex items-center gap-3 bg-white border border-[#e5e7eb] px-4 py-2.5 rounded-xl shadow-xs text-xs sm:text-sm shrink-0">
               <ShieldCheck className="w-5 h-5 text-[#2E8068] shrink-0" />
               <div>
-                <div className="font-semibold text-[#063F35] text-sm">WebGIS Monitoring Active</div>
-                <div className="text-xs text-[#6b7280] mt-0.5">Data demo terhubung ke API</div>
+                <div className="font-bold text-[#063F35]">WebGIS Monitoring Aktif</div>
+                <div className="text-[11px] text-[#6b7280]">Sinkronisasi GPS &amp; Citra Satelit</div>
               </div>
             </div>
           </div>
         </ScrollReveal>
 
-        {/* ── Filter & Search Bar ── */}
+        {/* ── Search & Filter Controls ── */}
         <ScrollReveal delay={0.05}>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 bg-white border border-[#e5e7eb] p-4 rounded-lg shadow-sm">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 bg-white border border-[#e5e7eb] p-3.5 rounded-2xl shadow-xs">
             {/* Search */}
             <div className="relative md:col-span-2">
               <Search className="w-4 h-4 text-[#9ca3af] absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
-                placeholder="Cari ID titik, peserta, daerah, atau kelas..."
+                placeholder="Cari ID titik (contoh: 101), nama tim, daerah, atau kelas..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full border border-[#e5e7eb] rounded-lg pl-9 pr-4 py-2.5 text-sm text-[#1a1a1a] placeholder-[#9ca3af] focus:outline-none focus:border-[#2E8068] focus:ring-1 focus:ring-[#2E8068]/30 transition-colors"
+                className="w-full border border-[#e5e7eb] rounded-xl pl-9 pr-4 py-2 text-xs sm:text-sm text-[#1a1a1a] placeholder-[#9ca3af] focus:outline-none focus:border-[#2E8068] focus:ring-1 focus:ring-[#2E8068]/30 transition-colors"
               />
             </div>
 
@@ -170,7 +454,7 @@ export default function PetaPage({ onNavigateHome, selectedLocation }) {
                 aria-label="Pilih daerah penempatan"
                 value={selectedAreaId}
                 onChange={(e) => setSelectedAreaId(e.target.value)}
-                className="w-full border border-[#e5e7eb] rounded-lg px-3 py-2.5 text-sm text-[#1a1a1a] focus:outline-none focus:border-[#2E8068] transition-colors bg-white font-medium"
+                className="w-full border border-[#e5e7eb] rounded-xl px-3 py-2 text-xs sm:text-sm text-[#1a1a1a] focus:outline-none focus:border-[#2E8068] transition-colors bg-white font-medium cursor-pointer"
               >
                 <option value="">Semua Daerah (4 Lokasi)</option>
                 {LOCATIONS_DATA.map((loc) => (
@@ -185,14 +469,15 @@ export default function PetaPage({ onNavigateHome, selectedLocation }) {
             <div className="flex items-center gap-2">
               <Filter className="w-4 h-4 text-[#9ca3af] shrink-0" />
               <select
+                aria-label="Pilih kelas pohon"
                 value={filterJenis}
                 onChange={(e) => setFilterJenis(e.target.value)}
-                className="w-full border border-[#e5e7eb] rounded-lg px-3 py-2.5 text-sm text-[#1a1a1a] focus:outline-none focus:border-[#2E8068] transition-colors bg-white"
+                className="w-full border border-[#e5e7eb] rounded-xl px-3 py-2 text-xs sm:text-sm text-[#1a1a1a] focus:outline-none focus:border-[#2E8068] transition-colors bg-white cursor-pointer"
               >
-                <option value="Semua">Semua Kelas</option>
+                <option value="Semua">Semua Kelas Pohon</option>
                 {TREE_TYPES.map((t) => (
                   <option key={t} value={t}>
-                    {t}
+                    Kelas {t} ({TREE_LABELS[t]})
                   </option>
                 ))}
               </select>
@@ -200,81 +485,178 @@ export default function PetaPage({ onNavigateHome, selectedLocation }) {
           </div>
         </ScrollReveal>
 
+        {/* ── Parameter GIS Titik Tanam (Sleek Horizontal Metric Strip) ── */}
+        <ScrollReveal delay={0.08}>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            <div className="bg-white border border-[#e5e7eb] px-3.5 py-2.5 rounded-xl shadow-xs flex items-center justify-between">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block">Titik Terfilter</span>
+                <span className="text-base font-extrabold text-[#063F35]">
+                  {filteredFeatures.length}{' '}
+                  <span className="text-xs font-normal text-gray-400">/ {stats?.total ?? 102}</span>
+                </span>
+              </div>
+              <div className="w-8 h-8 rounded-lg bg-emerald-50 text-[#2E8068] flex items-center justify-center">
+                <Sprout className="w-4 h-4" />
+              </div>
+            </div>
+
+            <div className="bg-white border border-[#e5e7eb] px-3.5 py-2.5 rounded-xl shadow-xs flex items-center justify-between">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block">Luas Wilayah</span>
+                <span className="text-base font-extrabold text-[#063F35]">{stats ? `${stats.luas_ha} ha` : '—'}</span>
+              </div>
+              <div className="w-8 h-8 rounded-lg bg-amber-50 text-[#F4B91F] flex items-center justify-center">
+                <Layers className="w-4 h-4" />
+              </div>
+            </div>
+
+            <div className="bg-white border border-[#e5e7eb] px-3.5 py-2.5 rounded-xl shadow-xs flex items-center justify-between">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block">Daerah Sasaran</span>
+                <span className="text-xs font-bold text-[#063F35] truncate block max-w-[125px]">
+                  {selectedArea ? selectedArea.name : 'Semua (4 Lokasi)'}
+                </span>
+              </div>
+              <div className="w-8 h-8 rounded-lg bg-emerald-50 text-[#2E8068] flex items-center justify-center">
+                <MapPin className="w-4 h-4" />
+              </div>
+            </div>
+
+            <div className="bg-white border border-[#e5e7eb] px-3.5 py-2.5 rounded-xl shadow-xs flex items-center justify-between">
+              <div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block">Kelas Indikator</span>
+                <span className="text-xs font-bold text-[#063F35] block truncate max-w-[125px]">
+                  {filterJenis === 'Semua' ? 'Semua (A, B, C)' : `Kelas ${filterJenis}`}
+                </span>
+              </div>
+              <div className="w-8 h-8 rounded-lg bg-teal-50 text-teal-700 flex items-center justify-center">
+                <Filter className="w-4 h-4" />
+              </div>
+            </div>
+          </div>
+        </ScrollReveal>
+
         {/* ── Error Banner ── */}
         {error && (
           <ScrollReveal delay={0.05}>
-            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs sm:text-sm text-red-700">
               {error}. Pastikan backend dan database aktif.
             </div>
           </ScrollReveal>
         )}
 
-        {/* ── Map + Side Panel ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* ── Unified GIS Workspace: Map (Left) + Inspector (Right) ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
 
-          {/* Left: Leaflet Map */}
-          <ScrollReveal className="lg:col-span-2 space-y-4" amount={0.1}>
-            {/* Map Container */}
-            <div className="h-[500px] sm:h-[580px] rounded-lg overflow-hidden border border-[#d1d5db] shadow-sm relative">
-              <MapContainer
-                center={defaultCenter}
-                zoom={defaultZoom}
-                scrollWheelZoom={true}
-                className="w-full h-full"
-              >
-                <TileLayer
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
+          {/* Left: Interactive Leaflet Map */}
+          <div className="lg:col-span-7 xl:col-span-7 h-[480px] sm:h-[540px] lg:h-[640px] xl:h-[680px] rounded-2xl overflow-hidden border border-[#d1d5db] shadow-sm relative isolate bg-gray-100">
+            <MapContainer
+              center={defaultCenter}
+              zoom={defaultZoom}
+              scrollWheelZoom={true}
+              className="w-full h-full"
+            >
+              <MapController setMapInstance={setMapInstance} />
 
-                {wilayah && (
-                  <>
-                    <GeoJSON
-                      key={`wilayah-${selectedAreaId}`}
-                      data={wilayah}
-                      style={(feature) => {
-                        const isMatch =
-                          !selectedAreaId ||
-                          feature.properties.nama_wilayah
-                            ?.toLowerCase()
-                            .includes(selectedArea?.name?.toLowerCase());
-                        return {
-                          color: isMatch ? '#2E8068' : '#9ca3af',
-                          weight: isMatch ? 2 : 1,
-                          fillColor: isMatch ? '#2E8068' : '#d1d5db',
-                          fillOpacity: isMatch ? 0.18 : 0.04,
-                        };
-                      }}
-                      onEachFeature={(feature, layer) => {
-                        layer.on('click', () => setSelectedRegion(feature.properties));
-                      }}
-                    />
-                    <FitBounds data={wilayah} hasSelectedLocation={Boolean(selectedArea)} />
-                  </>
-                )}
+              <TileLayer
+                key={activeBasemap}
+                attribution={currentBasemap.attribution}
+                url={currentBasemap.url}
+                maxZoom={currentBasemap.maxZoom}
+              />
 
-                <FocusLocation location={selectedArea} />
-
-                {filteredData && (
+              {wilayah && (
+                <>
                   <GeoJSON
-                    key={`points-${selectedAreaId}-${filterJenis}-${searchTerm}`}
-                    data={filteredData}
-                    pointToLayer={(feature, latlng) =>
-                      L.marker(latlng, { icon: markerIcon(feature.properties.jenis_pohon) })
-                    }
+                    key={`wilayah-${selectedAreaId}`}
+                    data={wilayah}
+                    style={(feature) => {
+                      const isMatch =
+                        !selectedAreaId ||
+                        feature.properties.nama_wilayah
+                          ?.toLowerCase()
+                          .includes(selectedArea?.name?.toLowerCase());
+                      return {
+                        color: isMatch ? '#2E8068' : '#9ca3af',
+                        weight: isMatch ? 2 : 1,
+                        fillColor: isMatch ? '#2E8068' : '#d1d5db',
+                        fillOpacity: isMatch ? 0.18 : 0.04,
+                      };
+                    }}
                     onEachFeature={(feature, layer) => {
-                      layer.on('click', () => setSelectedFeature(feature));
+                      layer.on('click', () => {
+                        setSelectedRegion(feature.properties);
+                        setSelectedFeature(null);
+                      });
                     }}
                   />
-                )}
-              </MapContainer>
+                  <FitBounds data={wilayah} hasSelectedLocation={Boolean(selectedArea)} />
+                </>
+              )}
 
-              {/* Legend Overlay */}
-              <div className="absolute left-3 bottom-3 z-[400] bg-white/95 backdrop-blur-sm border border-[#e5e7eb] rounded-lg p-3 shadow-md">
-                <div className="text-[10px] uppercase font-bold tracking-wider text-[#6b7280] mb-2">
+              <FocusLocation location={selectedArea} />
+
+              {filteredData && (
+                <GeoJSON
+                  key={`points-${selectedAreaId}-${filterJenis}-${searchTerm}`}
+                  data={filteredData}
+                  pointToLayer={(feature, latlng) =>
+                    L.marker(latlng, { icon: markerIcon(feature.properties.jenis_pohon) })
+                  }
+                  onEachFeature={(feature, layer) => {
+                    const p = feature.properties;
+                    markerLayersRef.current.set(p.id, layer);
+                    layer.bindPopup(createPointPopupHtml(p), {
+                      maxWidth: 270,
+                      minWidth: 210,
+                      className: 'custom-webgis-popup',
+                      offset: [0, -8],
+                    });
+                    layer.on('click', () => {
+                      handleSelectPoint(feature, { fly: false, openPopup: false });
+                    });
+                  }}
+                />
+              )}
+            </MapContainer>
+
+            {/* Basemap Switcher Controls (Google Maps Satelit / Jalan / Terrain) */}
+            <div className="absolute top-3 right-3 z-20 flex items-center bg-white/95 backdrop-blur-sm p-1 rounded-xl shadow-md border border-gray-200">
+              {BASEMAP_OPTIONS.map((bm) => (
+                <button
+                  key={bm.id}
+                  type="button"
+                  onClick={() => setActiveBasemap(bm.id)}
+                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    activeBasemap === bm.id
+                      ? 'bg-[#063F35] text-[#F4B91F] shadow-xs'
+                      : 'text-gray-700 hover:bg-gray-100'
+                  }`}
+                  title={bm.attribution}
+                >
+                  <span>{bm.icon}</span>
+                  <span className="hidden sm:inline">{bm.name}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Legend Overlay - safely docked in bottom-left with collapse toggle */}
+            <div className="absolute left-3 bottom-3 z-20 bg-white/95 backdrop-blur-sm border border-[#e5e7eb] rounded-xl p-3 shadow-md max-w-[210px] transition-all">
+              <div
+                className="flex items-center justify-between gap-3 cursor-pointer select-none"
+                onClick={() => setLegendOpen(!legendOpen)}
+                title="Klik untuk menyembunyikan/menampilkan legenda"
+              >
+                <div className="text-[10px] uppercase font-bold tracking-wider text-[#6b7280]">
                   Legenda Kelas
                 </div>
-                <div className="space-y-1.5">
+                <span className="text-[10px] text-gray-400 font-bold hover:text-gray-700">
+                  {legendOpen ? '▼' : '▲'}
+                </span>
+              </div>
+              {legendOpen && (
+                <div className="space-y-1.5 pt-2 mt-1.5 border-t border-gray-100 animate-fade-in">
                   {TREE_TYPES.map((treeClass) => (
                     <div key={treeClass} className="flex items-center gap-2 text-xs text-[#374151]">
                       <span
@@ -287,204 +669,309 @@ export default function PetaPage({ onNavigateHome, selectedLocation }) {
                     </div>
                   ))}
                 </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right: Unified WebGIS Inspector Panel (Eye-Level Synchronized, No Page Scroll) */}
+          <div className="lg:col-span-5 xl:col-span-5 flex flex-col bg-white border border-[#e5e7eb] rounded-2xl shadow-sm h-[540px] sm:h-[600px] lg:h-[640px] xl:h-[680px] overflow-hidden">
+
+            {/* Inspector Top Bar: View Mode Controls */}
+            <div className="p-3.5 border-b border-[#e5e7eb] flex items-center justify-between bg-gray-50/70 shrink-0">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-pulse shrink-0" />
+                <h3 className="font-bold text-[#063F35] text-sm truncate">
+                  {selectedFeature
+                    ? `Titik #${String(selectedFeature.properties.id).padStart(3, '0')}`
+                    : selectedRegion
+                    ? `Wilayah: ${selectedRegion.nama_wilayah}`
+                    : `Titik Terdata (${filteredFeatures.length})`}
+                </h3>
+              </div>
+
+              {/* Inspector View Toggles */}
+              <div className="flex items-center gap-1 bg-white border border-gray-200 p-0.5 rounded-lg text-[11px]">
+                <button
+                  type="button"
+                  onClick={() => setInspectorMode('split')}
+                  className={`px-2 py-0.5 rounded font-semibold transition-colors cursor-pointer ${
+                    inspectorMode === 'split' ? 'bg-[#063F35] text-[#F4B91F]' : 'text-gray-600 hover:text-black'
+                  }`}
+                  title="Tampilan Terpadu (Detail & Daftar bersamaan)"
+                >
+                  Terpadu
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setInspectorMode('detail')}
+                  disabled={!selectedFeature}
+                  className={`px-2 py-0.5 rounded font-semibold transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed ${
+                    inspectorMode === 'detail' ? 'bg-[#063F35] text-[#F4B91F]' : 'text-gray-600 hover:text-black'
+                  }`}
+                  title="Fokus Foto & Detail Penuh"
+                >
+                  Detail
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setInspectorMode('list')}
+                  className={`px-2 py-0.5 rounded font-semibold transition-colors cursor-pointer ${
+                    inspectorMode === 'list' ? 'bg-[#063F35] text-[#F4B91F]' : 'text-gray-600 hover:text-black'
+                  }`}
+                  title="Daftar Lengkap Semua Titik"
+                >
+                  Daftar
+                </button>
               </div>
             </div>
 
-            {/* Region info panel */}
-            {selectedRegion ? (
-              <div className="bg-white border border-[#e5e7eb] rounded-lg p-5 flex items-start justify-between gap-4 shadow-sm">
-                <div>
-                  <p className="text-[10px] uppercase tracking-wider font-bold text-[#2E8068]">
-                    Daerah terpilih
-                  </p>
-                  <h3 className="text-lg font-bold text-[#063F35] mt-1">
-                    {selectedRegion.nama_wilayah}
-                  </h3>
-                  <p className="text-sm text-[#6b7280] mt-0.5">
-                    Kecamatan {selectedRegion.kecamatan}
-                  </p>
-                  <p className="text-xs text-[#374151] mt-2">
-                    Luas penempatan: {selectedRegion.luas_ha} ha
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setSelectedRegion(null)}
-                  className="text-xs text-[#6b7280] hover:text-[#063F35] font-semibold transition-colors"
-                >
-                  Tutup
-                </button>
-              </div>
-            ) : (
-              <div className="border border-dashed border-[#d1d5db] rounded-lg p-4 text-xs text-[#9ca3af] text-center">
-                Klik salah satu polygon daerah pada peta untuk melihat informasinya di sini.
-              </div>
-            )}
+            {/* Inspector Body */}
+            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
 
-            {/* Selected Feature Panel */}
-            {selectedFeature && (
-              <div className="bg-white border border-[#e5e7eb] rounded-lg p-5 space-y-4 shadow-sm">
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <p className="text-[10px] uppercase tracking-wider font-bold text-[#F4B91F]">
-                      Titik terpilih
-                    </p>
-                    <h3 className="text-lg font-bold text-[#063F35] mt-1">
-                      {selectedFeature.properties.nama_peserta}
-                    </h3>
+              {/* ── CARD: Selected Region Info (when a polygon is clicked) ── */}
+              {selectedRegion && !selectedFeature && (
+                <div className="p-4 border-b border-[#e5e7eb] bg-emerald-50/50 space-y-2.5 shrink-0 animate-fade-in">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#2E8068] block">
+                        Kawasan Konservasi Terpilih
+                      </span>
+                      <h4 className="font-extrabold text-[#063F35] text-base">
+                        {selectedRegion.nama_wilayah}
+                      </h4>
+                      <p className="text-xs text-gray-600 mt-0.5">
+                        Kecamatan {selectedRegion.kecamatan} · Luas {selectedRegion.luas_ha} ha
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedRegion(null)}
+                      className="text-gray-400 hover:text-gray-700 p-1 rounded-md cursor-pointer"
+                      title="Tutup informasi daerah"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
                   </div>
                   <button
                     type="button"
-                    onClick={() => setSelectedFeature(null)}
-                    className="text-xs text-[#6b7280] hover:text-[#063F35] font-semibold transition-colors"
+                    onClick={() => {
+                      const match = LOCATIONS_DATA.find(
+                        (l) => l.name.toLowerCase() === selectedRegion.nama_wilayah.toLowerCase()
+                      );
+                      if (match) setSelectedAreaId(match.id);
+                    }}
+                    className="w-full py-1.5 px-3 bg-[#063F35] text-white hover:bg-[#2E8068] text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
                   >
-                    Tutup
+                    <Filter className="w-3.5 h-3.5 text-[#F4B91F]" />
+                    Filter Titik Hanya di {selectedRegion.nama_wilayah}
                   </button>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <img
-                      src={getAssetUrl(selectedFeature.properties.foto_before_url)}
-                      alt={`Foto before ${selectedFeature.properties.nama_peserta}`}
-                      className="w-full h-32 object-cover rounded-lg bg-gray-100"
-                      onError={(e) => {
-                        e.currentTarget.onerror = null;
-                        e.currentTarget.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200" fill="%23f1f5f9"><rect width="300" height="200" fill="%23f1f5f9"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="11" fill="%2394a3b8">🌱 Foto Belum Tersedia</text></svg>';
-                      }}
-                    />
-                    <span className="text-[10px] text-[#9ca3af] mt-1 block">Before</span>
-                  </div>
-                  <div>
-                    <img
-                      src={getAssetUrl(selectedFeature.properties.foto_after_url)}
-                      alt={`Foto after ${selectedFeature.properties.nama_peserta}`}
-                      className="w-full h-32 object-cover rounded-lg bg-gray-100"
-                      onError={(e) => {
-                        e.currentTarget.onerror = null;
-                        e.currentTarget.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200" fill="%23f1f5f9"><rect width="300" height="200" fill="%23f1f5f9"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="11" fill="%2394a3b8">🌱 Foto Belum Tersedia</text></svg>';
-                      }}
-                    />
-                    <span className="text-[10px] text-[#9ca3af] mt-1 block">After</span>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs text-[#374151]">
-                  <span>ID: TP-{String(selectedFeature.properties.id).padStart(3, '0')}</span>
-                  <span>Daerah: {selectedFeature.properties.lokasi_nama}</span>
-                  <span>Kelas: {selectedFeature.properties.jenis_pohon}</span>
-                  <span>Umur: {selectedFeature.properties.umur_tanam_bulan} bulan</span>
-                </div>
-              </div>
-            )}
-          </ScrollReveal>
+              )}
 
-          {/* Right: Side Panel */}
-          <div className="space-y-4">
-
-            {/* GIS Parameter Card */}
-            <ScrollReveal delay={0.1} amount={0.1}>
-              <div className="bg-white border border-[#e5e7eb] p-5 rounded-lg shadow-sm space-y-4">
-                <h3 className="text-base font-bold text-[#063F35] flex items-center gap-2">
-                  <Layers className="w-5 h-5 text-[#F4B91F]" />
-                  Parameter GIS Titik Tanam
-                </h3>
-                <p className="text-xs text-[#6b7280]">
-                  Menampilkan parameter metadata yang direkam untuk setiap bibit pohon di lokasi sasaran.
-                </p>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="bg-[#F7F5EF] p-3 rounded-lg border border-[#e5e7eb]">
-                    <span className="text-[#2E8068] block text-[10px] uppercase font-bold mb-1">
-                      Titik Terfilter
-                    </span>
-                    <span className="font-bold text-[#F4B91F] text-lg">
-                      {filteredFeatures.length}
-                      <span className="text-xs text-[#9ca3af] font-normal ml-1">
-                        / {stats?.total ?? 100}
-                      </span>
-                    </span>
-                  </div>
-                  <div className="bg-[#F7F5EF] p-3 rounded-lg border border-[#e5e7eb]">
-                    <span className="text-[#2E8068] block text-[10px] uppercase font-bold mb-1">
-                      Luas Wilayah
-                    </span>
-                    <span className="font-medium text-[#063F35] text-sm">
-                      {stats ? `${stats.luas_ha} ha` : '—'}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="bg-[#F7F5EF] p-3 rounded-lg border border-[#e5e7eb]">
-                    <span className="text-[#2E8068] block text-[10px] uppercase font-bold mb-1">
-                      Daerah Aktif
-                    </span>
-                    <span className="font-medium text-[#063F35] text-xs">
-                      {selectedArea ? selectedArea.name : 'Semua Daerah'}
-                    </span>
-                  </div>
-                  <div className="bg-[#F7F5EF] p-3 rounded-lg border border-[#e5e7eb]">
-                    <span className="text-[#2E8068] block text-[10px] uppercase font-bold mb-1">
-                      Kelas Indikator
-                    </span>
-                    <span className="font-medium text-[#063F35] text-xs">{filterJenis}</span>
-                  </div>
-                </div>
-              </div>
-            </ScrollReveal>
-
-            {/* Point List */}
-            <ScrollReveal delay={0.15} amount={0.08}>
-              <div className="bg-white border border-[#e5e7eb] p-5 rounded-lg shadow-sm space-y-3 min-h-[400px] max-h-[520px] lg:max-h-[600px] overflow-y-auto">
-                <h4 className="text-sm font-bold text-[#063F35] flex items-center justify-between">
-                  <span>Titik Terdata ({filteredFeatures.length})</span>
-                  <Sprout className="w-4 h-4 text-[#2E8068]" />
-                </h4>
-
-                <div className="space-y-2">
-                  {filteredFeatures.length === 0 ? (
-                    <div className="text-xs text-[#9ca3af] py-10 text-center border border-dashed border-[#e5e7eb] rounded-lg">
-                      Tidak ada titik tanam yang sesuai filter.
-                    </div>
-                  ) : (
-                    filteredFeatures.slice(0, 40).map((feature) => {
-                      const p = feature.properties;
-                      return (
-                        <div
-                          key={p.id}
-                          role="button"
-                          tabIndex={0}
-                          onClick={() => setSelectedFeature(feature)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === ' ') setSelectedFeature(feature);
-                          }}
-                          className="p-3 rounded-lg border text-xs bg-[#F7F5EF] border-[#e5e7eb] hover:border-[#2E8068] hover:bg-white transition-all cursor-pointer group"
+              {/* ── CARD: Selected Tree Point Detail (With Portrait Photos 3:4 & Attributes) ── */}
+              {selectedFeature && inspectorMode !== 'list' && (
+                <div
+                  className={`p-4 border-b border-[#e5e7eb] bg-white space-y-3 shrink-0 animate-fade-in overflow-y-auto ${
+                    inspectorMode === 'detail' ? 'flex-1' : 'max-h-[360px] lg:max-h-[380px]'
+                  }`}
+                >
+                  {/* Point Header & Next/Prev Controls */}
+                  <div className="flex items-center justify-between gap-2 pb-1 border-b border-gray-100">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          className="text-[10px] px-1.5 py-0.5 rounded font-extrabold text-white shrink-0"
+                          style={{ backgroundColor: TREE_COLORS[selectedFeature.properties.jenis_pohon] }}
                         >
-                          <div className="flex items-center justify-between font-semibold text-[#063F35] mb-1">
-                            <span className="group-hover:text-[#2E8068] transition-colors">
-                              TP-{String(p.id).padStart(3, '0')} — {p.nama_peserta}
-                            </span>
-                            <span
-                              className="text-[10px] px-2 py-0.5 rounded font-bold text-white shrink-0"
-                              style={{ backgroundColor: TREE_COLORS[p.jenis_pohon] }}
-                            >
-                              {p.jenis_pohon}
-                            </span>
-                          </div>
-                          <div className="text-[11px] text-[#6b7280] flex items-center justify-between mt-0.5">
-                            <span>Daerah: {p.lokasi_nama}</span>
-                            <span>Umur: {p.umur_tanam_bulan} bln</span>
-                          </div>
-                        </div>
-                      );
-                    })
+                          Kelas {selectedFeature.properties.jenis_pohon}
+                        </span>
+                        <span className="text-xs font-bold text-gray-500">
+                          #TP-{String(selectedFeature.properties.id).padStart(3, '0')}
+                        </span>
+                      </div>
+                      <h4 className="font-extrabold text-[#063F35] text-sm sm:text-base leading-snug truncate mt-0.5">
+                        {selectedFeature.properties.nama_peserta}
+                      </h4>
+                    </div>
+
+                    {/* Stepping controls (< prev | next >) + Close */}
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        type="button"
+                        onClick={handlePrevPoint}
+                        disabled={currentPointIndex <= 0}
+                        className="p-1 rounded-md border border-gray-200 hover:bg-gray-100 text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                        title="Titik Sebelumnya"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </button>
+                      <span className="text-[10px] font-bold text-gray-400 px-1">
+                        {currentPointIndex + 1}/{filteredFeatures.length}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleNextPoint}
+                        disabled={currentPointIndex >= filteredFeatures.length - 1}
+                        className="p-1 rounded-md border border-gray-200 hover:bg-gray-100 text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                        title="Titik Selanjutnya"
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedFeature(null)}
+                        className="p-1 rounded-md hover:bg-rose-50 text-gray-400 hover:text-rose-600 cursor-pointer ml-1"
+                        title="Tutup Detail"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Smart Adaptive Photos (Dynamically detects portrait/landscape & adjusts space) */}
+                  <AdaptivePhotoPair
+                    key={`photos-${selectedFeature.properties.id}`}
+                    beforeUrl={selectedFeature.properties.foto_before_url}
+                    afterUrl={selectedFeature.properties.foto_after_url}
+                    inspectorMode={inspectorMode}
+                    onZoomBefore={() => setPreviewModalPhoto(selectedFeature.properties.foto_before_url)}
+                    onZoomAfter={() => setPreviewModalPhoto(selectedFeature.properties.foto_after_url)}
+                  />
+
+                  {/* Metadata Chips & Google Maps Link */}
+                  <div className="grid grid-cols-2 gap-1.5 text-[11px] text-gray-700 pt-1">
+                    <div className="bg-gray-50 p-2 rounded-lg border border-gray-100">
+                      <span className="text-[9px] text-gray-400 font-bold block uppercase">Kawasan Hulu</span>
+                      <span className="font-semibold text-[#063F35] truncate block">
+                        📍 {selectedFeature.properties.lokasi_nama}
+                      </span>
+                    </div>
+                    <div className="bg-gray-50 p-2 rounded-lg border border-gray-100">
+                      <span className="text-[9px] text-gray-400 font-bold block uppercase">Umur &amp; Estimasi</span>
+                      <span className="font-semibold text-[#063F35] block">
+                        🌱 {selectedFeature.properties.umur_tanam_bulan} bln · ⏳ {selectedFeature.properties.jangka_hidup_tahun} thn
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* External Google Maps Link */}
+                  {selectedFeature.geometry?.coordinates && (
+                    <div className="flex items-center justify-between text-[11px] pt-1">
+                      <span className="font-mono text-gray-400 text-[10px]">
+                        {selectedFeature.geometry.coordinates[1].toFixed(5)}, {selectedFeature.geometry.coordinates[0].toFixed(5)}
+                      </span>
+                      <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${selectedFeature.geometry.coordinates[1]},${selectedFeature.geometry.coordinates[0]}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 text-emerald-700 hover:text-emerald-900 font-semibold hover:underline"
+                        title="Buka titik koordinat di Google Maps Satelit"
+                      >
+                        <span>Satelit Google Maps</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </div>
                   )}
                 </div>
-              </div>
-            </ScrollReveal>
+              )}
+
+              {/* ── LIST: All Tree Points (No 40 Limit, Synchronized Scroll) ── */}
+              {inspectorMode !== 'detail' && (
+                <div className="flex-1 flex flex-col min-h-0 bg-gray-50/40">
+                  <div className="px-3.5 py-2 border-b border-[#e5e7eb] bg-white flex items-center justify-between text-xs shrink-0">
+                    <span className="font-bold text-[#063F35] flex items-center gap-1.5">
+                      <Sprout className="w-3.5 h-3.5 text-[#2E8068]" />
+                      Daftar Titik ({filteredFeatures.length})
+                    </span>
+                    <span className="text-[10px] text-gray-400">
+                      {selectedFeature ? 'Klik titik lain untuk berpindah' : 'Klik untuk inspeksi detail'}
+                    </span>
+                  </div>
+
+                  <div
+                    ref={listContainerRef}
+                    className="flex-1 p-3 space-y-2 overflow-y-auto"
+                  >
+                    {filteredFeatures.length === 0 ? (
+                      <div className="text-xs text-gray-400 py-12 text-center border border-dashed border-[#e5e7eb] rounded-xl bg-white">
+                        Tidak ada titik tanam yang sesuai filter.
+                      </div>
+                    ) : (
+                      filteredFeatures.map((feature) => {
+                        const p = feature.properties;
+                        const isSelected = selectedFeature?.properties?.id === p.id;
+                        return (
+                          <div
+                            key={p.id}
+                            data-point-id={p.id}
+                            role="button"
+                            tabIndex={0}
+                            onClick={() => handleSelectPoint(feature)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' || e.key === ' ') handleSelectPoint(feature);
+                            }}
+                            className={`p-2.5 rounded-xl border text-xs transition-all cursor-pointer group select-none ${
+                              isSelected
+                                ? 'bg-emerald-50/90 border-[#2E8068] ring-2 ring-[#2E8068]/30 shadow-xs'
+                                : 'bg-white border-[#e5e7eb] hover:border-[#2E8068] hover:bg-emerald-50/20'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between font-semibold text-[#063F35] mb-1">
+                              <span className={`truncate pr-2 ${isSelected ? 'text-[#063F35] font-extrabold' : 'group-hover:text-[#2E8068]'}`}>
+                                {isSelected && <span className="mr-1">📍</span>}
+                                TP-{String(p.id).padStart(3, '0')} — {p.nama_peserta}
+                              </span>
+                              <span
+                                className="text-[10px] px-2 py-0.5 rounded font-bold text-white shrink-0 shadow-2xs"
+                                style={{ backgroundColor: TREE_COLORS[p.jenis_pohon] }}
+                              >
+                                {p.jenis_pohon}
+                              </span>
+                            </div>
+                            <div className="text-[11px] text-[#6b7280] flex items-center justify-between">
+                              <span className="truncate">Daerah: {p.lokasi_nama}</span>
+                              <span className="shrink-0 font-medium">Umur: {p.umur_tanam_bulan} bln</span>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+              )}
+
+            </div>
           </div>
         </div>
 
       </div>
+
+      {/* MODAL: Fullsize Photo Viewer for WebGIS Point */}
+      {previewModalPhoto && (
+        <div
+          onClick={() => setPreviewModalPhoto(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-fade-in cursor-zoom-out"
+        >
+          <div className="relative max-w-2xl w-full" onClick={(e) => e.stopPropagation()}>
+            <img
+              src={getAssetUrl(previewModalPhoto)}
+              alt="Pratinjau Foto Titik Tanam"
+              className="w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl"
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src =
+                  'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800" fill="%231e293b"><rect width="600" height="800" fill="%231e293b"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="14" fill="%2394a3b8">🌱 Foto Belum Dapat Dimuat</text></svg>';
+              }}
+            />
+            <button
+              onClick={() => setPreviewModalPhoto(null)}
+              className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 text-white font-bold flex items-center justify-center hover:bg-black cursor-pointer"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

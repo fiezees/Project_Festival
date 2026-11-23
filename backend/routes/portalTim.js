@@ -5,6 +5,7 @@ const fs = require('fs');
 const pool = require('../db');
 const { verifyPassword, generateToken } = require('../utils/auth');
 const { requireTimAuth } = require('../middleware/timAuth');
+const { checkGeofence } = require('../utils/geofence');
 
 const router = express.Router();
 
@@ -221,6 +222,13 @@ router.post(
       const umurBulan = parseInt(umur_tanam_bulan, 10) || 1;
       const jangkaTahun = parseInt(jangka_hidup_tahun, 10) || 40;
 
+      // Geofence verification
+      const geofence = checkGeofence(lat, lng, locId);
+      let initialCatatan = null;
+      if (geofence.isOutOfZone) {
+        initialCatatan = `🚨 [GEOFENCE ALERT]: Posisi terdeteksi berjarak ${geofence.distFormatted} di luar zona resmi ${geofence.zoneName}!`;
+      }
+
       // Insert point as WKT POINT(longitude latitude)
       const pointWkt = `POINT(${lng} ${lat})`;
 
@@ -228,11 +236,11 @@ router.post(
         INSERT INTO titik_tanam (
           tim_id, nama_peserta, lokasi_id, lokasi_nama, jenis_pohon,
           umur_tanam_bulan, jangka_hidup_tahun, foto_before_url, foto_after_url,
-          status_verifikasi, geom
+          status_verifikasi, catatan_verifikasi, geom
         ) VALUES (
           ?, ?, ?, ?, ?,
           ?, ?, ?, ?,
-          'pending', ST_GeomFromText(?)
+          'pending', ?, ST_GeomFromText(?)
         )
       `, [
         req.tim.id,
@@ -244,6 +252,7 @@ router.post(
         jangkaTahun,
         foto_before_url,
         foto_after_url,
+        initialCatatan,
         pointWkt,
       ]);
 
