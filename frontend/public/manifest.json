@@ -1,0 +1,32 @@
+{
+  "name": "Festival Tanam Hulu 2026",
+  "short_name": "FestivalPohon",
+  "description": "Portal Festival Tanam Hulu & WebGIS Titik Tanam Konservasi Yayasan Galapagos",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#F7F5EF",
+  "theme_color": "#063F35",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/logo-galapagos.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo-galapagos.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["environment", "education", "utilities"]
+}

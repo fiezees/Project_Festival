@@ -15,13 +15,20 @@ router.get('/', async (req, res) => {
   }
 
   try {
-    const where = species ? 'WHERE jenis_pohon = ?' : '';
-    const params = species ? [species] : [];
+    const conditions = ["(status_verifikasi = 'approved' OR status_verifikasi IS NULL)"];
+    const params = [];
+
+    if (species) {
+      conditions.push('jenis_pohon = ?');
+      params.push(species);
+    }
+
+    const where = `WHERE ${conditions.join(' AND ')}`;
     const [rows] = await pool.query(`
-                  SELECT id, nama_peserta, lokasi_id, lokasi_nama, jenis_pohon,
-                    umur_tanam_bulan, jangka_hidup_tahun, foto_before_url,
-                    foto_after_url,
-              ST_AsGeoJSON(geom) AS geom_json
+      SELECT id, nama_peserta, lokasi_id, lokasi_nama, jenis_pohon,
+        umur_tanam_bulan, jangka_hidup_tahun, foto_before_url,
+        foto_after_url,
+        ST_AsGeoJSON(geom) AS geom_json
       FROM titik_tanam
       ${where}
       ORDER BY id

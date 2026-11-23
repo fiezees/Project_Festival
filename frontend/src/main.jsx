@@ -10,6 +10,17 @@ if (typeof window !== 'undefined') {
       e.preventDefault();
     }
   });
+
+  // Register Service Worker for PWA (Production)
+  if ('serviceWorker' in navigator && import.meta.env.PROD) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').then((reg) => {
+        console.log('PWA ServiceWorker registered:', reg.scope);
+      }).catch((err) => {
+        console.log('PWA ServiceWorker failed:', err);
+      });
+    });
+  }
 }
 
 createRoot(document.getElementById('root')).render(

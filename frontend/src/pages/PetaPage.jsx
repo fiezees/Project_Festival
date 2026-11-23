@@ -10,7 +10,7 @@ import {
   ShieldCheck,
   Sprout,
 } from 'lucide-react';
-import { getStats, getTanam, getWilayah } from '../services/api';
+import { getStats, getTanam, getWilayah, getAssetUrl } from '../services/api';
 import { LOCATIONS_DATA } from '../data/mockData';
 import ScrollReveal from '../components/ScrollReveal';
 
@@ -344,17 +344,25 @@ export default function PetaPage({ onNavigateHome, selectedLocation }) {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <img
-                      src={selectedFeature.properties.foto_before_url}
+                      src={getAssetUrl(selectedFeature.properties.foto_before_url)}
                       alt={`Foto before ${selectedFeature.properties.nama_peserta}`}
-                      className="w-full h-32 object-cover rounded-lg"
+                      className="w-full h-32 object-cover rounded-lg bg-gray-100"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200" fill="%23f1f5f9"><rect width="300" height="200" fill="%23f1f5f9"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="11" fill="%2394a3b8">🌱 Foto Belum Tersedia</text></svg>';
+                      }}
                     />
                     <span className="text-[10px] text-[#9ca3af] mt-1 block">Before</span>
                   </div>
                   <div>
                     <img
-                      src={selectedFeature.properties.foto_after_url}
+                      src={getAssetUrl(selectedFeature.properties.foto_after_url)}
                       alt={`Foto after ${selectedFeature.properties.nama_peserta}`}
-                      className="w-full h-32 object-cover rounded-lg"
+                      className="w-full h-32 object-cover rounded-lg bg-gray-100"
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200" fill="%23f1f5f9"><rect width="300" height="200" fill="%23f1f5f9"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="11" fill="%2394a3b8">🌱 Foto Belum Tersedia</text></svg>';
+                      }}
                     />
                     <span className="text-[10px] text-[#9ca3af] mt-1 block">After</span>
                   </div>

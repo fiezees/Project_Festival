@@ -36,7 +36,47 @@ async function initDatabase() {
       // Ignore if column already exists (ER_DUP_FIELDNAME)
     }
 
-    // 2. Create table admin_users
+    // 2. Create table tim_users (Akun khusus 10 tim penanam terpilih)
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS tim_users (
+        id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+        proposal_id INT UNSIGNED NOT NULL UNIQUE,
+        username VARCHAR(60) NOT NULL UNIQUE,
+        password_hash VARCHAR(255) NOT NULL,
+        salt VARCHAR(64) NOT NULL,
+        nama_tim VARCHAR(150) NOT NULL,
+        nama_ketua VARCHAR(150) NOT NULL,
+        telepon VARCHAR(50) NOT NULL,
+        target_pohon SMALLINT UNSIGNED NOT NULL DEFAULT 10,
+        is_active TINYINT(1) NOT NULL DEFAULT 1,
+        last_login DATETIME NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (id),
+        INDEX idx_tim_proposal (proposal_id),
+        INDEX idx_tim_username (username)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+    console.log('[DB] Tabel tim_users siap.');
+
+    // 3. Ensure columns on titik_tanam for team associations and verification
+    const alterTitikQueries = [
+      'ALTER TABLE titik_tanam ADD COLUMN tim_id INT UNSIGNED NULL AFTER id',
+      "ALTER TABLE titik_tanam ADD COLUMN status_verifikasi ENUM('pending', 'approved', 'rejected') NOT NULL DEFAULT 'approved' AFTER foto_after_url",
+      'ALTER TABLE titik_tanam ADD COLUMN catatan_verifikasi TEXT NULL AFTER status_verifikasi',
+      'ALTER TABLE titik_tanam ADD COLUMN created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP AFTER geom',
+    ];
+
+    for (const q of alterTitikQueries) {
+      try {
+        await pool.query(q);
+      } catch (err) {
+        // Ignore column already exists
+      }
+    }
+    console.log('[DB] Kolom verifikasi & tim pada titik_tanam dipastikan.');
+
+    // 4. Create table admin_users
     await pool.query(`
       CREATE TABLE IF NOT EXISTS admin_users (
         id INT UNSIGNED NOT NULL AUTO_INCREMENT,

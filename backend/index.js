@@ -8,7 +8,10 @@ const tanamRoutes = require('./routes/tanam');
 const statsRoutes = require('./routes/stats');
 const proposalsRoutes = require('./routes/proposals');
 const adminAuthRoutes = require('./routes/auth');
+const adminTeamsRoutes = require('./routes/adminTeams');
+const portalTimRoutes = require('./routes/portalTim');
 const initDatabase = require('./init_db');
+const { performDatabaseBackup } = require('./utils/backupService');
 
 const app = express();
 const port = Number(process.env.PORT) || 3001;
@@ -34,8 +37,16 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve uploaded files statically
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Serve uploaded files statically with open CORS & CORP
+app.use(
+  '/uploads',
+  (req, res, next) => {
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    next();
+  },
+  express.static(path.join(__dirname, 'uploads'))
+);
 
 app.get('/', (req, res) => {
   res.json({
@@ -57,6 +68,8 @@ app.use('/api/tanam', tanamRoutes.router);
 app.use('/api/stats', statsRoutes);
 app.use('/api/proposals', proposalsRoutes);
 app.use('/api/admin', adminAuthRoutes);
+app.use('/api/admin', adminTeamsRoutes);
+app.use('/api/tim', portalTimRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Endpoint tidak ditemukan' });
@@ -67,6 +80,31 @@ initDatabase().catch((err) => {
   console.warn('[DB Init Warning] Auto init failed (MySQL mungkin belum siap):', err.message);
 });
 
+// Automated Daily Database Backup Scheduler
+function startBackupScheduler() {
+  setTimeout(async () => {
+    try {
+      console.log('⏰ [Scheduler] Memeriksa backup otomatis database...');
+      const res = await performDatabaseBackup();
+      console.log(`✅ [Scheduler] Backup database otomatis tersimpan: ${res.filename}`);
+    } catch (err) {
+      console.warn('⚠️ [Scheduler] Backup otomatis awal ditangguhkan:', err.message);
+    }
+  }, 20000);
+
+  // Periodic daily backup (every 24 hours)
+  setInterval(async () => {
+    try {
+      console.log('⏰ [Scheduler] Menjalankan backup otomatis 24 jam...');
+      const res = await performDatabaseBackup();
+      console.log(`✅ [Scheduler] Backup berkala selesai: ${res.filename}`);
+    } catch (err) {
+      console.warn('⚠️ [Scheduler] Gagal backup berkala:', err.message);
+    }
+  }, 24 * 60 * 60 * 1000);
+}
+
 app.listen(port, () => {
   console.log(`API listening on http://localhost:${port}`);
+  startBackupScheduler();
 });

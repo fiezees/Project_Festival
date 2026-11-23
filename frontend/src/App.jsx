@@ -9,6 +9,7 @@ import HomePage from './pages/HomePage';
 import PetaPage from './pages/PetaPage';
 import BeritaPage from './pages/BeritaPage';
 import AdminPage from './pages/AdminPage';
+import PortalTimPage from './pages/PortalTimPage';
 import ProposalModal from './components/ProposalModal';
 
 // ── Page slide variant ────────────────────────────────────────────────────────
@@ -31,6 +32,8 @@ export default function App() {
       const hash = window.location.hash.replace('#', '').toLowerCase();
       if (hash === 'admin') {
         setActivePage('admin');
+      } else if (hash === 'tim') {
+        setActivePage('tim');
       } else if (['yayasan', 'home', 'peta', 'berita'].includes(hash)) {
         setActivePage(hash);
       }
@@ -65,6 +68,29 @@ export default function App() {
           transition={pageTransition}
         >
           <AdminPage
+            onNavigateHome={() => {
+              setActivePage('home');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+          />
+        </motion.div>
+      </AnimatePresence>
+    );
+  }
+
+  // ── Dedicated Team Portal (Khusus 10 Tim Penanam) ────────────────────────
+  if (activePage === 'tim') {
+    return (
+      <AnimatePresence mode="wait">
+        <motion.div
+          key="tim"
+          variants={pageVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          transition={pageTransition}
+        >
+          <PortalTimPage
             onNavigateHome={() => {
               setActivePage('home');
               window.scrollTo({ top: 0, behavior: 'smooth' });

@@ -16,3 +16,9 @@ node_modules/
 # Build output
 dist/
 build/
+
+# Backups & Uploads
+backend/backups/*
+!backend/backups/.gitkeep
+backend/uploads/tanam/*
+!backend/uploads/tanam/.gitkeep

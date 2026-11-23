@@ -1,5 +1,23 @@
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3001/api';
 
+/**
+ * Helper to resolve static asset paths (e.g. /uploads/tanam/...) to full reachable URLs
+ */
+export function getAssetUrl(pathOrUrl) {
+  if (!pathOrUrl) return '';
+  if (
+    pathOrUrl.startsWith('http://') ||
+    pathOrUrl.startsWith('https://') ||
+    pathOrUrl.startsWith('data:') ||
+    pathOrUrl.startsWith('blob:')
+  ) {
+    return pathOrUrl;
+  }
+  const backendBase = (import.meta.env.VITE_API_BASE || 'http://localhost:3001/api').replace(/\/api\/?$/, '');
+  const cleanPath = pathOrUrl.startsWith('/') ? pathOrUrl : `/${pathOrUrl}`;
+  return `${backendBase}${cleanPath}`;
+}
+
 async function request(path, options = {}) {
   const response = await fetch(`${API_BASE}${path}`, options);
 
@@ -146,4 +164,136 @@ export function getProposalDownloadUrl(id) {
 
 export function getProposalPreviewUrl(id) {
   return `${API_BASE}/proposals/${id}/preview`;
+}
+
+export async function downloadDatabaseBackup(token) {
+  const res = await fetch(`${API_BASE}/admin/backup/download`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Gagal mengunduh backup database');
+  }
+  const blob = await res.blob();
+  const disposition = res.headers.get('Content-Disposition') || '';
+  let filename = 'backup_festival_pohon.sql';
+  const match = disposition.match(/filename="?([^"]+)"?/);
+  if (match && match[1]) filename = match[1];
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  return filename;
+}
+
+export function triggerDatabaseBackup(token) {
+  return request('/admin/backup', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
+
+// ==========================================
+// Admin Team Accounts & Curation
+// ==========================================
+export function generateTeamAccount(token, proposal_id, target_pohon = 10, custom_password = '') {
+  return request('/admin/teams/generate-account', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ proposal_id, target_pohon, custom_password }),
+  });
+}
+
+export function getAdminTeams(token) {
+  return request('/admin/teams', {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
+
+export function getAdminPlantingPoints(token, status = '') {
+  const query = status ? `?status=${encodeURIComponent(status)}` : '';
+  return request(`/admin/titik-tanam${query}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+}
+
+export function verifyPlantingPoint(token, id, status_verifikasi, catatan_verifikasi = '') {
+  return request(`/admin/titik-tanam/${id}/verify`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ status_verifikasi, catatan_verifikasi }),
+  });
+}
+
+// ==========================================
+// Team Portal (Khusus 10 Tim Penanam)
+// ==========================================
+export function timLogin(username, password) {
+  return request('/tim/login', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ username, password }),
+  });
+}
+
+export function getTimProfile(timToken) {
+  return request('/tim/me', {
+    headers: {
+      Authorization: `Bearer ${timToken}`,
+    },
+  });
+}
+
+export function getTimPlantingPoints(timToken) {
+  return request('/tim/titik-tanam', {
+    headers: {
+      Authorization: `Bearer ${timToken}`,
+    },
+  });
+}
+
+export async function submitTimPlantingPoint(timToken, formData) {
+  const response = await fetch(`${API_BASE}/tim/titik-tanam`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${timToken}`,
+    },
+    body: formData,
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data.error || 'Gagal mengirim titik penanaman');
+  }
+  return data;
+}
+
+export function deleteTimPlantingPoint(timToken, id) {
+  return request(`/tim/titik-tanam/${id}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${timToken}`,
+    },
+  });
 }
