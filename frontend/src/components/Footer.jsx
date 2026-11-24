@@ -32,7 +32,7 @@ export default function Footer({ setActivePage, onOpenProposal }) {
           {/* Col 2: Objek Lokasi */}
           <div className="space-y-4">
             <h4 className="text-sm font-semibold text-[#F4B91F] uppercase tracking-wider">
-              Objek Lokasi Aksi
+              Kawasan Aksi Tanam Hulu
             </h4>
             <ul className="space-y-3 text-sm text-white/70">
               <li className="flex items-center gap-2">

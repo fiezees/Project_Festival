@@ -114,7 +114,7 @@ async function initDatabase() {
       const defaultCategories = [
         ['Persiapan', 'persiapan', 'Persiapan teknis & koordinasi lapangan penanaman', '#063F35'],
         ['Edukasi', 'edukasi', 'Wawasan ekologi hulu sungai, DAS, dan botani pohon', '#2E8068'],
-        ['Pengumuman', 'pengumuman', 'Kabar resmi, jadwal seleksi, dan total hadiah', '#F4B91F'],
+        ['Pengumuman', 'pengumuman', 'Kabar resmi dan jadwal kegiatan', '#F4B91F'],
         ['Konservasi', 'konservasi', 'Aksi restorasi lereng kritis dan resapan air', '#10b981'],
         ['Inovasi', 'inovasi', 'Pemanfaatan WebGIS dan pemantauan vegetasi', '#3b82f6'],
         ['Komunitas', 'komunitas', 'Kolaborasi pemuda, pegiat lingkungan, dan warga', '#8b5cf6'],
@@ -190,20 +190,6 @@ async function initDatabase() {
           published_at: '2026-09-15 08:30:00',
         },
         {
-          slug: 'total-hadiah-100-juta-siap-diperebutkan-komunitas-hijau-sekolah',
-          judul: 'Total Hadiah Rp 100 Juta Siap Diperebutkan Komunitas Hijau & Sekolah',
-          ringkasan: 'Ajang apresiasi terbesar bagi pegiat lingkungan Sumatera Barat kembali hadir dengan total hadiah Rp 100.000.000 dan trofi bergilir.',
-          konten: `Festival Tanam Hulu 2026 tidak hanya menjadi gerakan konservasi, tetapi juga ruang apresiasi dan kompetisi positif bagi seluruh elemen masyarakat. Panitia mengalokasikan total hadiah sebesar Rp 100.000.000 untuk kategori kelompok terbaik, sekolah hijau, dan inovasi pemeliharaan pohon.\n\nPenilaian tidak hanya diambil dari jumlah pohon yang ditanam, tetapi juga kerapihan pengorganisasian, persentase daya tumbuh hidup (survival rate) dalam kurun waktu pemantauan, serta keterlibatan warga lokal.\n\nPendaftaran proposal aksi tanam akan dibuka resmi mulai 25 Oktober 2026 mendatang melalui website resmi ini.`,
-          gambar_url: 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&w=1000&q=80',
-          kategori: 'Pengumuman',
-          penulis: 'Dr. Hafiz Faqih',
-          waktu_baca: '3 menit',
-          status: 'published',
-          is_featured: 0,
-          views_count: 489,
-          published_at: '2026-09-10 14:15:00',
-        },
-        {
           slug: 'kolaborasi-pemuda-kuranji-dan-pauh-siapkan-pembibitan-pohon-endemik',
           judul: 'Kolaborasi Pemuda Kuranji dan Pauh Siapkan Pembibitan Pohon Endemik',
           ringkasan: 'Ratusan pemuda dari Gunung Nago dan Gunung Sarik bahu membahu menyiapkan rumah bibit swadaya untuk menyuplai bibit unggul berkualitas.',
@@ -229,8 +215,13 @@ async function initDatabase() {
           a.views_count, a.published_at,
         ]);
       }
-      console.log('[DB] 4 Artikel berita awal berhasil di-seed.');
+      console.log('[DB] 3 Artikel berita awal berhasil di-seed.');
     }
+
+    await pool.query(
+      "UPDATE berita SET status = 'archived' WHERE slug = ?",
+      ['total-hadiah-100-juta-siap-diperebutkan-komunitas-hijau-sekolah']
+    );
 
     // 3. Seed default admin if table is empty
     const [existingAdmins] = await pool.query('SELECT id, username FROM admin_users LIMIT 1');

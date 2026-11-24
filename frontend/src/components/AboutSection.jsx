@@ -34,7 +34,7 @@ export default function AboutSection() {
                 Festival Tanam Hulu 2026 adalah gerakan konservasi kolaboratif yang didedikasikan untuk memulihkan dan melindungi ekosistem hulu sungai. Inisiatif ini dirancang sebagai langkah mitigasi jangka panjang terhadap degradasi lingkungan dan perubahan iklim di tingkat lokal.
               </p>
               <p>
-                Program ini menargetkan penanaman 60.000 bibit di 4 lokasi strategis kawasan hulu sungai Kecamatan Pauh dan Kuranji untuk melindungi tutupan lahan dan sumber air Kota Padang. Penanaman ini berfokus pada vegetasi berakar kuat yang mampu menahan laju erosi.
+                Program ini menargetkan penanaman 60.000 bibit di empat kawasan aksi tanam hulu Kecamatan Pauh dan Kuranji untuk melindungi tutupan lahan dan sumber air Kota Padang. Penanaman ini berfokus pada vegetasi berakar kuat yang mampu menahan laju erosi.
               </p>
               <p>
                 Melalui kolaborasi pemerintah, masyarakat, akademisi, dan pemuda, festival ini mengintegrasikan teknologi WebGIS untuk monitoring dan transparansi, memastikan setiap bibit yang ditanam dapat dipantau pertumbuhannya secara real-time.

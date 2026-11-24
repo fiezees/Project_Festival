@@ -1,11 +1,11 @@
 /**
  * Instant Zero-Delay Tab Branding & Favicon Switcher
  * Dynamically switches browser favicon, tab title, and theme color
- * between Yayasan Galapagos and Festival Tanam Hulu with 0ms transition delay.
+ * between Perkumpulan Galapagos and Festival Tanam Hulu with 0ms transition delay.
  */
 
 const YAYASAN_FAVICON = '/logo-galapagos.png';
-const FESTIVAL_FAVICON = '/logo-festival.png';
+const FESTIVAL_FAVICON = '/logo-festival.png?v=4';
 
 // Pre-cache both images into browser memory immediately at app startup
 if (typeof window !== 'undefined') {
@@ -18,11 +18,11 @@ if (typeof window !== 'undefined') {
 export function setTabBranding(page = 'yayasan') {
   if (typeof document === 'undefined') return;
 
-  const isYayasan = page === 'yayasan';
+  const isYayasan = page === 'yayasan' || page === 'organisasi';
 
   // 1. Dynamic Tab Title
   if (isYayasan) {
-    document.title = 'Yayasan Galapagos — Dari Ranah Minang untuk Bumi Sejak 1986';
+    document.title = 'Perkumpulan Galapagos — Dari Ranah Minang untuk Bumi Sejak 1986';
   } else if (page === 'peta') {
     document.title = 'Peta WebGIS Titik Tanam — Festival Tanam Hulu 2026';
   } else if (page === 'berita') {

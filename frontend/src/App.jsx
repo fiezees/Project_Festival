@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import YayasanPage from './pages/YayasanPage';
+import OrganisasiPage from './pages/OrganisasiPage';
 import { setTabBranding } from './utils/tabBranding';
 
 // ─── WebGIS Festival Tanam Hulu ───────────────────────────────────────────────
@@ -26,12 +27,17 @@ export default function App() {
   const [isProposalOpen, setIsProposalOpen] = useState(false);
   const [selectedLocationMap, setSelectedLocationMap] = useState(null);
   const [selectedArticle, setSelectedArticle] = useState(null);
+  const [organizationSection, setOrganizationSection] = useState(null);
 
   // Check URL hash for direct links (e.g., /#admin)
   useEffect(() => {
     const handleHash = () => {
       const hash = window.location.hash.replace('#', '').toLowerCase();
-      if (hash === 'admin') {
+      const organizationMatch = hash.match(/^organisasi(?:-(yayasan|perkumpulan|sispala))?$/);
+      if (organizationMatch) {
+        setActivePage('organisasi');
+        setOrganizationSection(organizationMatch[1] || null);
+      } else if (hash === 'admin') {
         setActivePage('admin');
       } else if (hash === 'tim') {
         setActivePage('tim');
@@ -121,8 +127,32 @@ export default function App() {
         >
           <YayasanPage
             onNavigateTo={(page) => {
-              setActivePage(page);
+              setActivePage(page.startsWith('organisasi-') ? 'organisasi' : page);
               window.location.hash = page;
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+          />
+        </motion.div>
+      </AnimatePresence>
+    );
+  }
+
+  if (activePage === 'organisasi') {
+    return (
+      <AnimatePresence mode="wait">
+        <motion.div
+          key="organisasi"
+          variants={pageVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          transition={pageTransition}
+        >
+          <OrganisasiPage
+            initialSection={organizationSection}
+            onNavigateHome={() => {
+              setActivePage('yayasan');
+              window.location.hash = 'yayasan';
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
           />
@@ -146,7 +176,7 @@ export default function App() {
           className="flex items-center gap-2 text-sm font-bold px-4 py-2.5 rounded-full shadow-lg transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-xl active:scale-95 cursor-pointer"
           style={{ background: '#1B3226', color: '#F7F3E8' }}
         >
-          ← Profil Yayasan
+          ← Profil Perkumpulan
         </button>
       </div>
 

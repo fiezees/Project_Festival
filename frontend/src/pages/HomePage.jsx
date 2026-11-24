@@ -4,7 +4,6 @@ import StatsSection from '../components/StatsSection';
 import AboutSection from '../components/AboutSection';
 import LocationsSection from '../components/LocationsSection';
 import TimelineSection from '../components/TimelineSection';
-import PrizeSection from '../components/PrizeSection';
 import NewsSection from '../components/NewsSection';
 
 export default function HomePage({
@@ -24,7 +23,6 @@ export default function HomePage({
   return (
     <main className="space-y-0">
       <Hero
-        onOpenProposal={onOpenProposal}
         onNavigateToMap={onNavigateToMap}
         onScrollToTimeline={handleScrollToTimeline}
       />
@@ -38,10 +36,6 @@ export default function HomePage({
       />
 
       <TimelineSection
-        onOpenProposal={onOpenProposal}
-      />
-
-      <PrizeSection
         onOpenProposal={onOpenProposal}
       />
 

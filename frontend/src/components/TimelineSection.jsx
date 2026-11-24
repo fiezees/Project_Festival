@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, CheckCircle2, Users, Megaphone, FileText, Sprout, Award, Trophy, ArrowRight } from 'lucide-react';
+import { Calendar, CheckCircle2, Users, Megaphone, FileText, Sprout, MapPin, ArrowRight } from 'lucide-react';
 import { TIMELINE_DATA } from '../data/mockData';
 import ScrollReveal from './ScrollReveal';
 
@@ -9,8 +9,7 @@ const iconMap = {
   FileText: FileText,
   CheckCircle2: CheckCircle2,
   Sprout: Sprout,
-  Award: Award,
-  Trophy: Trophy
+  MapPin: MapPin
 };
 
 export default function TimelineSection({ onOpenProposal }) {
@@ -30,7 +29,7 @@ export default function TimelineSection({ onOpenProposal }) {
             </h2>
 
             <p className="text-[#374151] text-base lg:text-lg max-w-2xl">
-              Rangkaian tahapan pelaksanaan kegiatan dimulai dari Oktober 2026 hingga penganugerahan pemenang pada Desember 2026.
+              Rangkaian tahapan pelaksanaan kegiatan dimulai dari Oktober hingga publikasi hasil pemantauan pada Desember 2026.
             </p>
           </div>
         </ScrollReveal>

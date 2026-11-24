@@ -268,7 +268,7 @@ export default function PortalTimPage({ onNavigateHome }) {
 
       await submitTimPlantingPoint(timToken, formPayload);
       setIsModalOpen(false);
-      setActionNotice('Titik penanaman berhasil dikirim! Menunggu kurasi panitia.');
+      setActionNotice('Titik penanaman berhasil dikirim! Menunggu verifikasi panitia.');
       setTimeout(() => setActionNotice(''), 6000);
       loadTeamData();
     } catch (err) {
@@ -396,7 +396,7 @@ export default function PortalTimPage({ onNavigateHome }) {
         </div>
 
         <footer className="text-center text-xs text-gray-400 py-2">
-          Festival Tanam Hulu 2026 &bull; Yayasan Galapagos
+          Festival Tanam Hulu 2026 &bull; Perkumpulan Galapagos
         </footer>
       </div>
     );
@@ -591,7 +591,7 @@ export default function PortalTimPage({ onNavigateHome }) {
                       ) : (
                         <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
                           <Clock className="w-3 h-3 text-amber-600" />
-                          <span>Menunggu Kurasi</span>
+                          <span>Menunggu Verifikasi</span>
                         </span>
                       )}
                     </div>
@@ -802,7 +802,7 @@ export default function PortalTimPage({ onNavigateHome }) {
                           className="mt-0.5 rounded text-rose-600"
                         />
                         <span className="text-[10px] text-rose-800 font-semibold leading-tight">
-                          Saya konfirmasi titik ini adalah area tanam khusus yang telah dikoordinasikan dengan panitia (akan ditandai untuk kurasi).
+                          Saya konfirmasi titik ini adalah area tanam khusus yang telah dikoordinasikan dengan panitia (akan diverifikasi).
                         </span>
                       </label>
                     )}
@@ -1060,7 +1060,7 @@ export default function PortalTimPage({ onNavigateHome }) {
 
       {/* Footer */}
       <footer className="text-center text-xs text-gray-400 py-4 border-t border-gray-200/60 bg-white">
-        Portal Aksi Lapangan Festival Tanam Hulu 2026 &bull; Yayasan Galapagos
+        Portal Aksi Lapangan Festival Tanam Hulu 2026 &bull; Perkumpulan Galapagos
       </footer>
     </div>
   );

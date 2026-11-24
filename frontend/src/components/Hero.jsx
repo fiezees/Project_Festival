@@ -1,7 +1,6 @@
 import React from 'react';
-import { FESTIVAL_INFO } from '../data/mockData';
 
-export default function Hero({ onOpenProposal, onNavigateToMap, onScrollToTimeline }) {
+export default function Hero({ onNavigateToMap, onScrollToTimeline }) {
   const bgImageUrl = "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=2000&q=85";
 
   return (
@@ -28,7 +27,7 @@ export default function Hero({ onOpenProposal, onNavigateToMap, onScrollToTimeli
           </div>
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight">
-            Menanam Hari Ini,<br />Menjaga Air Esok Hari
+            menyemai lereng,<br />selamatkan padang
           </h1>
 
           <p className="text-lg text-white/80 max-w-xl leading-relaxed">

@@ -30,13 +30,13 @@ function getWhatsAppTemplate(proposal, type = null) {
 
   switch (st) {
     case 'Diterima':
-      return `*PENGUMUMAN SELEKSI PROPOSAL: DITERIMA*\n*Festival Tanam Hulu 2026 — Yayasan Galapagos*\n\nHalo Kak *${ketua}* & tim *"${tim}"*,\n\nSelamat! Berdasarkan hasil kurasi dewan juri, proposal tim Anda (No. Reg: *${regId}*) resmi dinyatakan *DITERIMA* untuk menjadi tim penanaman Festival Tanam Hulu 2026.\n\nMohon konfirmasi kesiapan tim Anda untuk tahap persiapan aksi lapangan dan technical meeting berikutnya. Terima kasih atas partisipasi dan komitmennya menjaga hulu sungai kita.\n\nSalam lestari,\n*Panitia Festival Tanam Hulu 2026*`;
+      return `*KONFIRMASI PENDAFTARAN: DITERIMA*\n*Festival Tanam Hulu 2026 — Perkumpulan Galapagos*\n\nHalo Kak *${ketua}* & tim *"${tim}"*,\n\nSelamat! Setelah verifikasi kelengkapan berkas oleh panitia, pendaftaran tim Anda (No. Reg: *${regId}*) dinyatakan *DITERIMA* untuk mengikuti Festival Tanam Hulu 2026.\n\nMohon konfirmasi kesiapan tim Anda untuk tahap persiapan aksi lapangan dan technical meeting berikutnya. Terima kasih atas partisipasi dan komitmennya menjaga hulu sungai kita.\n\nSalam lestari,\n*Panitia Festival Tanam Hulu 2026*`;
     case 'Ditinjau':
-      return `*INFORMASI PROSES SELEKSI PROPOSAL*\n*Festival Tanam Hulu 2026 — Yayasan Galapagos*\n\nHalo Kak *${ketua}* dari tim *"${tim}"*,\n\nBerkas proposal tim Anda (No. Reg: *${regId}*) saat ini sedang dalam proses peninjauan oleh dewan juri.\n\nMohon pastikan kontak WhatsApp ini tetap aktif untuk menerima informasi hasil kurasi dan jadwal pengumuman selanjutnya.\n\nSalam lestari,\n*Panitia Festival Tanam Hulu 2026*`;
+      return `*INFORMASI VERIFIKASI BERKAS*\n*Festival Tanam Hulu 2026 — Perkumpulan Galapagos*\n\nHalo Kak *${ketua}* dari tim *"${tim}"*,\n\nBerkas pendaftaran tim Anda (No. Reg: *${regId}*) sedang diperiksa kelengkapannya oleh panitia.\n\nMohon pastikan kontak WhatsApp ini tetap aktif apabila panitia memerlukan informasi tambahan.\n\nSalam lestari,\n*Panitia Festival Tanam Hulu 2026*`;
     case 'Ditolak':
-      return `*PENGUMUMAN SELEKSI PROPOSAL*\n*Festival Tanam Hulu 2026 — Yayasan Galapagos*\n\nHalo Kak *${ketua}* & seluruh tim *"${tim}"*,\n\nTerima kasih banyak atas partisipasi dan kepedulian yang telah diajukan melalui proposal No. Reg: *${regId}*. Mengingat kuota lokasi penanaman yang sangat terbatas, dengan berat hati kami sampaikan bahwa proposal tim Anda belum dapat terpilih pada periode penanaman tahun ini.\n\nKami sangat mengapresiasi semangat konservasi kawan-kawan sekalian. Mari terus bergerak bersama menjaga kelestarian lingkungan dan bumi kita.\n\nSalam lestari,\n*Panitia Festival Tanam Hulu 2026*`;
+      return `*PEMBERITAHUAN STATUS PENDAFTARAN*\n*Festival Tanam Hulu 2026 — Perkumpulan Galapagos*\n\nHalo Kak *${ketua}* & seluruh tim *"${tim}"*,\n\nTerima kasih atas partisipasi tim Anda melalui pendaftaran No. Reg: *${regId}*. Setelah pemeriksaan persyaratan, pendaftaran tim Anda belum dapat diterima pada periode ini.\n\nMari terus bergerak bersama menjaga kelestarian lingkungan dan bumi kita.\n\nSalam lestari,\n*Panitia Festival Tanam Hulu 2026*`;
     case 'Revisi':
-      return `*KONFIRMASI KELENGKAPAN BERKAS PROPOSAL*\n*Festival Tanam Hulu 2026 — Yayasan Galapagos*\n\nHalo Kak *${ketua}* dari tim *"${tim}"*,\n\nTerkait proposal tim Anda (No. Reg: *${regId}*), tim kurator telah meninjau dokumen yang dikirimkan. Terdapat beberapa data atau berkas yang perlu dikonfirmasi atau diperbaiki.\n\nMohon membalas pesan ini agar panitia dapat memandu proses penyesuaian berkasnya. Terima kasih banyak.\n\nSalam hangat,\n*Panitia Festival Tanam Hulu 2026*`;
+      return `*KONFIRMASI KELENGKAPAN BERKAS*\n*Festival Tanam Hulu 2026 — Perkumpulan Galapagos*\n\nHalo Kak *${ketua}* dari tim *"${tim}"*,\n\nTerkait pendaftaran tim Anda (No. Reg: *${regId}*), terdapat beberapa data atau berkas yang perlu dikonfirmasi atau dilengkapi.\n\nMohon membalas pesan ini agar panitia dapat memandu proses penyesuaian berkasnya. Terima kasih banyak.\n\nSalam hangat,\n*Panitia Festival Tanam Hulu 2026*`;
     default:
       return `Halo Kak *${ketua}* dari tim *"${tim}"*,\n\nKami dari Panitia Festival Tanam Hulu 2026 ingin mengonfirmasi terkait pendaftaran proposal tim Anda (No. Reg: *${regId}*). Mohon informasikan jika pesan ini telah diterima. Terima kasih.\n\nSalam lestari,\n*Panitia Festival Tanam Hulu 2026*`;
   }
@@ -1202,7 +1202,7 @@ export default function AdminPage({ onNavigateHome }) {
             }`}
           >
             <Sprout className="w-4 h-4 text-[#F4B91F]" />
-            <span>Kurasi Titik Tanam</span>
+            <span>Verifikasi Titik Tanam</span>
             {adminPointsList.filter((p) => p.status_verifikasi === 'pending').length > 0 && (
               <span className="ml-1 px-1.5 py-0.5 rounded-full text-[10px] bg-amber-400 text-amber-950 font-mono font-bold animate-pulse">
                 {adminPointsList.filter((p) => p.status_verifikasi === 'pending').length} Baru
@@ -1782,7 +1782,7 @@ export default function AdminPage({ onNavigateHome }) {
                           />
                         </div>
                         <div className="flex items-center justify-between text-[10px] text-gray-400">
-                          <span>Pending kurasi: {tm.total_pending || 0}</span>
+                          <span>Menunggu verifikasi: {tm.total_pending || 0}</span>
                           <span>Total input: {tm.total_planted || 0}</span>
                         </div>
                       </div>
@@ -1809,14 +1809,14 @@ export default function AdminPage({ onNavigateHome }) {
           </div>
         )}
 
-        {/* TAB 3: KURASI TITIK TANAM WEBGIS */}
+        {/* TAB 3: VERIFIKASI TITIK TANAM WEBGIS */}
         {activeAdminTab === 'curation' && (
           <div className="space-y-6 animate-fade-in">
             <div className="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <h2 className="text-lg font-black text-[#063F35]">
-                    Kurasi &amp; Verifikasi Titik Tanam WebGIS
+                    Verifikasi Titik Tanam WebGIS
                   </h2>
                   <p className="text-xs text-gray-500">
                     Periksa koordinat GPS dan bukti foto aksi penanaman tim sebelum titik resmi diterbitkan ke peta WebGIS publik.
@@ -1829,7 +1829,7 @@ export default function AdminPage({ onNavigateHome }) {
                     className="text-xs font-semibold bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-gray-700 focus:bg-white focus:outline-none"
                   >
                     <option value="Semua">Semua Titik</option>
-                    <option value="pending">⏳ Menunggu Kurasi</option>
+                    <option value="pending">⏳ Menunggu Verifikasi</option>
                     <option value="approved">✅ Disetujui (Tayang)</option>
                     <option value="rejected">⚠️ Perlu Revisi</option>
                   </select>
@@ -2503,7 +2503,7 @@ export default function AdminPage({ onNavigateHome }) {
                 <textarea
                   value={adminNoteInput}
                   onChange={(e) => setAdminNoteInput(e.target.value)}
-                  placeholder="Tulis catatan evaluasi internal, kesepakatan dewan juri, atau catatan perbaikan (hanya dapat dilihat oleh admin)..."
+                  placeholder="Tulis catatan tindak lanjut internal atau catatan perbaikan (hanya dapat dilihat oleh admin)..."
                   className="w-full bg-white border border-amber-300 rounded-lg p-2.5 text-xs sm:text-sm text-gray-800 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30 resize-none h-20 placeholder:text-gray-400"
                 />
                 <div className="flex justify-end">
@@ -2756,7 +2756,7 @@ export default function AdminPage({ onNavigateHome }) {
                 type="text"
                 value={adminNoteInput}
                 onChange={(e) => setAdminNoteInput(e.target.value)}
-                placeholder="Tulis catatan evaluasi internal untuk proposal ini (hanya dapat dibaca admin)..."
+                placeholder="Tulis catatan tindak lanjut administratif untuk pendaftaran ini (hanya dapat dibaca admin)..."
                 className="flex-1 bg-white border border-amber-300 rounded-lg px-3 py-1 text-xs text-gray-800 focus:outline-none focus:border-amber-500 placeholder:text-gray-400"
               />
               <button
@@ -2957,7 +2957,7 @@ export default function AdminPage({ onNavigateHome }) {
           <div className="relative max-w-2xl w-full" onClick={(e) => e.stopPropagation()}>
             <img 
               src={getAssetUrl(previewCurPhoto)} 
-              alt="Foto Kurasi" 
+              alt="Foto Verifikasi Lokasi"
               className="w-full max-h-[85vh] object-contain rounded-xl shadow-2xl" 
               onError={(e) => {
                 e.currentTarget.onerror = null;
@@ -3065,7 +3065,7 @@ export default function AdminPage({ onNavigateHome }) {
                     type="text"
                     value={newsFormData.penulis}
                     onChange={(e) => setNewsFormData({ ...newsFormData, penulis: e.target.value })}
-                    placeholder="Contoh: Tim Humas Yayasan Galapagos"
+                    placeholder="Contoh: Tim Humas Perkumpulan Galapagos"
                     className="w-full px-3.5 py-2 bg-gray-50 border border-gray-300 rounded-xl text-gray-800 focus:outline-none focus:border-[#063F35]"
                   />
                 </div>

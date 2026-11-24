@@ -4,9 +4,13 @@ export const FESTIVAL_INFO = {
   tagline: "Menanam Masa Depan, Menjaga Air Mata Kita di Hulu",
   targetLubangTanam: 60000,
   startDate: "10 Oktober 2026",
-  totalPrize: 100000000,
-  totalPrizeFormatted: "Rp 100.000.000",
   locationOverview: "Kecamatan Pauh & Kecamatan Kuranji, Kota Padang, Sumatera Barat"
+};
+
+const DISASTER_2025_IMPACT = {
+  summary: "Data khusus banjir Batu Busuak (Pauh), 25 November 2025: 327 jiwa (110 KK) terdampak; 172 jiwa (77 KK) mengungsi; dua rumah hanyut.",
+  sourceLabel: "ANTARA Sumbar, 26 Nov 2025",
+  sourceUrl: "https://sumbar.antaranews.com/berita/729125/setelah-relawan-pt-semen-padang-kirim-bantuan-untuk-dapur-umum-korban-banjir-batu-busuak"
 };
 
 export const LOCATIONS_DATA = [
@@ -16,10 +20,9 @@ export const LOCATIONS_DATA = [
     kecamatan: "Pauh",
     city: "Kota Padang",
     coordinates: [-0.9085, 100.4532],
-    targetTrees: 18000,
     areaSize: "45 Hektar",
     description: "Area hulu sungai utama di kaki Bukit Barisan dengan lanskap perbukitan asri. Terkenal dengan sejarah PLTA lama dan keanekaragaman flora lokal. Konservasi fokus mencegah erosi tebing sungai.",
-    treeTypes: ["Surian", "Mahoni", "Durian Unggul", "Pala"],
+    disaster2025: DISASTER_2025_IMPACT,
     image: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=1000&q=80",
     badgeColor: "emerald"
   },
@@ -29,10 +32,9 @@ export const LOCATIONS_DATA = [
     kecamatan: "Pauh",
     city: "Kota Padang",
     coordinates: [-0.9168, 100.4410],
-    targetTrees: 15000,
     areaSize: "38 Hektar",
     description: "Zona resapan air strategis yang menyuplai ketersediaan air bersih kawasan perkotaan Padang. Penghijauan ditujukan untuk penguatan vegetasi lereng bukit kritis.",
-    treeTypes: ["Trembesi", "Bambu Betung", "Kayu Manis", "Alpukat"],
+    disaster2025: DISASTER_2025_IMPACT,
     image: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1000&q=80",
     badgeColor: "teal"
   },
@@ -42,10 +44,9 @@ export const LOCATIONS_DATA = [
     kecamatan: "Pauh",
     city: "Kota Padang",
     coordinates: [-0.9254, 100.4321],
-    targetTrees: 14000,
     areaSize: "32 Hektar",
     description: "Kawasan penangkap air dekat intake jaringan irigasi hulu. Penanaman vegetasi berakar dalam membantu kestabilan struktur tanah dan pemeliharaan sumber mata air alami.",
-    treeTypes: ["Pinus", "Surian", "Manggis", "Jambu Biji"],
+    disaster2025: DISASTER_2025_IMPACT,
     image: "https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1000&q=80",
     badgeColor: "green"
   },
@@ -55,10 +56,9 @@ export const LOCATIONS_DATA = [
     kecamatan: "Kuranji",
     city: "Kota Padang",
     coordinates: [-0.8872, 100.4180],
-    targetTrees: 13000,
     areaSize: "30 Hektar",
     description: "Wilayah sub-DAS Kuranji yang mengolaborasikan masyarakat lokal dan pemuda hijau. Proyek penanaman difokuskan pada pemulihan lahan terdegradasi dan pencegahan sedimentasi.",
-    treeTypes: ["Petai", "Rambutan", "Matoa", "Kayu Manis"],
+    disaster2025: DISASTER_2025_IMPACT,
     image: "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=1000&q=80",
     badgeColor: "lime"
   }
@@ -91,10 +91,10 @@ export const TIMELINE_DATA = [
   },
   {
     step: 4,
-    title: "Pengumuman Peserta Lolos",
+    title: "Konfirmasi Tim Peserta",
     date: "15 November 2026",
     status: "Mendatang",
-    description: "Publikasi tim peserta terpilih yang berhak mendapatkan bantuan bibit unggul, pupuk organik, dan pendampingan WebGIS.",
+    description: "Informasi teknis bagi tim peserta serta pendampingan penggunaan WebGIS.",
     icon: "CheckCircle2"
   },
   {
@@ -107,90 +107,21 @@ export const TIMELINE_DATA = [
   },
   {
     step: 6,
-    title: "Penjurian & Evaluasi Kelangsungan Hidup",
+    title: "Pemantauan Kelangsungan Hidup Tanaman",
     date: "01 - 10 Des 2026",
     status: "Mendatang",
-    description: "Monitoring dan verifikasi lapangan oleh dewan juri independen menggunakan geotagging WebGIS untuk mengukur tingkat kelangsungan hidup pohon.",
-    icon: "Award"
+    description: "Pemantauan lapangan menggunakan geotagging WebGIS untuk mencatat kondisi dan kelangsungan hidup tanaman.",
+    icon: "MapPin"
   },
   {
     step: 7,
-    title: "Pengumuman Pemenang & Anugerah",
+    title: "Publikasi Hasil Pemantauan",
     date: "15 Desember 2026",
     status: "Mendatang",
-    description: "Malam penganugerahan pemenang, pembagian total hadiah Rp 100.000.000, serta penyerahan sertifikat apresiasi hijau.",
-    icon: "Trophy"
+    description: "Publikasi hasil pemantauan, tingkat keberhasilan, dan tindak lanjut aksi penanaman.",
+    icon: "CheckCircle2"
   }
 ];
-
-export const PRIZE_DATA = {
-  total: 100000000,
-  categories: [
-    {
-      rank: "Juara 1 (Terbaik Utama)",
-      amount: "Rp 40.000.000",
-      rawAmount: 40000000,
-      rewards: [
-        "Uang Pembinaan Rp 40.000.000",
-        "Piala Bergilir Wali Kota Padang & Gubernur Sumatera Barat",
-        "Sertifikat Penghargaan Konservasi Utama",
-        "Paket Alat Perawatan & Pupuk Organik 1 Tahun",
-        "Pendampingan WebGIS Komunitas Penuh"
-      ],
-      color: "from-amber-500 to-yellow-600",
-      icon: "Crown"
-    },
-    {
-      rank: "Juara 2 (Runner Up)",
-      amount: "Rp 25.000.000",
-      rawAmount: 25000000,
-      rewards: [
-        "Uang Pembinaan Rp 25.000.000",
-        "Trofi Runner-Up & Piagam Kehormatan",
-        "Paket Bibit Pohon Produksi Unggul (500 Bibit)",
-        "Sertifikat Penghargaan Hijau"
-      ],
-      color: "from-slate-400 to-slate-600",
-      icon: "Medal"
-    },
-    {
-      rank: "Juara 3 (Juara III)",
-      amount: "Rp 15.000.000",
-      rawAmount: 15000000,
-      rewards: [
-        "Uang Pembinaan Rp 15.000.000",
-        "Trofi Juara III & Piagam Kehormatan",
-        "Paket Bibit Pohon Produksi Unggul (300 Bibit)",
-        "Sertifikat Penghargaan Hijau"
-      ],
-      color: "from-amber-700 to-amber-900",
-      icon: "Award"
-    },
-    {
-      rank: "Harapan 1, 2, & 3",
-      amount: "Rp 10.000.000",
-      rawAmount: 10000000,
-      rewards: [
-        "Uang Pembinaan total Rp 10.000.000 (@ Rp 3.330.000)",
-        "Plakat Harapan & Sertifikat Partisipasi Tingkat Provinsi"
-      ],
-      color: "from-emerald-600 to-teal-700",
-      icon: "Star"
-    },
-    {
-      rank: "Kategori Khusus (Inovasi & Favorit)",
-      amount: "Rp 10.000.000",
-      rawAmount: 10000000,
-      rewards: [
-        "Inovasi Teknik Penanaman Ramah Lingkungan (Rp 5.000.000)",
-        "Komunitas Terfavorit Pilihan Warga (Rp 5.000.000)",
-        "Plakat Khusus Dewan Juri"
-      ],
-      color: "from-indigo-600 to-purple-700",
-      icon: "Trophy"
-    }
-  ]
-};
 
 export const NEWS_DATA = [
   {
@@ -224,21 +155,6 @@ export const NEWS_DATA = [
     Dengan penanaman 60.000 bibit ini, diperkirakan tingkat retensi air hujan akan meningkat hingga 35%, mengurangi risiko debit limpasan ekstrem saat curah hujan tinggi di puncak musim penghujan.`,
     image: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=1000&q=80",
     readTime: "6 menit"
-  },
-  {
-    id: "berita-3",
-    title: "Total Hadiah Rp 100 Juta Siap Diperebutkan Komunitas Hijau & Sekolah",
-    category: "Pengumuman",
-    date: "10 September 2026",
-    author: "Dr. Hafiz",
-    summary: "Ajang apresiasi terbesar bagi pegiat lingkungan Sumatera Barat kembali hadir dengan total hadiah Rp 100.000.000 dan trofi bergilir.",
-    content: `Festival Tanam Hulu 2026 tidak hanya menjadi gerakan konservasi, tetapi juga ruang apresiasi dan kompetisi positif bagi seluruh elemen masyarakat. Panitia mengalokasikan total hadiah sebesar Rp 100.000.000 untuk kategori kelompok terbaik, sekolah hijau, dan inovasi pemeliharaan pohon.
-
-    Penilaian tidak hanya diambil dari jumlah pohon yang ditanam, tetapi juga kerapihan pengorganisasian, persentase daya tumbuh hidup (survival rate) dalam kurun waktu pemantauan, serta keterlibatan warga lokal.
-
-    Pendaftaran proposal aksi tanam akan dibuka resmi mulai 25 Oktober 2026 mendatang melalui website resmi ini.`,
-    image: "https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&w=1000&q=80",
-    readTime: "3 menit"
   },
   {
     id: "berita-4",

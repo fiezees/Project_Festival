@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useId, useState, useEffect, useRef } from 'react';
 import { motion, useInView, AnimatePresence } from 'framer-motion';
 import {
   MapPin, Trees, ArrowUpRight, Menu, X, ChevronRight, ChevronLeft,
@@ -8,6 +8,11 @@ import {
   Mail, Phone, Globe, User,
 } from 'lucide-react';
 import galapagosLogo from '../assets/logo-galapagos.png';
+import watermark1 from '../assets/watermark1.png';
+import watermark2 from '../assets/watermark2.png';
+import watermark3 from '../assets/watermark3.png';
+import watermark4 from '../assets/watermark4.png';
+import festivalLogo from '../assets/LogoFestival.png';
 
 // ── Custom brand SVG icons (not in lucide-react v1.48) ────────────────────────
 const InstagramIcon = ({ size = 16, ...p }) => (
@@ -62,21 +67,26 @@ function FadeIn({ children, delay = 0, dir = 'up', className = '' }) {
   );
 }
 
-// ── Topography background pattern ─────────────────────────────────────────────
-function Topo({ opacity = 0.06, color = '#1B3226', id = 'tp0' }) {
+// ── Galapagos watermark background ────────────────────────────────────────────
+function WatermarkPattern({ opacity = 0.32 }) {
+  const patternId = `galapagos-watermark-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
+
   return (
-    <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ opacity }}>
+    <svg
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      style={{ opacity }}
+      aria-hidden="true"
+      focusable="false"
+    >
       <defs>
-        <pattern id={id} x="0" y="0" width="120" height="120" patternUnits="userSpaceOnUse">
-          <path d="M0 60 Q15 40 30 60 Q45 80 60 60 Q75 40 90 60 Q105 80 120 60"
-            fill="none" stroke={color} strokeWidth="1.2" />
-          <path d="M0 90 Q15 70 30 90 Q45 110 60 90 Q75 70 90 90 Q105 110 120 90"
-            fill="none" stroke={color} strokeWidth="1.2" />
-          <path d="M0 30 Q15 10 30 30 Q45 50 60 30 Q75 10 90 30 Q105 50 120 30"
-            fill="none" stroke={color} strokeWidth="1.2" />
+        <pattern id={patternId} width="320" height="280" patternUnits="userSpaceOnUse">
+          <image href={watermark1} x="10" y="12" width="130" height="78" preserveAspectRatio="xMidYMid meet" />
+          <image href={watermark2} x="188" y="8" width="82" height="108" preserveAspectRatio="xMidYMid meet" />
+          <image href={watermark3} x="18" y="155" width="92" height="92" preserveAspectRatio="xMidYMid meet" />
+          <image href={watermark4} x="188" y="150" width="112" height="105" preserveAspectRatio="xMidYMid meet" />
         </pattern>
       </defs>
-      <rect width="100%" height="100%" fill={`url(#${id})`} />
+      <rect width="100%" height="100%" fill={`url(#${patternId})`} />
     </svg>
   );
 }
@@ -89,13 +99,10 @@ function Navbar({ onNavigateTo }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeId, setActiveId] = useState('');
 
-  // Links ordered exactly as the sections appear on the page ↓
   const navLinks = [
-    { label: 'Cerita Kami',      id: 'cerita' },
-    { label: 'Ruang Gerak',      id: 'ruang-gerak' },
-    { label: 'Jejak Dampak',     id: 'dampak' },
-    { label: 'Kawan Galapagos',  id: 'komunitas' },
-    { label: 'Kabar Alam',       id: 'kabar' },
+    { label: 'Yayasan', id: 'organisasi-yayasan' },
+    { label: 'Perkumpulan', id: 'organisasi-perkumpulan' },
+    { label: 'SISPALA', id: 'organisasi-sispala' },
   ];
 
   useEffect(() => {
@@ -104,18 +111,11 @@ function Navbar({ onNavigateTo }) {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Intersection Observer → highlight active section in navbar
-  useEffect(() => {
-    const els = navLinks.map(l => document.getElementById(l.id)).filter(Boolean);
-    const obs = new IntersectionObserver(
-      entries => entries.forEach(e => { if (e.isIntersecting) setActiveId(e.target.id); }),
-      { threshold: 0.25, rootMargin: '-100px 0px -40% 0px' }
-    );
-    els.forEach(el => obs.observe(el));
-    return () => obs.disconnect();
-  }, []);
-
-  const handleNav = (id) => { setMenuOpen(false); goTo(id); };
+  const handleNav = (id) => {
+    setMenuOpen(false);
+    setActiveId(id);
+    onNavigateTo(id);
+  };
 
   return (
     <div className="fixed top-5 inset-x-0 mx-auto max-w-6xl z-50 px-4">
@@ -164,12 +164,12 @@ function Navbar({ onNavigateTo }) {
         {/* CTA + hamburger */}
         <div className="flex items-center gap-2">
           <motion.button
-            onClick={() => onNavigateTo('peta')}
+            onClick={() => onNavigateTo('home')}
             whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
             className="hidden sm:flex items-center gap-2 text-sm font-black px-4 py-2 rounded-full"
             style={{ background: C.yellow, color: C.forest }}>
-            <Trees size={14} />
-            <span>Peta Tanam Hulu</span>
+            <img src={festivalLogo} alt="" className="h-6 w-6 rounded-full bg-white object-contain p-0.5" />
+            <span>Festival Tanam Hulu</span>
             <ArrowUpRight size={13} />
           </motion.button>
           <button className="md:hidden p-2 rounded-full" style={{ color: C.forest }}
@@ -223,7 +223,7 @@ function HeroSection({ onNavigateTo }) {
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden pt-32 pb-20"
       style={{ background: C.bgCream }}>
-      <Topo opacity={0.07} id="tp-hero" />
+      <WatermarkPattern opacity={0.36} />
       <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 w-full">
         <div className="grid lg:grid-cols-12 gap-10 lg:gap-16 items-center">
 
@@ -240,7 +240,7 @@ function HeroSection({ onNavigateTo }) {
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight"
                 style={{ color: C.forest }}>
                 Halo! Kami<br />
-                Yayasan{' '}
+                Perkumpulan{' '}
                 <span className="relative inline-block">
                   <span className="relative z-10">Galapagos.</span>
                   <svg className="absolute -bottom-1 left-0 w-full" viewBox="0 0 200 12" fill="none">
@@ -267,17 +267,22 @@ function HeroSection({ onNavigateTo }) {
                   Kenali Cerita Kami <ChevronRight size={18} />
                 </motion.button>
                 <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-                  onClick={() => onNavigateTo('peta')}
-                  className="flex items-center gap-2 px-6 py-3.5 rounded-full font-bold text-base"
+                  onClick={() => onNavigateTo('home')}
+                  className="flex items-center gap-3 px-5 py-3 rounded-full font-bold text-base shadow-md"
                   style={{ background: C.yellow, color: C.forest }}>
-                  Jelajahi WebGIS Tanam Hulu <ArrowUpRight size={18} />
+                  <img src={festivalLogo} alt="" className="h-9 w-9 rounded-full bg-white object-contain p-0.5" />
+                  <span className="text-left leading-tight">
+                    <span className="block">Festival Tanam Hulu</span>
+                    <span className="block text-xs font-semibold opacity-75">Kunjungi situs FTH</span>
+                  </span>
+                  <ArrowUpRight size={18} />
                 </motion.button>
               </div>
             </FadeIn>
 
             <FadeIn delay={0.5}>
               <div className="flex flex-wrap gap-6 pt-4">
-                {[['38+','Tahun Berdiri'],['60K+','Pohon Ditanam'],['500+','Kawan Relawan']].map(([v,l]) => (
+                {[['38+','Tahun Berdiri'],['500+','Kawan Relawan']].map(([v,l]) => (
                   <div key={l} className="flex flex-col">
                     <span className="text-2xl font-black" style={{ color: C.yellow }}>{v}</span>
                     <span className="text-xs font-medium" style={{ color: C.brown }}>{l}</span>
@@ -307,7 +312,7 @@ function HeroSection({ onNavigateTo }) {
                   }} />
                 </motion.div>
 
-                {/* Rotating heritage seal badge with official Galapagos logo */}
+                {/* Rotating heritage seal badge with the Festival Tanam Hulu logo */}
                 <div className="absolute -top-7 -right-7 z-20">
                   <div className="relative w-36 h-36 rounded-full shadow-2xl flex items-center justify-center cursor-default select-none group"
                     style={{ background: C.bgCream, border: `2.5px solid ${C.forest}` }}>
@@ -328,18 +333,18 @@ function HeroSection({ onNavigateTo }) {
                         </defs>
                         <text style={{ fill: C.forest, fontSize: '9px', fontWeight: '900', letterSpacing: '0.18em' }}>
                           <textPath href="#hero-seal-path" startOffset="0%">
-                            ✦ YAYASAN GALAPAGOS ✦ PADANG 1986 
+                            ✦ FESTIVAL TANAM HULU ✦ PADANG 2026
                           </textPath>
                         </text>
                       </svg>
                     </motion.div>
 
-                    {/* Official Galapagos Logo in center medallion */}
+                    {/* Festival Tanam Hulu logo in center medallion */}
                     <div className="relative z-10 w-20 h-20 rounded-full overflow-hidden shadow-md flex items-center justify-center transition-transform duration-300 group-hover:scale-105"
                       style={{ border: `2px solid ${C.forest}` }}>
                       <img
-                        src={galapagosLogo}
-                        alt="Logo Yayasan Galapagos"
+                        src={festivalLogo}
+                        alt="Logo Festival Tanam Hulu"
                         className="w-full h-full object-contain rounded-full"
                       />
                     </div>
@@ -415,7 +420,7 @@ function HeroSection({ onNavigateTo }) {
 // MARQUEE BANNER
 // ═══════════════════════════════════════════════════════════════════════════════
 function MarqueeBanner() {
-  const text = '✦ SALAM LESTARI ✦ MENJAGA HULU MERAWAT HILIR ✦ YAYASAN GALAPAGOS LESTARI INDONESIA ✦ BERGERAK BERSAMA KAWAN ✦ SEJAK 31 AGUSTUS 1986 ';
+  const text = '✦ SALAM LESTARI ✦ MENJAGA HULU MERAWAT HILIR ✦ PERKUMPULAN GALAPAGOS ✦ BERGERAK BERSAMA KAWAN ✦ SEJAK 31 AGUSTUS 1986 ';
   const rep = text.repeat(4);
   return (
     <div className="relative overflow-hidden py-4 -rotate-1 scale-105 my-10"
@@ -558,27 +563,26 @@ function BentoExplorer({ onNavigateTo }) {
 
         {/* Bottom: Full-width mustard CTA card */}
         <FadeIn delay={0.2}>
-          <motion.div
-            className="relative overflow-hidden rounded-3xl cursor-pointer"
-            style={{ height: '7rem', background: C.yellow }}
+          <motion.button
+            type="button"
+            className="relative flex w-full items-center overflow-hidden rounded-3xl border-0 p-0 text-left cursor-pointer"
+            style={{ height: '8rem', background: C.yellow }}
             whileHover={{ scale: 1.01 }}
             transition={{ type: 'spring', stiffness: 300, damping: 25 }}
             onHoverStart={() => setHovered('webgis')}
             onHoverEnd={() => setHovered(null)}
-            onClick={() => onNavigateTo('peta')}>
+            onClick={() => onNavigateTo('home')}>
 
-            {/* Subtle topo pattern */}
-            <div className="absolute inset-0 opacity-10">
-              <Topo opacity={1} color={C.forest} id="tp-bento" />
+            <div className="absolute inset-0" style={{ opacity: 0.35 }}>
+              <WatermarkPattern opacity={1} />
             </div>
 
             {/* Decorative circle */}
             <div className="absolute right-0 top-1/2 -translate-y-1/2 w-40 h-40 rounded-full opacity-15"
               style={{ background: C.forest, transform: 'translate(20%,-50%)' }} />
 
-            <div className="relative z-10 h-full flex items-center justify-between px-8">
+            <div className="relative z-10 flex h-full w-full items-center justify-between gap-4 px-5 sm:px-8">
               <div>
-                {/* Papan penunjuk mustard special */}
                 <motion.div
                   animate={{ rotate: hovered === 'webgis' ? 0 : -1, scale: hovered === 'webgis' ? 1.04 : 1 }}
                   transition={{ type: 'spring', stiffness: 300 }}
@@ -587,13 +591,18 @@ function BentoExplorer({ onNavigateTo }) {
                   <Trees size={13} style={{ color: C.yellow }} />
                   <span className="text-[11px] font-black tracking-widest uppercase"
                     style={{ color: C.yellow }}>
-                    EKSPLORASI SPESIAL: PETA 60.000 POHON ↗
+                    KUNJUNGI FESTIVAL TANAM HULU ↗
                   </span>
                 </motion.div>
                 <p className="text-sm font-semibold opacity-80" style={{ color: C.forest }}>
-                  Jelajahi WebGIS interaktif Festival Tanam Hulu — titik penanaman & data DAS Batang Kuranji.
+                  Kunjungi Festival Tanam Hulu dan jelajahi aksi konservasi DAS Batang Kuranji.
                 </p>
               </div>
+              <img
+                src={festivalLogo}
+                alt="Logo Festival Tanam Hulu"
+                className="h-16 w-16 shrink-0 rounded-full bg-white object-contain p-1 shadow-sm sm:h-20 sm:w-20"
+              />
               <motion.div
                 animate={{ x: hovered === 'webgis' ? 5 : 0, y: hovered === 'webgis' ? -5 : 0 }}
                 transition={{ type: 'spring', stiffness: 400 }}
@@ -602,7 +611,7 @@ function BentoExplorer({ onNavigateTo }) {
                 <ArrowUpRight size={20} style={{ color: C.yellow }} />
               </motion.div>
             </div>
-          </motion.div>
+          </motion.button>
         </FadeIn>
       </div>
     </section>
@@ -632,7 +641,7 @@ function StorySection() {
     },
     {
       year: 'Kini', phase: 'Menjaga Hulu & Masa Depan',
-      desc: 'Bertransformasi menjadi Yayasan Galapagos Lestari Indonesia, kini bersinergi dengan masyarakat, pemerintah, dan kaum muda dalam rehabilitasi hutan, pembinaan Siswa Tanggap Bencana, dan pelestarian DAS Batang Kuranji.',
+      desc: 'Perkumpulan Galapagos kini bersinergi dengan masyarakat, pemerintah, dan kaum muda dalam rehabilitasi hutan, pembinaan Siswa Tanggap Bencana, dan pelestarian DAS Batang Kuranji.',
       color: C.forest,
       img: 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=400&q=80',
       fallback: 'https://images.unsplash.com/photo-1573489235842-05dddb86e5f7?w=400&q=80',
@@ -642,7 +651,7 @@ function StorySection() {
 
   return (
     <section id="cerita" className="scroll-mt-28 py-24 relative overflow-hidden" style={{ background: C.bgDark }}>
-      <Topo opacity={0.05} color={C.sage} id="tp-story" />
+      <WatermarkPattern opacity={0.3} />
       <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6">
         <FadeIn>
           <div className="text-center mb-16">
@@ -708,7 +717,6 @@ function StorySection() {
 function ImpactSection() {
   const stats = [
     { value: '38+',     unit: 'Tahun',   desc: 'Mengabdi & Menjaga Alam (Sejak 1986)' },
-    { value: '60.000+', unit: 'Pohon',   desc: 'Ditanam di Kawasan Hulu DAS' },
     { value: '500+',    unit: 'Orang',   desc: 'Kawan Relawan & Siswa Tanggap Bencana' },
     { value: 'Puluhan', unit: 'Nagari',  desc: 'Komunitas Lokal Diberdayakan' },
   ];
@@ -718,7 +726,7 @@ function ImpactSection() {
         <FadeIn>
           <div className="relative overflow-hidden p-10 md:p-16"
             style={{ background: C.forest, borderRadius: '2.5rem' }}>
-            <Topo opacity={0.08} color={C.yellow} id="tp-impact" />
+            <WatermarkPattern opacity={0.3} />
             <div className="relative z-10">
               <div className="text-center mb-12">
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold mb-4"
@@ -729,7 +737,7 @@ function ImpactSection() {
                   Angka-Angka yang<br /><span style={{ color: C.yellow }}>Bercerita Nyata.</span>
                 </h2>
               </div>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {stats.map((s, i) => (
                   <FadeIn key={s.unit} delay={i * 0.12}>
                     <motion.div whileHover={{ scale: 1.04, y: -4 }}
@@ -779,7 +787,7 @@ function ProgramsSection({ onNavigateTo }) {
               Di Mana Kami Bergerak?
             </h2>
             <p className="mt-4 text-base max-w-lg mx-auto" style={{ color: C.brown }}>
-              Tiga pilar utama yang menopang setiap langkah Yayasan Galapagos Lestari Indonesia di lapangan.
+              Tiga pilar utama yang menopang setiap langkah Perkumpulan Galapagos di lapangan.
             </p>
           </div>
         </FadeIn>
@@ -1046,8 +1054,8 @@ function NewsSection() {
     {
       category: 'Aksi Lestari', categoryColor: C.forest,
       date: '12 Oktober 2026',
-      title: 'Festival Tanam Hulu 2026: Ribuan Pohon, Satu Tekad Menjaga Alam Ranah Minang',
-      excerpt: 'Festival Tanam Hulu tahun ini mencatat rekor baru: lebih dari 5.000 bibit pohon endemik Sumatera ditanam dalam satu hari oleh 300+ kawan relawan...',
+      title: 'Festival Tanam Hulu 2026: Bergerak Bersama Menjaga Alam Ranah Minang',
+      excerpt: 'Festival Tanam Hulu mengajak relawan dan masyarakat bergerak bersama menjaga ekosistem hulu sungai dan sumber air di Sumatera Barat...',
       img: 'https://images.unsplash.com/photo-1573489235842-05dddb86e5f7?w=400&q=80',
       fallback: 'https://images.unsplash.com/photo-1534361960057-19f4434a327d?w=400&q=80',
     },
@@ -1137,7 +1145,7 @@ function YayasanFooter({ onNavigateTo }) {
                 Galapagos<span style={{ color: C.yellow }}>.</span>
               </span>
               <p className="text-sm leading-relaxed mt-4 mb-5 opacity-70" style={{ color: C.bgCream }}>
-                Yayasan Galapagos Lestari Indonesia — lahir dari semangat pecinta alam Padang pada 31 Agustus 1986.
+                Perkumpulan Galapagos — lahir dari semangat pecinta alam Padang pada 31 Agustus 1986.
                 Bergerak bersama warga menjaga kelestarian hutan hulu sungai, mitigasi bencana, dan edukasi lingkungan di Sumatera Barat.
               </p>
               <div className="flex items-start gap-2 text-sm" style={{ color: `${C.bgCream}80` }}>
@@ -1210,7 +1218,7 @@ function YayasanFooter({ onNavigateTo }) {
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4"
           style={{ borderTop: '1px solid rgba(247,243,232,0.10)' }}>
           <p className="text-xs opacity-40" style={{ color: C.bgCream }}>
-            © 2026 Yayasan Galapagos Lestari Indonesia. Berdiri sejak 31 Agustus 1986 di Padang, Sumatera Barat.
+            © 2026 Perkumpulan Galapagos. Berdiri sejak 31 Agustus 1986 di Padang, Sumatera Barat.
           </p>
           <div className="flex items-center gap-2">
             <Leaf size={12} style={{ color: C.yellow }} />

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Tooltip, useMap } from 'react-leaflet';
 import L from 'leaflet';
-import { MapPin, TreePine, ArrowUpRight } from 'lucide-react';
+import { AlertTriangle, MapPin, ArrowUpRight } from 'lucide-react';
 import { LOCATIONS_DATA } from '../data/mockData';
 import ScrollReveal from './ScrollReveal';
 
@@ -71,13 +71,13 @@ export default function LocationsSection({ onSelectLocationMap }) {
         <ScrollReveal>
           <div className="flex flex-col gap-2">
             <div className="text-sm tracking-wide text-[#2E8068] uppercase font-semibold">
-              Lokasi Kegiatan
+              Kawasan Aksi Tanam Hulu
             </div>
             <h2 className="text-3xl lg:text-4xl font-bold text-[#063F35]">
-              Empat Lokasi, Satu Gerakan
+              Empat Kawasan, Satu Gerakan
             </h2>
             <p className="text-[#374151] max-w-2xl mt-2 text-base">
-              Festival Tanam Hulu difokuskan pada empat lokasi strategis di sekitar daerah aliran sungai untuk memaksimalkan dampak restorasi lingkungan. Arahkan kursor atau klik kartu untuk fokus pada peta interaktif.
+              Festival Tanam Hulu berfokus pada kawasan aksi tanam hulu untuk memaksimalkan dampak restorasi lingkungan. Arahkan kursor atau klik kartu untuk fokus pada peta interaktif.
             </p>
           </div>
         </ScrollReveal>
@@ -126,27 +126,28 @@ export default function LocationsSection({ onSelectLocationMap }) {
                     <h3 className={`text-lg font-semibold transition-colors ${isActive ? 'text-[#2E8068]' : 'text-[#063F35]'}`}>
                       {loc.name}
                     </h3>
-                    <div className="flex items-center gap-1.5 mt-1 text-[#2E8068] font-semibold text-sm">
-                      <TreePine className="w-4 h-4" />
-                      <span>{loc.targetTrees.toLocaleString('id-ID')} Lubang</span>
+                    <div className={`flex items-center gap-1.5 mt-1 font-semibold text-sm ${loc.disaster2025 ? 'text-amber-700' : 'text-[#2E8068]'}`}>
+                      <AlertTriangle className="w-4 h-4 shrink-0" />
+                      <span>Kondisi Dampak Bencana 2025</span>
                     </div>
                   </div>
 
-                  <p className="text-sm text-[#374151] line-clamp-2">
-                    {loc.description}
+                  <p className={`text-sm text-[#374151] ${loc.disaster2025 ? '' : 'line-clamp-2'}`}>
+                    {loc.disaster2025.summary}
                   </p>
 
-                  {/* Tree species chips */}
-                  <div className="flex flex-wrap gap-1.5 pt-1">
-                    {loc.treeTypes.slice(0, 3).map((tree, idx) => (
-                      <span
-                        key={idx}
-                        className="text-xs bg-[#063F35]/5 text-[#2E8068] px-2 py-0.5 rounded"
-                      >
-                        {tree}
-                      </span>
-                    ))}
-                  </div>
+                  {loc.disaster2025 && (
+                    <a
+                      href={loc.disaster2025.sourceUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={(event) => event.stopPropagation()}
+                      className="text-xs font-semibold text-[#2E8068] underline underline-offset-2"
+                    >
+                      Sumber: {loc.disaster2025.sourceLabel}
+                    </a>
+                  )}
+
                 </div>
 
                 {/* Card Footer */}
@@ -236,10 +237,10 @@ export default function LocationsSection({ onSelectLocationMap }) {
                         <div>
                           <h4 className="text-sm font-semibold text-[#063F35]">{loc.name}</h4>
                           <p className="text-xs text-[#6b7280] font-medium mt-1">
-                            Kecamatan {loc.kecamatan} • {loc.targetTrees.toLocaleString('id-ID')} Lubang
+                            Kecamatan {loc.kecamatan}
                           </p>
                           <p className="text-xs text-[#374151] mt-1 line-clamp-2">
-                            {loc.description}
+                            {loc.disaster2025.summary}
                           </p>
                         </div>
                         <button
@@ -263,7 +264,7 @@ export default function LocationsSection({ onSelectLocationMap }) {
               <div className="flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-[#2E8068]" />
                 <span className="text-[#374151]">
-                  Fokus area: <strong className="text-[#2E8068] font-semibold">{activeLoc.name}</strong> (Kec. {activeLoc.kecamatan}) — {activeLoc.targetTrees.toLocaleString('id-ID')} Lubang Tanam
+                  Kawasan aktif: <strong className="text-[#2E8068] font-semibold">{activeLoc.name}</strong> (Kec. {activeLoc.kecamatan})
                 </span>
               </div>
 

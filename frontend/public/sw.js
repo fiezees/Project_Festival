@@ -1,11 +1,11 @@
 // Service Worker for Festival Tanam Hulu 2026 PWA
-const CACHE_NAME = 'festival-tanam-hulu-v3';
+const CACHE_NAME = 'festival-tanam-hulu-v4';
 const PRECACHE_URLS = [
   '/',
   '/index.html',
   '/manifest.json',
   '/favicon.svg?v=3',
-  '/logo-festival.png?v=3',
+  '/logo-festival.png?v=4',
   '/logo-galapagos.png?v=2',
 ];
 

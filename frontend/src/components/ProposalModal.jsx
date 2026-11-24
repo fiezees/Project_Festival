@@ -384,17 +384,17 @@ export default function ProposalModal({ isOpen, onClose }) {
                     <div className="p-3 rounded-xl bg-white border border-gray-200 text-xs text-gray-700 leading-relaxed">
                       {trackResult.status === 'Diterima' && (
                         <p className="text-emerald-800">
-                          🎉 <strong>Selamat!</strong> Proposal tim Anda telah dinyatakan <strong>DITERIMA</strong> dan lolos seleksi berkas Festival Tanam Hulu 2026. Panitia akan segera menghubungi ketua tim untuk persiapan technical meeting.
+                          🎉 <strong>Selamat!</strong> Pendaftaran tim Anda telah dinyatakan <strong>DITERIMA</strong> untuk mengikuti Festival Tanam Hulu 2026. Panitia akan segera menghubungi ketua tim untuk persiapan technical meeting.
                         </p>
                       )}
                       {trackResult.status === 'Ditinjau' && (
                         <p className="text-sky-800">
-                          ⏳ <strong>Sedang Ditinjau:</strong> Berkas dokumen proposal tim Anda sedang dalam proses kurasi & penilaian oleh dewan penilai. Pastikan kontak WhatsApp aktif.
+                          ⏳ <strong>Sedang Diverifikasi:</strong> Panitia sedang memeriksa kelengkapan berkas proposal Anda. Pastikan kontak WhatsApp aktif.
                         </p>
                       )}
                       {trackResult.status === 'Ditolak' && (
                         <p className="text-rose-800">
-                          Terima kasih atas partisipasi Anda. Berdasarkan hasil kurasi, proposal tim Anda belum dapat diterima pada periode kali ini. Tetap semangat berkarya!
+                          Terima kasih atas partisipasi Anda. Setelah pemeriksaan persyaratan, pendaftaran tim Anda belum dapat diterima pada periode kali ini.
                         </p>
                       )}
                       {trackResult.status === 'Menunggu' && (
@@ -496,7 +496,7 @@ export default function ProposalModal({ isOpen, onClose }) {
                     </label>
                     <textarea
                       rows={2}
-                      placeholder="Ceritakan singkat rencana lokasi tanam, jenis pohon, atau anggota..."
+                      placeholder="Ceritakan singkat rencana kawasan aksi, jenis pohon, atau anggota..."
                       value={formData.notes}
                       onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                       className="w-full bg-white border border-gray-300 rounded-lg px-3.5 py-1.5 text-xs sm:text-sm text-gray-900 focus:outline-none focus:border-[#2E8068] focus:ring-1 focus:ring-[#2E8068]/30 transition-all placeholder:text-gray-400 resize-none"
