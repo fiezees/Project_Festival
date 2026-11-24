@@ -217,31 +217,191 @@ function Navbar({ onNavigateTo }) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════════════
+// HERO DECORATIVE VECTOR LAYERS (100% HD crisp SVG — zero blur)
+// ═══════════════════════════════════════════════════════════════════════════════
+function GoldLeafFlourish({ direction = 'left' }) {
+  const flip = direction === 'right' ? 'scale(-1, 1)' : undefined;
+  return (
+    <svg
+      width="20"
+      height="13"
+      viewBox="0 0 26 16"
+      fill="none"
+      className="shrink-0"
+      style={flip ? { transform: flip } : undefined}
+      aria-hidden="true"
+    >
+      <path d="M24 8 C17 8, 12 4.5, 4 1.5 C8.5 5.5, 13.5 7.5, 24 8 Z" stroke={C.yellowH} strokeWidth="1.2" strokeLinejoin="round" />
+      <path d="M24 8 C16 8, 9 8, 1 8 C9 8, 16 8, 24 8 Z" stroke={C.yellowH} strokeWidth="1.15" strokeLinecap="round" />
+      <path d="M24 8 C17 8, 12 11.5, 4 14.5 C8.5 10.5, 13.5 8.5, 24 8 Z" stroke={C.yellowH} strokeWidth="1.2" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function ButtonLeafWreath({ side = 'left' }) {
+  const flip = side === 'right' ? 'scale(-1, 1)' : undefined;
+  return (
+    <svg
+      width="22"
+      height="40"
+      viewBox="0 0 44 76"
+      fill="none"
+      className="pointer-events-none shrink-0 select-none transition-transform duration-300 group-hover:scale-105"
+      style={flip ? { transform: flip } : undefined}
+      aria-hidden="true"
+    >
+      <path d="M35 67 C19 59, 12 47, 13 37 C14 26, 22 15, 34 8" stroke="#3F5B35" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M29 12 C27 6, 31 3, 35 3 C35 8, 33 11, 29 12 Z" fill="#8D8238" />
+      <path d="M20 20 C14 16, 14 11, 18 9 C22 12, 23 16, 20 20 Z" fill="#6D7639" />
+      <path d="M13 33 C6 32, 3 27, 6 23 C11 24, 14 28, 13 33 Z" fill="#4C683D" />
+      <path d="M13 45 C6 45, 3 40, 6 36 C11 36, 14 40, 13 45 Z" fill="#3B5636" />
+      <path d="M19 56 C12 58, 9 54, 11 49 C16 49, 19 52, 19 56 Z" fill="#324D31" />
+      <path d="M27 63 C21 66, 18 63, 19 59 C24 58, 27 60, 27 63 Z" fill="#2B442A" />
+    </svg>
+  );
+}
+
+function DetailedDryLeaf({ w, c1, c2, vein = '#FFF3CE', className = '', style, animate, transition }) {
+  return (
+    <motion.svg
+      width={w}
+      height={w * 0.56}
+      viewBox="0 0 48 27"
+      fill="none"
+      className={className}
+      style={style}
+      animate={animate}
+      transition={transition}
+    >
+      {/* Stem */}
+      <path d="M1 15.5 C3.5 15, 5.5 14.5, 7 14" stroke={c2} strokeWidth="1.3" strokeLinecap="round" />
+      {/* Leaf blade with organic asymmetric contour */}
+      <path d="M6 14 C13 4, 29 2, 46 11 C36 22, 18 25, 6 14 Z" fill={c1} />
+      {/* Shaded lower half */}
+      <path d="M6 14 C18 25, 36 22, 46 11 C31 13.5, 17 15, 6 14 Z" fill={c2} fillOpacity="0.48" />
+      {/* Midrib vein */}
+      <path d="M7 14 C19 12, 33 11.5, 44 11.2" stroke={vein} strokeOpacity="0.58" strokeWidth="0.95" strokeLinecap="round" />
+      {/* Delicate lateral veins */}
+      <path d="M15 13.2 L19.5 8.2 M23 12.4 L28 7.5 M31 11.8 L35.5 8.2 M17 13.5 L21.5 18.2 M25 12.8 L29.5 17.8 M33 12 L37 15.8"
+        stroke={vein} strokeOpacity="0.42" strokeWidth="0.7" strokeLinecap="round" />
+    </motion.svg>
+  );
+}
+
+function CtaBrushingLeaves() {
+  const leaves = [
+    { style: { left: '-16px', top: '-10px', rotate: '-28deg' },   w: 24, c1: '#6F8B56', c2: '#465D36', delay: 0.1 },
+    { style: { right: '-12px', top: '-12px', rotate: '22deg' },  w: 28, c1: '#D8A234', c2: '#9E6E1E', delay: 0.35 },
+    { style: { left: '16px', bottom: '-10px', rotate: '15deg' }, w: 22, c1: '#C9832B', c2: '#8B541A', delay: 0.55 },
+    { style: { right: '-20px', bottom: '-8px', rotate: '-18deg' }, w: 25, c1: '#B58D32', c2: '#785A1E', delay: 0.75 },
+  ];
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-visible z-20 select-none" aria-hidden="true">
+      {leaves.map((l, idx) => (
+        <DetailedDryLeaf
+          key={idx}
+          w={l.w}
+          c1={l.c1}
+          c2={l.c2}
+          className="absolute"
+          style={l.style}
+          animate={{ y: [0, -3, 0] }}
+          transition={{ duration: 4 + idx * 0.5, repeat: Infinity, ease: 'easeInOut', delay: l.delay }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function FlyingDryLeaves() {
+  const leaves = [
+    { x: '43%', y: '18%', w: 20, rot: 34,  c1: '#C88D2E', c2: '#8B5D1B', delay: 0.1 },
+    { x: '48%', y: '34%', w: 24, rot: -22, c1: '#D8A234', c2: '#996A1D', delay: 0.4 },
+    { x: '45%', y: '52%', w: 28, rot: 18,  c1: '#B87B28', c2: '#7D4F16', delay: 0.7 },
+    { x: '52%', y: '66%', w: 22, rot: -35, c1: '#8D8238', c2: '#5B5424', delay: 0.3 },
+    { x: '38%', y: '78%', w: 26, rot: 26,  c1: '#D49424', c2: '#966516', delay: 0.6 },
+    { x: '49%', y: '82%', w: 20, rot: -14, c1: '#A87028', c2: '#6E4618', delay: 0.9 },
+    { x: '91%', y: '24%', w: 19, rot: -42, c1: '#C89230', c2: '#895E1C', delay: 0.5 },
+    { x: '93%', y: '68%', w: 23, rot: 28,  c1: '#9C8A38', c2: '#645822', delay: 0.8 },
+  ];
+  return (
+    <div className="pointer-events-none absolute inset-0 hidden lg:block overflow-visible z-[6] select-none" aria-hidden="true">
+      {leaves.map((l, idx) => (
+        <DetailedDryLeaf
+          key={idx}
+          w={l.w}
+          c1={l.c1}
+          c2={l.c2}
+          className="absolute"
+          style={{ left: l.x, top: l.y, rotate: `${l.rot}deg` }}
+          animate={{ y: [0, -6, 0], x: [0, 3, 0], rotate: [l.rot, l.rot + 6, l.rot] }}
+          transition={{ duration: 4.8 + idx * 0.45, repeat: Infinity, ease: 'easeInOut', delay: l.delay }}
+        />
+      ))}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // HERO SECTION
 // ═══════════════════════════════════════════════════════════════════════════════
 function HeroSection({ onNavigateTo }) {
   return (
-    <section className="relative min-h-screen flex items-center overflow-hidden pt-32 pb-20"
+    <section className="relative flex items-center overflow-visible pt-24 pb-6 lg:pt-24 lg:pb-8"
       style={{ background: C.bgCream }}>
-      <WatermarkPattern opacity={0.36} />
-      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 w-full">
-        <div className="grid lg:grid-cols-12 gap-10 lg:gap-16 items-center">
+      <WatermarkPattern opacity={0.34} />
 
-          {/* ── Left: text 7 cols ── */}
-          <div className="lg:col-span-7 space-y-6">
+      {/* Warm sunlight beams from top-right (smooth CSS gradient — zero blur) */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background: 'radial-gradient(ellipse 56% 58% at 84% 18%, rgba(255,245,212,0.72) 0%, rgba(229,169,60,0.12) 42%, transparent 72%)',
+        }}
+        aria-hidden="true"
+      />
+
+      {/* Larger Crisp HD left & bottom-left botanical fern framing (848x1264 transparent PNG) */}
+      <img
+        src="/fern-frame-left.png"
+        width={848}
+        height={1264}
+        alt=""
+        aria-hidden="true"
+        className="pointer-events-none absolute bottom-0 left-0 z-[5] w-[110px] sm:w-[165px] lg:w-[195px] xl:w-[250px] 2xl:w-[295px] h-auto object-contain object-left-bottom select-none opacity-90 lg:opacity-95"
+      />
+
+      {/* Top-right balanced HD botanical fern framing (rotated 180deg to mirror bottom-left) */}
+      <img
+        src="/fern-frame-left.png"
+        width={848}
+        height={1264}
+        alt=""
+        aria-hidden="true"
+        className="pointer-events-none absolute top-0 right-0 z-[5] w-[105px] sm:w-[150px] lg:w-[180px] xl:w-[225px] 2xl:w-[265px] h-auto object-contain select-none opacity-85 lg:opacity-90"
+        style={{ transform: 'rotate(180deg)' }}
+      />
+
+      <FlyingDryLeaves />
+
+      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 w-full overflow-visible">
+        <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-8 overflow-visible">
+
+          {/* ── Left Column: Vertikal terpusat dengan lereng kanan, tanpa ruang kosong berlebih ── */}
+          <div className="flex flex-col">
             <FadeIn delay={0.1}>
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold"
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold"
                 style={{ background: `${C.sage}18`, color: C.forest, border: `1px solid ${C.sage}30` }}>
                 Dari Ranah Minang untuk Bumi Sejak 1986
               </div>
             </FadeIn>
 
             <FadeIn delay={0.2}>
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight"
-                style={{ color: C.forest }}>
-                Halo! Kami<br />
-                Perkumpulan{' '}
-                <span className="relative inline-block">
+              <h1 className="mt-4 font-black tracking-tight" style={{ color: C.forest }}>
+                <span className="block text-[1.85rem] sm:text-4xl lg:text-[2.25rem] xl:text-[2.6rem] leading-[1.12] sm:whitespace-nowrap">
+                  Halo! Kami Perkumpulan
+                </span>
+                <span className="relative inline-block text-[2.15rem] sm:text-5xl lg:text-[2.6rem] xl:text-[3rem] leading-[1.1] mt-0.5">
                   <span className="relative z-10">Galapagos.</span>
                   <svg className="absolute -bottom-1 left-0 w-full" viewBox="0 0 200 12" fill="none">
                     <path d="M4 8 Q50 2 100 7 Q150 12 196 5"
@@ -252,164 +412,147 @@ function HeroSection({ onNavigateTo }) {
             </FadeIn>
 
             <FadeIn delay={0.3}>
-              <p className="text-lg leading-relaxed max-w-xl" style={{ color: C.brown }}>
+              <p className="mt-4 text-base sm:text-[17px] leading-relaxed max-w-xl" style={{ color: C.brown }}>
                 Berawal dari sekumpulan kawan pecinta alam di Padang yang hobi mendaki gunung, kini kami bergerak
                 bersama warga menjaga hutan hulu sungai, merawat lingkungan, dan bersiaga menghadapi bencana.
               </p>
             </FadeIn>
 
-            <FadeIn delay={0.4}>
-              <div className="flex flex-wrap gap-3 pt-2">
-                <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-                  onClick={() => goTo('cerita')}
-                  className="flex items-center gap-2 px-6 py-3.5 rounded-full font-bold text-base"
-                  style={{ background: C.forest, color: C.bgCream }}>
-                  Kenali Cerita Kami <ChevronRight size={18} />
-                </motion.button>
-                <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-                  onClick={() => onNavigateTo('home')}
-                  className="flex items-center gap-3 px-5 py-3 rounded-full font-bold text-base shadow-md"
-                  style={{ background: C.yellow, color: C.forest }}>
-                  <img src={festivalLogo} alt="" className="h-9 w-9 rounded-full bg-white object-contain p-0.5" />
-                  <span className="text-left leading-tight">
-                    <span className="block">Festival Tanam Hulu</span>
-                    <span className="block text-xs font-semibold opacity-75">Kunjungi situs FTH</span>
-                  </span>
-                  <ArrowUpRight size={18} />
-                </motion.button>
-              </div>
-            </FadeIn>
+            {/* CTA & Stats: rapat tepat di bawah deskripsi (mt-8), sejajar horizontal */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ type: 'spring', stiffness: 60, damping: 18, delay: 0.3 }}
+              className="mt-8"
+            >
+              <div className="flex flex-wrap items-center gap-5 sm:gap-6">
+                <div className="relative inline-flex items-center overflow-visible">
+                  <CtaBrushingLeaves />
+                  <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+                    onClick={() => goTo('cerita')}
+                    className="relative z-10 inline-flex items-center gap-2 h-12 px-6 rounded-full font-bold text-sm cursor-pointer shadow-md"
+                    style={{ background: C.forest, color: C.bgCream }}>
+                    Kenali Cerita Kami <ChevronRight size={16} />
+                  </motion.button>
+                </div>
 
-            <FadeIn delay={0.5}>
-              <div className="flex flex-wrap gap-6 pt-4">
-                {[['38+','Tahun Berdiri'],['500+','Kawan Relawan']].map(([v,l]) => (
-                  <div key={l} className="flex flex-col">
-                    <span className="text-2xl font-black" style={{ color: C.yellow }}>{v}</span>
-                    <span className="text-xs font-medium" style={{ color: C.brown }}>{l}</span>
-                  </div>
-                ))}
+                <div className="flex items-center gap-6">
+                  {[['38+','Tahun Berdiri'],['500+','Kawan Relawan']].map(([v,l]) => (
+                    <div key={l} className="flex flex-col leading-tight">
+                      <span className="text-xl sm:text-2xl font-black" style={{ color: C.yellow }}>{v}</span>
+                      <span className="text-xs font-medium" style={{ color: C.brown }}>{l}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </FadeIn>
+            </motion.div>
           </div>
 
-          {/* ── Right: visual collage 5 cols ── */}
-          <div className="lg:col-span-5 relative">
-            <FadeIn delay={0.3} dir="left">
-              <div className="relative">
-                {/* Main portrait image */}
-                <motion.div whileHover={{ scale: 1.015 }} transition={{ duration: 0.5 }}
-                  className="relative overflow-hidden shadow-2xl"
-                  style={{ borderRadius: '2.5rem', border: '5px solid #ffffff' }}>
-                  <div className="overflow-hidden" style={{ borderRadius: '2.25rem', aspectRatio: '4/5' }}>
-                    <motion.img whileHover={{ scale: 1.08 }} transition={{ duration: 0.7 }}
-                      src="https://images.unsplash.com/photo-1448375240586-882707db888b?w=600&q=80"
-                      alt="Hutan Sumatera Barat" className="w-full h-full object-cover"
-                      onError={e => { e.currentTarget.src = 'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=600&q=80'; }} />
-                  </div>
-                  <div className="absolute inset-0 pointer-events-none" style={{
-                    background: 'linear-gradient(to top, rgba(27,50,38,0.55) 0%, rgba(27,50,38,0.05) 50%, transparent 100%)',
-                    borderRadius: '2.25rem',
-                  }} />
-                </motion.div>
+          {/* ── Right Column: HD Waterfall Island + Tagline Rapat + Tombol Ramping Simetris ── */}
+          <div className="relative overflow-visible flex flex-col items-center">
+            <FadeIn delay={0.25} dir="left" className="w-full overflow-visible">
+              <div className="relative flex flex-col items-center w-full max-w-[445px] mx-auto overflow-visible">
 
-                {/* Rotating heritage seal badge with the Festival Tanam Hulu logo */}
-                <div className="absolute -top-7 -right-7 z-20">
-                  <div className="relative w-36 h-36 rounded-full shadow-2xl flex items-center justify-center cursor-default select-none group"
-                    style={{ background: C.bgCream, border: `2.5px solid ${C.forest}` }}>
-                    
-                    {/* Subtle dashed vintage border */}
-                    <div className="absolute inset-2 rounded-full pointer-events-none"
-                      style={{ border: `1.5px dashed ${C.forest}30` }} />
+                {/* HD waterfall island container (978x893 > 2x supersampled HD) */}
+                <div className="relative w-full overflow-visible">
+                  <div
+                    className="pointer-events-none absolute inset-0"
+                    style={{
+                      background: 'radial-gradient(ellipse 64% 58% at 50% 48%, rgba(229,169,60,0.20) 0%, rgba(229,169,60,0.09) 36%, rgba(229,169,60,0.02) 60%, transparent 78%)',
+                    }}
+                  />
 
-                    {/* Rotating text ring */}
-                    <motion.div animate={{ rotate: 360 }}
-                      transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
-                      className="absolute inset-0 w-full h-full pointer-events-none">
-                      <svg viewBox="0 0 144 144" className="w-full h-full">
-                        <defs>
-                          <path id="hero-seal-path"
-                            d="M 72, 72 m -54, 0 a 54, 54 0 1, 1 108, 0 a 54, 54 0 1, 1 -108, 0"
-                            fill="none" />
-                        </defs>
-                        <text style={{ fill: C.forest, fontSize: '9px', fontWeight: '900', letterSpacing: '0.18em' }}>
-                          <textPath href="#hero-seal-path" startOffset="0%">
-                            ✦ FESTIVAL TANAM HULU ✦ PADANG 2026
-                          </textPath>
-                        </text>
-                      </svg>
-                    </motion.div>
+                  <motion.div
+                    animate={{ y: [0, -10, 0] }}
+                    transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut' }}
+                    className="relative z-10 overflow-visible flex justify-center"
+                  >
+                    <motion.img
+                      whileHover={{ scale: 1.015 }}
+                      transition={{ type: 'spring', stiffness: 180, damping: 20 }}
+                      src="/lereng-fth.png"
+                      width={978}
+                      height={893}
+                      alt="Kawasan Lereng Festival Tanam Hulu"
+                      className="w-full max-w-[390px] xl:max-w-[435px] h-auto select-none"
+                    />
+                  </motion.div>
 
-                    {/* Festival Tanam Hulu logo in center medallion */}
-                    <div className="relative z-10 w-20 h-20 rounded-full overflow-hidden shadow-md flex items-center justify-center transition-transform duration-300 group-hover:scale-105"
-                      style={{ border: `2px solid ${C.forest}` }}>
-                      <img
-                        src={festivalLogo}
-                        alt="Logo Festival Tanam Hulu"
-                        className="w-full h-full object-contain rounded-full"
-                      />
-                    </div>
+                  {/* Grounding ambient shadow synced with floating island motion */}
+                  <div className="relative z-20 -mt-5 pointer-events-none select-none flex flex-col items-center">
+                    <motion.div
+                      animate={{ scale: [1, 0.91, 1], opacity: [0.95, 0.65, 0.95] }}
+                      transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut' }}
+                      className="w-[54%] h-4 rounded-full"
+                      style={{
+                        background: 'radial-gradient(ellipse 50% 50% at 50% 50%, rgba(27,50,38,0.14) 0%, rgba(74,68,59,0.06) 44%, transparent 82%)',
+                      }}
+                    />
                   </div>
                 </div>
 
-                {/* Polaroid photo thumbnail (top-left) */}
-                <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.7, type: 'spring' }}
-                  whileHover={{ rotate: 0, scale: 1.08 }}
-                  className="absolute top-6 -left-7 z-20 p-2 pb-5 bg-white shadow-2xl cursor-pointer"
-                  style={{
-                    borderRadius: '1.25rem',
-                    border: '2px solid rgba(27,50,38,0.12)',
-                    rotate: '-6deg',
-                    width: '124px',
-                    transition: 'rotate 0.3s ease, transform 0.3s ease',
-                  }}>
-                  {/* Retro washi tape */}
-                  <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-10 h-3 rounded-sm opacity-90 shadow-sm"
-                    style={{ background: C.yellow, transform: 'translateX(-50%) rotate(2deg)' }} />
-
-                  <div className="overflow-hidden rounded-lg aspect-square">
-                    <img
-                      src="https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=260&q=80"
-                      alt="Basecamp Pecinta Alam" className="w-full h-full object-cover"
-                      onError={e => { e.currentTarget.src = 'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=260&q=80'; }} />
+                {/* Tagline rapat tepat di bawah lereng */}
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.45, type: 'spring' }}
+                  className="relative z-10 -mt-2 w-full flex flex-col items-center px-2"
+                >
+                  <div className="inline-flex items-center justify-center gap-2 whitespace-nowrap">
+                    <GoldLeafFlourish direction="left" />
+                    <p className="inline-flex items-center gap-1.5 whitespace-nowrap font-extrabold uppercase text-[9.5px] sm:text-[10.5px] xl:text-[11px] tracking-[0.07em]"
+                      style={{ color: C.forest }}>
+                      <span style={{ color: C.sage }}>Menyemai Lereng</span>
+                      <span className="opacity-45">•</span>
+                      <span>Selamatkan Padang</span>
+                    </p>
+                    <GoldLeafFlourish direction="right" />
                   </div>
-                  <p className="mt-2 text-center text-[10px] font-black tracking-wide leading-tight" style={{ color: C.forest }}>
-                    Basecamp '86
-                  </p>
+                  <div
+                    className="mt-1 w-full max-w-[300px] h-[1.5px] rounded-full"
+                    style={{
+                      background: `linear-gradient(90deg, ${C.yellow}35 0%, ${C.yellow} 16%, ${C.yellow} 84%, ${C.yellow}35 100%)`,
+                    }}
+                  />
                 </motion.div>
 
-                {/* Floating quote card (bottom-left) */}
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.9, type: 'spring' }}
-                  whileHover={{ y: -4, scale: 1.02 }}
-                  className="absolute -bottom-6 -left-6 z-20 max-w-[250px] p-4 rounded-3xl shadow-2xl"
-                  style={{
-                    background: 'rgba(247,243,232,0.97)',
-                    backdropFilter: 'blur(16px)',
-                    border: `2px solid rgba(27,50,38,0.15)`,
-                  }}>
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[10px] font-black tracking-wider uppercase" style={{ color: C.sage }}>
-                      Prinsip Galapagos
-                    </span>
+                {/* Tombol FTH lebih ringkas, font membumi (Fraunces), dengan logo FTH dipertahankan */}
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ type: 'spring', stiffness: 60, damping: 18, delay: 0.35 }}
+                  className="mt-2.5 relative inline-flex items-center justify-center group overflow-visible"
+                >
+                  <div className="-mr-2 relative z-20">
+                    <ButtonLeafWreath side="left" />
                   </div>
-                  <p className="text-xs font-semibold leading-relaxed" style={{ color: C.forest }}>
-                    "Menjaga alam bukan tugas pemerintah saja — ini urusan kita bersama."
-                  </p>
-                  <div className="mt-2.5 pt-2 flex items-center justify-between"
-                    style={{ borderTop: '1px solid rgba(27,50,38,0.08)' }}>
-                    <span className="text-[10px] font-black" style={{ color: C.brown }}>
-                      Romelson Candra
-                    </span>
-                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
-                      style={{ background: `${C.yellow}30`, color: C.forest }}>
-                      Ketua
-                    </span>
+
+                  <motion.button
+                    whileHover={{ scale: 1.03, y: -1.5, boxShadow: `0 10px 22px ${C.yellow}48` }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => onNavigateTo('home')}
+                    className="relative z-10 inline-flex items-center gap-2 h-10 px-4 rounded-full font-semibold text-[13.5px] shadow-md cursor-pointer"
+                    style={{
+                      background: C.yellow,
+                      color: C.forest,
+                      fontFamily: "'Fraunces', Georgia, serif",
+                      boxShadow: `0 6px 16px ${C.yellow}35`,
+                    }}>
+                    <img src={festivalLogo} alt=""
+                      className="h-6 w-6 rounded-full bg-white object-contain p-0.5 shadow-sm shrink-0" />
+                    <span className="tracking-[0.01em]">Kunjungi Situs FTH</span>
+                    <ArrowUpRight size={15} strokeWidth={2.2} className="shrink-0" />
+                  </motion.button>
+
+                  <div className="-ml-2 relative z-20">
+                    <ButtonLeafWreath side="right" />
                   </div>
                 </motion.div>
+
               </div>
             </FadeIn>
           </div>
+
         </div>
       </div>
     </section>
@@ -423,7 +566,7 @@ function MarqueeBanner() {
   const text = '✦ SALAM LESTARI ✦ MENJAGA HULU MERAWAT HILIR ✦ PERKUMPULAN GALAPAGOS ✦ BERGERAK BERSAMA KAWAN ✦ SEJAK 31 AGUSTUS 1986 ';
   const rep = text.repeat(4);
   return (
-    <div className="relative overflow-hidden py-4 -rotate-1 scale-105 my-10"
+    <div className="relative overflow-hidden py-4 -rotate-1 scale-105 mt-3 mb-10"
       style={{ background: C.yellow, borderTop: `2px solid ${C.forest}`, borderBottom: `2px solid ${C.forest}` }}>
       <motion.div animate={{ x: ['0%', '-50%'] }}
         transition={{ duration: 32, repeat: Infinity, ease: 'linear' }}
@@ -1235,7 +1378,7 @@ function YayasanFooter({ onNavigateTo }) {
 // ═══════════════════════════════════════════════════════════════════════════════
 export default function YayasanPage({ onNavigateTo }) {
   return (
-    <div style={{ background: C.bgCream, fontFamily: "'Plus Jakarta Sans','Inter',system-ui,sans-serif" }}>
+    <div className="overflow-x-clip" style={{ background: C.bgCream, fontFamily: "'Plus Jakarta Sans','Inter',system-ui,sans-serif" }}>
       <Navbar onNavigateTo={onNavigateTo} />
       <HeroSection onNavigateTo={onNavigateTo} />
       <MarqueeBanner />
