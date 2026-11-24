@@ -2,15 +2,17 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Sprout, MapPin, Camera, CheckCircle2, Clock, XCircle, 
   LogOut, Plus, Trash2, ArrowLeft, RefreshCw, AlertCircle,
-  User, Lock, Compass, AlertTriangle, ShieldAlert
+  User, Lock, Compass, AlertTriangle, ShieldAlert, Edit
 } from 'lucide-react';
 import { 
   timLogin, getTimProfile, getTimPlantingPoints, 
-  submitTimPlantingPoint, deleteTimPlantingPoint,
+  submitTimPlantingPoint, updateTimPlantingPoint, deleteTimPlantingPoint,
   getAssetUrl
 } from '../services/api';
 import { processAndCompressImage, IMAGE_FALLBACK_SVG } from '../utils/imageOptimizer';
 import { validatePointGeofence } from '../utils/geofence';
+
+const formatPointCode = (id) => `#TP-${String(id).padStart(3, '0')}`;
 
 const LOKASI_OPTIONS = [
   { id: 'batu-busuak', nama: 'Batu Busuak, Pauh' },
@@ -49,8 +51,10 @@ export default function PortalTimPage({ onNavigateHome }) {
   const [loadingPoints, setLoadingPoints] = useState(false);
   const [actionNotice, setActionNotice] = useState('');
 
-  // Add Point Modal state
+  // Add / Edit Point Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingPoint, setEditingPoint] = useState(null);
+  const [clearExistingAfter, setClearExistingAfter] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState('');
   const [gettingGps, setGettingGps] = useState(false);
@@ -86,6 +90,23 @@ export default function PortalTimPage({ onNavigateHome }) {
     if (!formData.latitude || !formData.longitude) return null;
     return validatePointGeofence(formData.latitude, formData.longitude, formData.lokasi_id);
   }, [formData.latitude, formData.longitude, formData.lokasi_id]);
+
+  const speciesOptions = useMemo(() => {
+    if (formData.jenis_pohon && !POHON_OPTIONS.includes(formData.jenis_pohon)) {
+      return [formData.jenis_pohon, ...POHON_OPTIONS];
+    }
+    return POHON_OPTIONS;
+  }, [formData.jenis_pohon]);
+
+  const locationOptions = useMemo(() => {
+    if (formData.lokasi_id && !LOKASI_OPTIONS.some((o) => o.id === formData.lokasi_id)) {
+      return [
+        { id: formData.lokasi_id, nama: formData.lokasi_nama || formData.lokasi_id },
+        ...LOKASI_OPTIONS,
+      ];
+    }
+    return LOKASI_OPTIONS;
+  }, [formData.lokasi_id, formData.lokasi_nama]);
 
   // Photo viewer modal
   const [previewPhotoUrl, setPreviewPhotoUrl] = useState(null);
@@ -194,6 +215,7 @@ export default function PortalTimPage({ onNavigateHome }) {
         setOptimizingBefore(false);
       }
     } else {
+      setClearExistingAfter(false);
       setOptimizingAfter(true);
       try {
         const result = await processAndCompressImage(file, 1280, 0.82);
@@ -210,27 +232,51 @@ export default function PortalTimPage({ onNavigateHome }) {
     }
   };
 
+  const resetModalMediaState = () => {
+    setFotoBeforeFile(null);
+    setFotoAfterFile(null);
+    setBeforeStats(null);
+    setAfterStats(null);
+    setOptimizingBefore(false);
+    setOptimizingAfter(false);
+    setClearExistingAfter(false);
+    setOverrideOutOfZone(false);
+    setFormError('');
+    setGpsAccuracy(null);
+  };
+
   const handleOpenAddModal = () => {
+    setEditingPoint(null);
     setFormData({
       latitude: '',
       longitude: '',
       lokasi_id: 'batu-busuak',
       lokasi_nama: 'Batu Busuak, Pauh',
       jenis_pohon: 'Trembesi (Albizia saman)',
-      umur_tanam_bulan: 3,
+      umur_tanam_bulan: 1,
       jangka_hidup_tahun: 50,
     });
-    setFotoBeforeFile(null);
     setFotoBeforePreview('');
-    setFotoAfterFile(null);
     setFotoAfterPreview('');
-    setBeforeStats(null);
-    setAfterStats(null);
-    setOptimizingBefore(false);
-    setOptimizingAfter(false);
-    setOverrideOutOfZone(false);
-    setFormError('');
-    setGpsAccuracy(null);
+    resetModalMediaState();
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEditModal = (pt) => {
+    const matchedLoc = LOKASI_OPTIONS.find((o) => o.id === pt.lokasi_id);
+    setEditingPoint(pt);
+    setFormData({
+      latitude: pt.latitude != null ? String(pt.latitude) : '',
+      longitude: pt.longitude != null ? String(pt.longitude) : '',
+      lokasi_id: pt.lokasi_id || 'batu-busuak',
+      lokasi_nama: pt.lokasi_nama || matchedLoc?.nama || 'Batu Busuak, Pauh',
+      jenis_pohon: pt.jenis_pohon || 'Trembesi (Albizia saman)',
+      umur_tanam_bulan: pt.umur_tanam_bulan ?? 1,
+      jangka_hidup_tahun: pt.jangka_hidup_tahun ?? 50,
+    });
+    setFotoBeforePreview(pt.foto_before_url ? getAssetUrl(pt.foto_before_url) : '');
+    setFotoAfterPreview(pt.foto_after_url ? getAssetUrl(pt.foto_after_url) : '');
+    resetModalMediaState();
     setIsModalOpen(true);
   };
 
@@ -248,8 +294,8 @@ export default function PortalTimPage({ onNavigateHome }) {
       return;
     }
 
-    if (!fotoBeforeFile || !fotoAfterFile) {
-      setFormError('Foto sebelum (lahan) dan sesudah (bibit tertanam) wajib diunggah.');
+    if (!fotoBeforeFile && (!editingPoint || !fotoBeforePreview)) {
+      setFormError('Foto awal saat pertama ditanam (Before) wajib diunggah. Foto After (setelah 6 bulan) boleh menyusul.');
       return;
     }
 
@@ -263,12 +309,27 @@ export default function PortalTimPage({ onNavigateHome }) {
       formPayload.append('jenis_pohon', formData.jenis_pohon);
       formPayload.append('umur_tanam_bulan', formData.umur_tanam_bulan);
       formPayload.append('jangka_hidup_tahun', formData.jangka_hidup_tahun);
-      formPayload.append('foto_before', fotoBeforeFile);
-      formPayload.append('foto_after', fotoAfterFile);
+      if (fotoBeforeFile) {
+        formPayload.append('foto_before', fotoBeforeFile);
+      }
+      if (fotoAfterFile) {
+        formPayload.append('foto_after', fotoAfterFile);
+      } else if (editingPoint && clearExistingAfter) {
+        formPayload.append('clear_foto_after', 'true');
+      }
 
-      await submitTimPlantingPoint(timToken, formPayload);
+      if (editingPoint) {
+        await updateTimPlantingPoint(timToken, editingPoint.id, formPayload);
+        setActionNotice(
+          `Titik ${formatPointCode(editingPoint.id)} berhasil diperbarui dengan kode yang sama! Menunggu verifikasi ulang panitia.`
+        );
+      } else {
+        await submitTimPlantingPoint(timToken, formPayload);
+        setActionNotice('Titik penanaman berhasil dikirim! Menunggu verifikasi panitia.');
+      }
+
       setIsModalOpen(false);
-      setActionNotice('Titik penanaman berhasil dikirim! Menunggu verifikasi panitia.');
+      setEditingPoint(null);
       setTimeout(() => setActionNotice(''), 6000);
       loadTeamData();
     } catch (err) {
@@ -529,7 +590,7 @@ export default function PortalTimPage({ onNavigateHome }) {
               Catat Titik Tanam Baru
             </div>
             <div className="text-[11px] text-gray-200">
-              Ambil GPS &amp; foto before/after di lokasi
+              Upload GPS &amp; foto pertama ditanam (Before); foto 6 bulan (After) bisa menyusul
             </div>
           </div>
         </button>
@@ -562,13 +623,21 @@ export default function PortalTimPage({ onNavigateHome }) {
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="space-y-0.5">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="text-xs font-bold text-[#063F35]">
                           Pohon #{pointsList.length - idx}
+                        </span>
+                        <span className="text-[10px] font-mono font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                          {formatPointCode(pt.id)}
                         </span>
                         <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-100/70 px-2 py-0.5 rounded-md">
                           {pt.jenis_pohon}
                         </span>
+                        {pt.status_verifikasi === 'pending' && pt.updated_at && (
+                          <span className="text-[10px] font-bold text-sky-800 bg-sky-100 px-2 py-0.5 rounded-full border border-sky-200">
+                            Pembaruan • Verifikasi Ulang
+                          </span>
+                        )}
                       </div>
                       <div className="text-xs text-gray-600 font-medium flex items-center gap-1">
                         <MapPin className="w-3.5 h-3.5 text-gray-400" />
@@ -597,55 +666,77 @@ export default function PortalTimPage({ onNavigateHome }) {
                     </div>
                   </div>
 
-                  {/* Photos Thumbnail Before & After (Portrait 3:4) */}
+                  {/* Photos Thumbnail Before (Tanam Awal) & After (Setelah 6 Bulan) */}
                   <div className="grid grid-cols-2 gap-2.5 pt-1">
                     <div 
-                      onClick={() => setPreviewPhotoUrl(pt.foto_before_url)}
+                      onClick={() => pt.foto_before_url && setPreviewPhotoUrl(pt.foto_before_url)}
                       className="relative rounded-xl overflow-hidden bg-gray-100 aspect-[3/4] border border-gray-200 cursor-pointer group shadow-xs"
-                      title="Klik untuk melihat foto kondisi lahan penuh"
+                      title="Klik untuk melihat foto saat pertama ditanam penuh"
                     >
-                      <img 
-                        src={getAssetUrl(pt.foto_before_url)} 
-                        alt="Before" 
+                      <img
+                        src={getAssetUrl(pt.foto_before_url)}
+                        alt="Before (Saat Pertama Ditanam)"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                         onError={(e) => {
                           e.currentTarget.onerror = null;
                           e.currentTarget.src = IMAGE_FALLBACK_SVG;
                         }}
                       />
-                      <span className="absolute bottom-1.5 left-1.5 bg-black/65 backdrop-blur-xs text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
-                        Kondisi Lahan (Before)
+                      <span className="absolute bottom-1.5 left-1.5 bg-black/70 backdrop-blur-xs text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
+                        Before · Awal Tanam
                       </span>
                       <span className="absolute top-1.5 right-1.5 bg-black/50 text-white text-[8px] px-1 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity">
                         🔍 Perbesar
                       </span>
                     </div>
 
-                    <div 
-                      onClick={() => setPreviewPhotoUrl(pt.foto_after_url)}
-                      className="relative rounded-xl overflow-hidden bg-gray-100 aspect-[3/4] border border-gray-200 cursor-pointer group shadow-xs"
-                      title="Klik untuk melihat foto bibit tertanam penuh"
-                    >
-                      <img 
-                        src={getAssetUrl(pt.foto_after_url)} 
-                        alt="After" 
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                        onError={(e) => {
-                          e.currentTarget.onerror = null;
-                          e.currentTarget.src = IMAGE_FALLBACK_SVG;
-                        }}
-                      />
-                      <span className="absolute bottom-1.5 left-1.5 bg-emerald-950/85 backdrop-blur-xs text-[#F4B91F] text-[9px] font-bold px-1.5 py-0.5 rounded">
-                        Bibit Tertanam (After)
-                      </span>
-                      <span className="absolute top-1.5 right-1.5 bg-black/50 text-white text-[8px] px-1 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                        🔍 Perbesar
-                      </span>
-                    </div>
+                    {pt.foto_after_url ? (
+                      <div
+                        onClick={() => setPreviewPhotoUrl(pt.foto_after_url)}
+                        className="relative rounded-xl overflow-hidden bg-gray-100 aspect-[3/4] border border-gray-200 cursor-pointer group shadow-xs"
+                        title="Klik untuk melihat foto perkembangan setelah 6 bulan"
+                      >
+                        <img
+                          src={getAssetUrl(pt.foto_after_url)}
+                          alt="After (Setelah 6 Bulan Ditanam)"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = IMAGE_FALLBACK_SVG;
+                          }}
+                        />
+                        <span className="absolute bottom-1.5 left-1.5 bg-emerald-950/85 backdrop-blur-xs text-[#F4B91F] text-[9px] font-bold px-1.5 py-0.5 rounded">
+                          After · 6 Bulan
+                        </span>
+                        <span className="absolute top-1.5 right-1.5 bg-black/50 text-white text-[8px] px-1 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                          🔍 Perbesar
+                        </span>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleOpenEditModal(pt)}
+                        className="relative rounded-xl bg-emerald-50/70 hover:bg-emerald-100/70 aspect-[3/4] border-2 border-dashed border-emerald-300 cursor-pointer flex flex-col items-center justify-center p-3 text-center gap-1.5 transition-colors"
+                        title="Klik untuk mengunggah foto perkembangan setelah 6 bulan"
+                      >
+                        <div className="w-8 h-8 rounded-full bg-white border border-emerald-200 flex items-center justify-center text-emerald-700 shadow-2xs">
+                          <Camera className="w-4 h-4" />
+                        </div>
+                        <span className="text-[11px] font-bold text-[#063F35] leading-tight">
+                          Foto After (6 Bulan)
+                        </span>
+                        <span className="text-[10px] text-emerald-800/80 leading-snug">
+                          Belum diunggah. Klik Edit untuk melengkapi perkembangan tanaman.
+                        </span>
+                        <span className="mt-0.5 text-[10px] font-bold text-white bg-[#063F35] px-2.5 py-1 rounded-full">
+                          + Upload After
+                        </span>
+                      </button>
+                    )}
                   </div>
 
-                  {/* Coordinates & Actions */}
-                  <div className="flex items-center justify-between text-xs pt-1 border-t border-gray-100 text-gray-500">
+                  {/* Coordinates & Always-Active Edit + Conditional Delete Actions */}
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs pt-1 border-t border-gray-100 text-gray-500">
                     <a
                       href={`https://www.google.com/maps?q=${pt.latitude},${pt.longitude}`}
                       target="_blank"
@@ -656,16 +747,29 @@ export default function PortalTimPage({ onNavigateHome }) {
                       <span>{pt.latitude}, {pt.longitude}</span>
                     </a>
 
-                    {pt.status_verifikasi !== 'approved' && (
+                    <div className="flex items-center gap-2">
                       <button
-                        onClick={() => handleDeletePoint(pt.id)}
-                        className="flex items-center gap-1 text-rose-600 hover:text-rose-800 text-[11px] font-semibold cursor-pointer"
-                        title="Hapus titik ini"
+                        type="button"
+                        onClick={() => handleOpenEditModal(pt)}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-[#063F35] border border-emerald-200 text-[11px] font-bold cursor-pointer transition-colors"
+                        title="Edit data atau lengkapi foto 6 bulan (kode tetap sama & diajukan verifikasi ulang)"
                       >
-                        <Trash2 className="w-3 h-3" />
-                        <span>Hapus</span>
+                        <Edit className="w-3 h-3" />
+                        <span>{pt.foto_after_url ? 'Edit / Update' : 'Edit / Tambah After'}</span>
                       </button>
-                    )}
+
+                      {pt.status_verifikasi !== 'approved' && (
+                        <button
+                          type="button"
+                          onClick={() => handleDeletePoint(pt.id)}
+                          className="flex items-center gap-1 text-rose-600 hover:text-rose-800 text-[11px] font-semibold cursor-pointer px-1.5 py-1"
+                          title="Hapus titik ini"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          <span>Hapus</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   {/* Reviewer Note from Committee if any */}
@@ -681,7 +785,7 @@ export default function PortalTimPage({ onNavigateHome }) {
         </div>
       </main>
 
-      {/* MODAL: Form Catat Titik Tanam Baru */}
+      {/* MODAL: Form Catat / Edit Titik Tanam */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
           <div className="bg-white rounded-t-3xl sm:rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-5 sm:p-6 space-y-4 border border-gray-200 shadow-2xl">
@@ -691,8 +795,16 @@ export default function PortalTimPage({ onNavigateHome }) {
                   <Sprout className="w-5 h-5 text-emerald-700" />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-[#063F35]">Input Titik Pohon Baru</h3>
-                  <p className="text-[11px] text-gray-500">Rekam koordinat GPS dan foto aksi lapangan</p>
+                  <h3 className="text-base font-black text-[#063F35]">
+                    {editingPoint
+                      ? `Edit & Update Titik ${formatPointCode(editingPoint.id)}`
+                      : 'Input Titik Pohon Baru'}
+                  </h3>
+                  <p className="text-[11px] text-gray-500">
+                    {editingPoint
+                      ? 'Perubahan menggunakan kode titik yang sama & memicu verifikasi ulang admin'
+                      : 'Rekam koordinat GPS dan foto pertama ditanam (Before)'}
+                  </p>
                 </div>
               </div>
               <button
@@ -703,6 +815,12 @@ export default function PortalTimPage({ onNavigateHome }) {
                 ✕
               </button>
             </div>
+
+            {editingPoint && (
+              <div className="p-3 bg-amber-50 border border-amber-200 text-amber-900 rounded-xl text-[11px] leading-relaxed">
+                <strong>Pembaruan Titik {formatPointCode(editingPoint.id)}:</strong> Data tetap terhitung sebagai pengiriman yang sama. Setelah disimpan, status otomatis kembali <strong>Menunggu Verifikasi Admin</strong> untuk kurasi ulang sebelum tayang di peta.
+              </div>
+            )}
 
             {formError && (
               <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-xs flex items-center gap-2">
@@ -830,7 +948,7 @@ export default function PortalTimPage({ onNavigateHome }) {
                     }}
                     className="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-lg text-xs"
                   >
-                    {LOKASI_OPTIONS.map((loc) => (
+                    {locationOptions.map((loc) => (
                       <option key={loc.id} value={loc.id}>{loc.nama}</option>
                     ))}
                   </select>
@@ -843,7 +961,7 @@ export default function PortalTimPage({ onNavigateHome }) {
                     onChange={(e) => setFormData({ ...formData, jenis_pohon: e.target.value })}
                     className="w-full p-2.5 bg-gray-50 border border-gray-300 rounded-lg text-xs"
                   >
-                    {POHON_OPTIONS.map((tree) => (
+                    {speciesOptions.map((tree) => (
                       <option key={tree} value={tree}>{tree}</option>
                     ))}
                   </select>
@@ -851,11 +969,11 @@ export default function PortalTimPage({ onNavigateHome }) {
 
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <span className="text-gray-600 block mb-1">Umur Bibit (Bulan):</span>
+                    <span className="text-gray-600 block mb-1">Umur Tanam (Bulan):</span>
                     <input
                       type="number"
-                      min="1"
-                      max="60"
+                      min="0"
+                      max="120"
                       value={formData.umur_tanam_bulan}
                       onChange={(e) => setFormData({ ...formData, umur_tanam_bulan: e.target.value })}
                       className="w-full p-2 bg-gray-50 border border-gray-300 rounded-lg text-xs"
@@ -875,21 +993,33 @@ export default function PortalTimPage({ onNavigateHome }) {
                 </div>
               </div>
 
-              {/* Step 3: Photos Before & After */}
+              {/* Step 3: Photos Before (Tanam Awal) & After (6 Bulan Opsional) */}
               <div className="space-y-3 pt-1">
-                <label className="font-bold text-gray-700 uppercase tracking-wider text-[11px] block">
-                  3. Unggah Bukti Foto Lapangan
-                </label>
+                <div className="flex flex-wrap items-center justify-between gap-1">
+                  <label className="font-bold text-gray-700 uppercase tracking-wider text-[11px] block">
+                    3. Unggah Bukti Foto Lapangan
+                  </label>
+                  <span className="text-[10px] text-emerald-700 font-medium">
+                    Foto After (6 bulan) boleh menyusul
+                  </span>
+                </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {/* Foto Before */}
+                  {/* Foto Before (Saat Pertama Ditanam — Wajib) */}
                   <div className="p-3 border border-gray-200 rounded-xl space-y-2 bg-gray-50/50">
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold text-gray-700 block">📷 Foto Lahan (Before)</span>
-                      {beforeStats && (
-                        <span className="inline-flex items-center text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">
+                    <div className="flex items-start justify-between gap-1">
+                      <div>
+                        <span className="font-semibold text-gray-800 block">📷 Foto Before</span>
+                        <span className="text-[10px] text-gray-500 block">Saat pertama ditanam (Wajib)</span>
+                      </div>
+                      {beforeStats ? (
+                        <span className="inline-flex items-center text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full shrink-0">
                           <CheckCircle2 className="w-2.5 h-2.5 mr-1 text-emerald-700" />
                           Hemat {beforeStats.savedPercentage}
+                        </span>
+                      ) : (
+                        <span className="text-[9px] font-bold bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded shrink-0">
+                          Wajib
                         </span>
                       )}
                     </div>
@@ -912,6 +1042,7 @@ export default function PortalTimPage({ onNavigateHome }) {
                               setFotoBeforePreview(''); 
                               setBeforeStats(null);
                             }}
+                            title="Ganti foto Before"
                             className="absolute top-1 right-1 bg-black/60 hover:bg-black text-white p-1 rounded-full text-[10px] cursor-pointer"
                           >
                             ✕
@@ -926,7 +1057,7 @@ export default function PortalTimPage({ onNavigateHome }) {
                       </div>
                     ) : (
                       !optimizingBefore && (
-                        <label className="flex flex-col items-center justify-center p-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">
+                        <label className="flex flex-col items-center justify-center p-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors text-center">
                           <Camera className="w-5 h-5 text-gray-400 mb-1" />
                           <span className="text-[11px] text-gray-600 font-medium">Buka Kamera / Foto</span>
                           <span className="text-[9px] text-gray-400">Otomatis dikompres &amp; format apapun diterima</span>
@@ -942,13 +1073,20 @@ export default function PortalTimPage({ onNavigateHome }) {
                     )}
                   </div>
 
-                  {/* Foto After */}
-                  <div className="p-3 border border-gray-200 rounded-xl space-y-2 bg-emerald-50/40 border-emerald-200">
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold text-emerald-800 block">🌱 Foto Tertanam (After)</span>
-                      {afterStats && (
-                        <span className="text-[10px] bg-emerald-200 text-emerald-900 font-bold px-2 py-0.5 rounded-full">
+                  {/* Foto After (Setelah 6 Bulan — Opsional Saat Awal) */}
+                  <div className="p-3 border rounded-xl space-y-2 bg-emerald-50/40 border-emerald-200">
+                    <div className="flex items-start justify-between gap-1">
+                      <div>
+                        <span className="font-semibold text-emerald-900 block">🌳 Foto After</span>
+                        <span className="text-[10px] text-emerald-700 block">Setelah 6 bulan ditanam</span>
+                      </div>
+                      {afterStats ? (
+                        <span className="text-[10px] bg-emerald-200 text-emerald-900 font-bold px-2 py-0.5 rounded-full shrink-0">
                           Hemat {afterStats.savedPercentage}
+                        </span>
+                      ) : (
+                        <span className="text-[9px] font-bold bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded shrink-0">
+                          Opsional
                         </span>
                       )}
                     </div>
@@ -970,7 +1108,11 @@ export default function PortalTimPage({ onNavigateHome }) {
                               setFotoAfterFile(null); 
                               setFotoAfterPreview(''); 
                               setAfterStats(null);
+                              if (editingPoint?.foto_after_url) {
+                                setClearExistingAfter(true);
+                              }
                             }}
+                            title="Hapus / ganti foto After"
                             className="absolute top-1 right-1 bg-black/60 hover:bg-black text-white p-1 rounded-full text-[10px] cursor-pointer"
                           >
                             ✕
@@ -985,10 +1127,10 @@ export default function PortalTimPage({ onNavigateHome }) {
                       </div>
                     ) : (
                       !optimizingAfter && (
-                        <label className="flex flex-col items-center justify-center p-3 border-2 border-dashed border-emerald-300 rounded-lg cursor-pointer hover:bg-emerald-50 transition-colors">
+                        <label className="flex flex-col items-center justify-center p-3 border-2 border-dashed border-emerald-300 rounded-lg cursor-pointer hover:bg-emerald-50 transition-colors text-center">
                           <Camera className="w-5 h-5 text-emerald-600 mb-1" />
-                          <span className="text-[11px] text-emerald-800 font-medium">Buka Kamera / Foto</span>
-                          <span className="text-[9px] text-emerald-600">Otomatis dikompres &amp; format apapun diterima</span>
+                          <span className="text-[11px] text-emerald-800 font-medium">Upload Foto 6 Bulan</span>
+                          <span className="text-[9px] text-emerald-700">Boleh dikosongkan dulu saat awal tanam</span>
                           <input
                             type="file"
                             accept="image/*,.heic,.heif"
@@ -1014,7 +1156,7 @@ export default function PortalTimPage({ onNavigateHome }) {
                 </button>
                 <button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || optimizingBefore || optimizingAfter}
                   className="px-5 py-2.5 rounded-xl bg-[#063F35] hover:bg-[#084f43] text-[#F4B91F] font-bold shadow-md cursor-pointer disabled:opacity-50 flex items-center gap-2"
                 >
                   {isSubmitting ? (
@@ -1022,6 +1164,8 @@ export default function PortalTimPage({ onNavigateHome }) {
                       <RefreshCw className="w-4 h-4 animate-spin" />
                       <span>Mengunggah...</span>
                     </>
+                  ) : editingPoint ? (
+                    <span>Simpan &amp; Ajukan Verifikasi Ulang</span>
                   ) : (
                     <span>Kirim Titik Penanaman</span>
                   )}

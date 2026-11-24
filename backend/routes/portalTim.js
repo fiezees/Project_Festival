@@ -43,8 +43,93 @@ const upload = multer({
   },
 });
 
-// =========================================================================
-// 1. POST /api/tim/login - Login Khusus 10 Tim Penanam
+const uploadPointPhotos = upload.fields([
+  { name: 'foto_before', maxCount: 1 },
+  { name: 'foto_after', maxCount: 1 },
+]);
+
+function handlePointPhotoUpload(req, res, next) {
+  uploadPointPhotos(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({ error: err.message || 'Gagal memproses berkas foto.' });
+    }
+    return next();
+  });
+}
+
+function removeLocalTanamFile(assetUrl) {
+  if (!assetUrl || !String(assetUrl).startsWith('/uploads/tanam/')) return;
+  const targetPath = path.join(UPLOAD_DIR, path.basename(assetUrl));
+  if (targetPath.startsWith(UPLOAD_DIR) && fs.existsSync(targetPath)) {
+    try {
+      fs.unlinkSync(targetPath);
+    } catch (err) {
+      console.warn('Warning deleting superseded photo:', err.message);
+    }
+  }
+}
+
+function cleanupUploadedFiles(files) {
+  if (!files) return;
+  for (const fieldFiles of Object.values(files)) {
+    for (const file of fieldFiles || []) {
+      if (file?.path && fs.existsSync(file.path)) {
+        try {
+          fs.unlinkSync(file.path);
+        } catch {
+          // Ignore temporary file cleanup errors
+        }
+      }
+    }
+  }
+}
+
+function parseAndValidatePointInput(body) {
+  const {
+    latitude,
+    longitude,
+    lokasi_id,
+    lokasi_nama,
+    jenis_pohon,
+    umur_tanam_bulan,
+    jangka_hidup_tahun,
+  } = body;
+
+  if (!latitude || !longitude) {
+    return { error: 'Koordinat latitude dan longitude wajib diisi.' };
+  }
+
+  const lat = parseFloat(latitude);
+  const lng = parseFloat(longitude);
+
+  if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+    return { error: 'Format koordinat GPS tidak valid.' };
+  }
+
+  const locId = (lokasi_id || 'batu-busuak').trim().toLowerCase().replace(/\s+/g, '-');
+  const locName = (lokasi_nama || 'Batu Busuak').trim();
+  const treeSpecies = (jenis_pohon || 'Trembesi').trim();
+  const parsedUmur = parseInt(umur_tanam_bulan, 10);
+  const umurBulan = Number.isFinite(parsedUmur) && parsedUmur >= 0 ? parsedUmur : 1;
+  const jangkaTahun = parseInt(jangka_hidup_tahun, 10) || 40;
+
+  const geofence = checkGeofence(lat, lng, locId);
+  const initialCatatan = geofence.isOutOfZone
+    ? `🚨 [GEOFENCE ALERT]: Posisi terdeteksi berjarak ${geofence.distFormatted} di luar zona resmi ${geofence.zoneName}!`
+    : null;
+
+  return {
+    lat,
+    lng,
+    locId,
+    locName,
+    treeSpecies,
+    umurBulan,
+    jangkaTahun,
+    pointWkt: `POINT(${lng} ${lat})`,
+    initialCatatan,
+  };
+}
 // =========================================================================
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
@@ -156,7 +241,7 @@ router.get('/titik-tanam', requireTimAuth, async (req, res) => {
       SELECT 
         id, nama_peserta, lokasi_id, lokasi_nama, jenis_pohon,
         umur_tanam_bulan, jangka_hidup_tahun, foto_before_url, foto_after_url,
-        status_verifikasi, catatan_verifikasi, created_at,
+        status_verifikasi, catatan_verifikasi, created_at, updated_at,
         ST_X(geom) AS longitude,
         ST_Y(geom) AS latitude
       FROM titik_tanam
@@ -173,64 +258,32 @@ router.get('/titik-tanam', requireTimAuth, async (req, res) => {
 
 // =========================================================================
 // 4. POST /api/tim/titik-tanam - Tambah Titik Tanam Baru oleh Tim
+//    (Foto Before wajib saat awal tanam; Foto After 6 bulan bersifat opsional)
 // =========================================================================
 router.post(
   '/titik-tanam',
   requireTimAuth,
-  upload.fields([
-    { name: 'foto_before', maxCount: 1 },
-    { name: 'foto_after', maxCount: 1 },
-  ]),
+  handlePointPhotoUpload,
   async (req, res) => {
     try {
-      const {
-        latitude,
-        longitude,
-        lokasi_id,
-        lokasi_nama,
-        jenis_pohon,
-        umur_tanam_bulan,
-        jangka_hidup_tahun,
-      } = req.body;
-
-      if (!latitude || !longitude) {
-        return res.status(400).json({ error: 'Koordinat latitude dan longitude wajib diisi.' });
+      const parsed = parseAndValidatePointInput(req.body);
+      if (parsed.error) {
+        cleanupUploadedFiles(req.files);
+        return res.status(400).json({ error: parsed.error });
       }
 
-      const lat = parseFloat(latitude);
-      const lng = parseFloat(longitude);
-
-      if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
-        return res.status(400).json({ error: 'Format koordinat GPS tidak valid.' });
-      }
-
-      // Photos
       const beforeFile = req.files && req.files.foto_before ? req.files.foto_before[0] : null;
       const afterFile = req.files && req.files.foto_after ? req.files.foto_after[0] : null;
 
-      if (!beforeFile || !afterFile) {
-        return res.status(400).json({ error: 'Foto kondisi sebelum (before) dan sesudah (after) wajib diunggah.' });
+      if (!beforeFile) {
+        cleanupUploadedFiles(req.files);
+        return res.status(400).json({
+          error: 'Foto awal saat pertama ditanam (Before) wajib diunggah. Foto After (6 bulan) boleh menyusul.',
+        });
       }
 
       const foto_before_url = `/uploads/tanam/${beforeFile.filename}`;
-      const foto_after_url = `/uploads/tanam/${afterFile.filename}`;
-
-      // Default names if omitted
-      const locId = (lokasi_id || 'batu-busuak').trim().toLowerCase().replace(/\s+/g, '-');
-      const locName = (lokasi_nama || 'Batu Busuak').trim();
-      const treeSpecies = (jenis_pohon || 'Trembesi').trim();
-      const umurBulan = parseInt(umur_tanam_bulan, 10) || 1;
-      const jangkaTahun = parseInt(jangka_hidup_tahun, 10) || 40;
-
-      // Geofence verification
-      const geofence = checkGeofence(lat, lng, locId);
-      let initialCatatan = null;
-      if (geofence.isOutOfZone) {
-        initialCatatan = `🚨 [GEOFENCE ALERT]: Posisi terdeteksi berjarak ${geofence.distFormatted} di luar zona resmi ${geofence.zoneName}!`;
-      }
-
-      // Insert point as WKT POINT(longitude latitude)
-      const pointWkt = `POINT(${lng} ${lat})`;
+      const foto_after_url = afterFile ? `/uploads/tanam/${afterFile.filename}` : null;
 
       const [insertResult] = await pool.query(`
         INSERT INTO titik_tanam (
@@ -245,15 +298,15 @@ router.post(
       `, [
         req.tim.id,
         req.tim.nama_tim,
-        locId,
-        locName,
-        treeSpecies,
-        umurBulan,
-        jangkaTahun,
+        parsed.locId,
+        parsed.locName,
+        parsed.treeSpecies,
+        parsed.umurBulan,
+        parsed.jangkaTahun,
         foto_before_url,
         foto_after_url,
-        initialCatatan,
-        pointWkt,
+        parsed.initialCatatan,
+        parsed.pointWkt,
       ]);
 
       res.status(201).json({
@@ -263,18 +316,135 @@ router.post(
           id: insertResult.insertId,
           tim_id: req.tim.id,
           nama_peserta: req.tim.nama_tim,
-          lokasi_nama: locName,
-          jenis_pohon: treeSpecies,
-          latitude: lat,
-          longitude: lng,
+          lokasi_id: parsed.locId,
+          lokasi_nama: parsed.locName,
+          jenis_pohon: parsed.treeSpecies,
+          umur_tanam_bulan: parsed.umurBulan,
+          jangka_hidup_tahun: parsed.jangkaTahun,
+          latitude: parsed.lat,
+          longitude: parsed.lng,
           foto_before_url,
           foto_after_url,
+          status_verifikasi: 'pending',
+          updated_at: null,
+        },
+      });
+    } catch (error) {
+      cleanupUploadedFiles(req.files);
+      console.error('POST /api/tim/titik-tanam error:', error);
+      res.status(500).json({ error: `Gagal menyimpan titik penanaman: ${error.message}` });
+    }
+  }
+);
+
+// =========================================================================
+// 5. PUT /api/tim/titik-tanam/:id - Edit / Update Titik Tanam (Semua Kondisi)
+//    Mempertahankan ID/kode titik yang sama dan mereset status ke 'pending'
+// =========================================================================
+router.put(
+  '/titik-tanam/:id',
+  requireTimAuth,
+  handlePointPhotoUpload,
+  async (req, res) => {
+    const pointId = req.params.id;
+    try {
+      const [rows] = await pool.query(
+        'SELECT id, tim_id, foto_before_url, foto_after_url, status_verifikasi FROM titik_tanam WHERE id = ? LIMIT 1',
+        [pointId]
+      );
+
+      if (rows.length === 0) {
+        cleanupUploadedFiles(req.files);
+        return res.status(404).json({ error: 'Titik penanaman tidak ditemukan.' });
+      }
+
+      const existing = rows[0];
+      if (existing.tim_id !== req.tim.id) {
+        cleanupUploadedFiles(req.files);
+        return res.status(403).json({ error: 'Anda hanya dapat memperbarui titik penanaman milik tim Anda.' });
+      }
+
+      const parsed = parseAndValidatePointInput(req.body);
+      if (parsed.error) {
+        cleanupUploadedFiles(req.files);
+        return res.status(400).json({ error: parsed.error });
+      }
+
+      const beforeFile = req.files && req.files.foto_before ? req.files.foto_before[0] : null;
+      const afterFile = req.files && req.files.foto_after ? req.files.foto_after[0] : null;
+      const clearAfter = req.body.clear_foto_after === 'true';
+
+      const nextBeforeUrl = beforeFile ? `/uploads/tanam/${beforeFile.filename}` : existing.foto_before_url;
+      if (!nextBeforeUrl) {
+        cleanupUploadedFiles(req.files);
+        return res.status(400).json({ error: 'Foto awal saat pertama ditanam (Before) wajib tersedia.' });
+      }
+
+      const nextAfterUrl = afterFile
+        ? `/uploads/tanam/${afterFile.filename}`
+        : clearAfter
+        ? null
+        : existing.foto_after_url;
+
+      await pool.query(`
+        UPDATE titik_tanam
+        SET lokasi_id = ?,
+            lokasi_nama = ?,
+            jenis_pohon = ?,
+            umur_tanam_bulan = ?,
+            jangka_hidup_tahun = ?,
+            foto_before_url = ?,
+            foto_after_url = ?,
+            status_verifikasi = 'pending',
+            catatan_verifikasi = ?,
+            geom = ST_GeomFromText(?),
+            updated_at = NOW()
+        WHERE id = ? AND tim_id = ?
+      `, [
+        parsed.locId,
+        parsed.locName,
+        parsed.treeSpecies,
+        parsed.umurBulan,
+        parsed.jangkaTahun,
+        nextBeforeUrl,
+        nextAfterUrl,
+        parsed.initialCatatan,
+        parsed.pointWkt,
+        pointId,
+        req.tim.id,
+      ]);
+
+      // Remove superseded files only after DB update succeeds
+      if (beforeFile && existing.foto_before_url && existing.foto_before_url !== nextBeforeUrl) {
+        removeLocalTanamFile(existing.foto_before_url);
+      }
+      if ((afterFile || clearAfter) && existing.foto_after_url && existing.foto_after_url !== nextAfterUrl) {
+        removeLocalTanamFile(existing.foto_after_url);
+      }
+
+      res.json({
+        message: 'Data titik penanaman berhasil diperbarui dengan kode yang sama dan diajukan untuk verifikasi ulang panitia.',
+        id: existing.id,
+        point: {
+          id: existing.id,
+          tim_id: req.tim.id,
+          nama_peserta: req.tim.nama_tim,
+          lokasi_id: parsed.locId,
+          lokasi_nama: parsed.locName,
+          jenis_pohon: parsed.treeSpecies,
+          umur_tanam_bulan: parsed.umurBulan,
+          jangka_hidup_tahun: parsed.jangkaTahun,
+          latitude: parsed.lat,
+          longitude: parsed.lng,
+          foto_before_url: nextBeforeUrl,
+          foto_after_url: nextAfterUrl,
           status_verifikasi: 'pending',
         },
       });
     } catch (error) {
-      console.error('POST /api/tim/titik-tanam error:', error);
-      res.status(500).json({ error: `Gagal menyimpan titik penanaman: ${error.message}` });
+      cleanupUploadedFiles(req.files);
+      console.error('PUT /api/tim/titik-tanam/:id error:', error);
+      res.status(500).json({ error: `Gagal memperbarui titik penanaman: ${error.message}` });
     }
   }
 );

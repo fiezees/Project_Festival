@@ -297,7 +297,7 @@ function CtaBrushingLeaves() {
     { style: { right: '-20px', bottom: '-8px', rotate: '-18deg' }, w: 25, c1: '#B58D32', c2: '#785A1E', delay: 0.75 },
   ];
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-visible z-20 select-none" aria-hidden="true">
+    <div className="pointer-events-none absolute inset-0 overflow-visible z-[1] select-none" aria-hidden="true">
       {leaves.map((l, idx) => (
         <DetailedDryLeaf
           key={idx}
@@ -326,7 +326,7 @@ function FlyingDryLeaves() {
     { x: '93%', y: '68%', w: 23, rot: 28,  c1: '#9C8A38', c2: '#645822', delay: 0.8 },
   ];
   return (
-    <div className="pointer-events-none absolute inset-0 hidden lg:block overflow-visible z-[6] select-none" aria-hidden="true">
+    <div className="pointer-events-none absolute inset-0 hidden lg:block overflow-visible z-[2] select-none" aria-hidden="true">
       {leaves.map((l, idx) => (
         <DetailedDryLeaf
           key={idx}
@@ -361,14 +361,14 @@ function HeroSection({ onNavigateTo }) {
         aria-hidden="true"
       />
 
-      {/* Larger Crisp HD left & bottom-left botanical fern framing (848x1264 transparent PNG) */}
+      {/* Larger Crisp HD left & bottom-left botanical fern framing (848x1264 transparent PNG, strictly behind text) */}
       <img
         src="/fern-frame-left.png"
         width={848}
         height={1264}
         alt=""
         aria-hidden="true"
-        className="pointer-events-none absolute bottom-0 left-0 z-[5] w-[110px] sm:w-[165px] lg:w-[195px] xl:w-[250px] 2xl:w-[295px] h-auto object-contain object-left-bottom select-none opacity-90 lg:opacity-95"
+        className="pointer-events-none absolute bottom-0 left-0 z-[1] w-[110px] sm:w-[165px] lg:w-[195px] xl:w-[250px] 2xl:w-[295px] h-auto object-contain object-left-bottom select-none opacity-65 sm:opacity-75 lg:opacity-80"
       />
 
       {/* Top-right balanced HD botanical fern framing (rotated 180deg to mirror bottom-left) */}
@@ -378,25 +378,25 @@ function HeroSection({ onNavigateTo }) {
         height={1264}
         alt=""
         aria-hidden="true"
-        className="pointer-events-none absolute top-0 right-0 z-[5] w-[105px] sm:w-[150px] lg:w-[180px] xl:w-[225px] 2xl:w-[265px] h-auto object-contain select-none opacity-85 lg:opacity-90"
+        className="pointer-events-none absolute top-0 right-0 z-[1] w-[105px] sm:w-[150px] lg:w-[180px] xl:w-[225px] 2xl:w-[265px] h-auto object-contain select-none opacity-75 lg:opacity-85"
         style={{ transform: 'rotate(180deg)' }}
       />
 
       <FlyingDryLeaves />
 
-      <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 w-full overflow-visible">
+      <div className="relative z-20 max-w-6xl mx-auto px-4 sm:px-6 w-full overflow-visible">
         <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-8 overflow-visible">
 
           {/* ── Left Column: Vertikal terpusat dengan lereng kanan, tanpa ruang kosong berlebih ── */}
-          <div className="flex flex-col">
-            <FadeIn delay={0.1}>
+          <div className="relative z-20 flex flex-col">
+            <FadeIn delay={0.1} className="relative z-20">
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold"
                 style={{ background: `${C.sage}18`, color: C.forest, border: `1px solid ${C.sage}30` }}>
                 Dari Ranah Minang untuk Bumi Sejak 1986
               </div>
             </FadeIn>
 
-            <FadeIn delay={0.2}>
+            <FadeIn delay={0.2} className="relative z-20">
               <h1 className="mt-4 font-black tracking-tight" style={{ color: C.forest }}>
                 <span className="block text-[1.85rem] sm:text-4xl lg:text-[2.25rem] xl:text-[2.6rem] leading-[1.12] sm:whitespace-nowrap">
                   Halo! Kami Perkumpulan
@@ -411,7 +411,7 @@ function HeroSection({ onNavigateTo }) {
               </h1>
             </FadeIn>
 
-            <FadeIn delay={0.3}>
+            <FadeIn delay={0.3} className="relative z-20">
               <p className="mt-4 text-base sm:text-[17px] leading-relaxed max-w-xl" style={{ color: C.brown }}>
                 Berawal dari sekumpulan kawan pecinta alam di Padang yang hobi mendaki gunung, kini kami bergerak
                 bersama warga menjaga hutan hulu sungai, merawat lingkungan, dan bersiaga menghadapi bencana.
@@ -423,14 +423,14 @@ function HeroSection({ onNavigateTo }) {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ type: 'spring', stiffness: 60, damping: 18, delay: 0.3 }}
-              className="mt-8"
+              className="relative z-20 mt-8"
             >
               <div className="flex flex-wrap items-center gap-5 sm:gap-6">
                 <div className="relative inline-flex items-center overflow-visible">
                   <CtaBrushingLeaves />
                   <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
                     onClick={() => goTo('cerita')}
-                    className="relative z-10 inline-flex items-center gap-2 h-12 px-6 rounded-full font-bold text-sm cursor-pointer shadow-md"
+                    className="relative z-20 inline-flex items-center gap-2 h-12 px-6 rounded-full font-bold text-sm cursor-pointer shadow-md"
                     style={{ background: C.forest, color: C.bgCream }}>
                     Kenali Cerita Kami <ChevronRight size={16} />
                   </motion.button>

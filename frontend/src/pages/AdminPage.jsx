@@ -540,7 +540,7 @@ export default function AdminPage({ onNavigateHome }) {
       setAdminPointsList((prev) =>
         prev.map((pt) =>
           pt.id === pointId
-            ? { ...pt, status_verifikasi: newStatus, catatan_verifikasi: note || pt.catatan_verifikasi }
+            ? { ...pt, status_verifikasi: newStatus, catatan_verifikasi: note || null }
             : pt
         )
       );
@@ -1869,9 +1869,17 @@ export default function AdminPage({ onNavigateHome }) {
                       <div className="flex items-start justify-between gap-2">
                         <div>
                           <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-[10px] font-mono font-bold text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
+                              #TP-{String(pt.id).padStart(3, '0')}
+                            </span>
                             <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">
                               {pt.nama_tim || pt.nama_peserta}
                             </span>
+                            {pt.status_verifikasi === 'pending' && pt.updated_at && (
+                              <span className="text-[10px] font-bold text-sky-800 bg-sky-100 border border-sky-200 px-2 py-0.5 rounded-full">
+                                Pembaruan • Verifikasi Ulang
+                              </span>
+                            )}
                             {geo.status === 'out_of_bounds' && (
                               <span className="text-[10px] font-black text-rose-800 bg-rose-100 border border-rose-300 px-2 py-0.5 rounded-full flex items-center gap-1 animate-pulse">
                                 <AlertTriangle className="w-3 h-3 text-rose-600" />
@@ -1918,39 +1926,51 @@ export default function AdminPage({ onNavigateHome }) {
                       {/* Before / After Photos (Portrait 3:4) */}
                       <div className="grid grid-cols-2 gap-2">
                         <div 
-                          onClick={() => setPreviewCurPhoto(pt.foto_before_url)}
+                          onClick={() => pt.foto_before_url && setPreviewCurPhoto(pt.foto_before_url)}
                           className="relative rounded-lg overflow-hidden bg-gray-100 aspect-[3/4] border border-gray-200 cursor-pointer group shadow-xs"
-                          title="Klik untuk melihat foto kondisi lahan penuh"
+                          title="Klik untuk melihat foto saat pertama ditanam penuh"
                         >
                           <img 
-                            src={getAssetUrl(pt.foto_before_url)} 
-                            alt="Before" 
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform" 
+                            src={getAssetUrl(pt.foto_before_url)}
+                            alt="Before (Awal Tanam)"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                             onError={(e) => {
                               e.currentTarget.onerror = null;
                               e.currentTarget.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="400" viewBox="0 0 300 400" fill="%23f1f5f9"><rect width="300" height="400" fill="%23f1f5f9"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="12" fill="%2394a3b8">🌱 Foto Belum Tersedia</text></svg>';
                             }}
                           />
-                          <span className="absolute bottom-1.5 left-1.5 bg-black/65 backdrop-blur-xs text-white text-[9px] font-bold px-1.5 py-0.5 rounded">Before</span>
+                          <span className="absolute bottom-1.5 left-1.5 bg-black/70 backdrop-blur-xs text-white text-[9px] font-bold px-1.5 py-0.5 rounded">Before · Awal</span>
                           <span className="absolute top-1.5 right-1.5 bg-black/50 text-white text-[8px] px-1 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity">🔍</span>
                         </div>
-                        <div 
-                          onClick={() => setPreviewCurPhoto(pt.foto_after_url)}
-                          className="relative rounded-lg overflow-hidden bg-gray-100 aspect-[3/4] border border-gray-200 cursor-pointer group shadow-xs"
-                          title="Klik untuk melihat foto bibit tertanam penuh"
-                        >
-                          <img 
-                            src={getAssetUrl(pt.foto_after_url)} 
-                            alt="After" 
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform" 
-                            onError={(e) => {
-                              e.currentTarget.onerror = null;
-                              e.currentTarget.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="400" viewBox="0 0 300 400" fill="%23f1f5f9"><rect width="300" height="400" fill="%23f1f5f9"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="12" fill="%2394a3b8">🌱 Foto Belum Tersedia</text></svg>';
-                            }}
-                          />
-                          <span className="absolute bottom-1.5 left-1.5 bg-emerald-950/85 backdrop-blur-xs text-[#F4B91F] text-[9px] font-bold px-1.5 py-0.5 rounded">After</span>
-                          <span className="absolute top-1.5 right-1.5 bg-black/50 text-white text-[8px] px-1 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity">🔍</span>
-                        </div>
+                        {pt.foto_after_url ? (
+                          <div
+                            onClick={() => setPreviewCurPhoto(pt.foto_after_url)}
+                            className="relative rounded-lg overflow-hidden bg-gray-100 aspect-[3/4] border border-gray-200 cursor-pointer group shadow-xs"
+                            title="Klik untuk melihat foto perkembangan 6 bulan penuh"
+                          >
+                            <img
+                              src={getAssetUrl(pt.foto_after_url)}
+                              alt="After (6 Bulan)"
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                              onError={(e) => {
+                                e.currentTarget.onerror = null;
+                                e.currentTarget.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="400" viewBox="0 0 300 400" fill="%23f1f5f9"><rect width="300" height="400" fill="%23f1f5f9"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="12" fill="%2394a3b8">🌱 Foto Belum Tersedia</text></svg>';
+                              }}
+                            />
+                            <span className="absolute bottom-1.5 left-1.5 bg-emerald-950/85 backdrop-blur-xs text-[#F4B91F] text-[9px] font-bold px-1.5 py-0.5 rounded">After · 6 Bln</span>
+                            <span className="absolute top-1.5 right-1.5 bg-black/50 text-white text-[8px] px-1 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity">🔍</span>
+                          </div>
+                        ) : (
+                          <div className="relative rounded-lg bg-slate-50 aspect-[3/4] border-2 border-dashed border-slate-200 flex flex-col items-center justify-center p-2.5 text-center gap-1">
+                            <Clock className="w-5 h-5 text-slate-400" />
+                            <span className="text-[10px] font-bold text-slate-600 leading-tight">
+                              After (6 Bulan)
+                            </span>
+                            <span className="text-[9px] text-slate-500 leading-snug">
+                              Menunggu pembaruan 6 bulan oleh tim
+                            </span>
+                          </div>
+                        )}
                       </div>
 
                       {/* Coordinates */}
@@ -1966,7 +1986,9 @@ export default function AdminPage({ onNavigateHome }) {
                           <span>{pt.latitude}, {pt.longitude}</span>
                           <ExternalLink className="w-3 h-3 text-gray-400" />
                         </a>
-                        <span className="text-[10px] text-gray-400">{formatDate(pt.created_at)}</span>
+                        <span className="text-[10px] text-gray-400">
+                          {pt.updated_at ? `Diperbarui ${formatDate(pt.updated_at)}` : formatDate(pt.created_at)}
+                        </span>
                       </div>
 
                       {/* Catatan verifikasi */}

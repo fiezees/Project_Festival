@@ -1,4 +1,12 @@
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3001/api';
+const getApiBase = () => {
+  if (import.meta.env.VITE_API_BASE) return import.meta.env.VITE_API_BASE;
+  if (typeof window !== 'undefined' && window.location.hostname && window.location.hostname !== 'localhost') {
+    return `http://${window.location.hostname}:3001/api`;
+  }
+  return 'http://localhost:3001/api';
+};
+
+const API_BASE = getApiBase();
 
 /**
  * Helper to resolve static asset paths (e.g. /uploads/tanam/...) to full reachable URLs
@@ -13,7 +21,10 @@ export function getAssetUrl(pathOrUrl) {
   ) {
     return pathOrUrl;
   }
-  const backendBase = (import.meta.env.VITE_API_BASE || 'http://localhost:3001/api').replace(/\/api\/?$/, '');
+  const defaultBackend = (typeof window !== 'undefined' && window.location.hostname && window.location.hostname !== 'localhost')
+    ? `http://${window.location.hostname}:3001`
+    : 'http://localhost:3001';
+  const backendBase = (import.meta.env.VITE_API_BASE || `${defaultBackend}/api`).replace(/\/api\/?$/, '');
   const cleanPath = pathOrUrl.startsWith('/') ? pathOrUrl : `/${pathOrUrl}`;
   return `${backendBase}${cleanPath}`;
 }
@@ -273,9 +284,9 @@ export function getTimPlantingPoints(timToken) {
   });
 }
 
-export async function submitTimPlantingPoint(timToken, formData) {
-  const response = await fetch(`${API_BASE}/tim/titik-tanam`, {
-    method: 'POST',
+async function uploadTimPlantingPoint(timToken, path, method, formData, fallbackError) {
+  const response = await fetch(`${API_BASE}${path}`, {
+    method,
     headers: {
       Authorization: `Bearer ${timToken}`,
     },
@@ -284,9 +295,29 @@ export async function submitTimPlantingPoint(timToken, formData) {
 
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new Error(data.error || 'Gagal mengirim titik penanaman');
+    throw new Error(data.error || fallbackError);
   }
   return data;
+}
+
+export function submitTimPlantingPoint(timToken, formData) {
+  return uploadTimPlantingPoint(
+    timToken,
+    '/tim/titik-tanam',
+    'POST',
+    formData,
+    'Gagal mengirim titik penanaman'
+  );
+}
+
+export function updateTimPlantingPoint(timToken, id, formData) {
+  return uploadTimPlantingPoint(
+    timToken,
+    `/tim/titik-tanam/${id}`,
+    'PUT',
+    formData,
+    'Gagal memperbarui titik penanaman'
+  );
 }
 
 export function deleteTimPlantingPoint(timToken, id) {

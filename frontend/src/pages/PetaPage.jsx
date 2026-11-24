@@ -5,6 +5,7 @@ import {
   ArrowLeft,
   ChevronLeft,
   ChevronRight,
+  Clock,
   ExternalLink,
   Eye,
   Filter,
@@ -109,13 +110,20 @@ function createPointPopupHtml(p) {
       <!-- Side-by-side Portrait Thumbnails -->
       <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 6px;">
         <div style="position: relative; border-radius: 6px; overflow: hidden; aspect-ratio: 3/4; background: #f1f5f9; border: 1px solid #e2e8f0;">
-          <img src="${beforeUrl}" alt="Before" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'100\\' height=\\'133\\' fill=\\'%23f1f5f9\\'><text x=\\'50%\\' y=\\'50%\\' dominant-baseline=\\'middle\\' text-anchor=\\'middle\\' font-size=\\'10\\' fill=\\'%2394a3b8\\'>Before</text></svg>'" />
-          <span style="position: absolute; bottom: 2px; left: 2px; background: rgba(0,0,0,0.65); color: #fff; font-size: 8px; font-weight: 700; padding: 1px 4px; border-radius: 3px;">Before</span>
+          <img src="${beforeUrl}" alt="Before (Awal Tanam)" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'100\\' height=\\'133\\' fill=\\'%23f1f5f9\\'><text x=\\'50%\\' y=\\'50%\\' dominant-baseline=\\'middle\\' text-anchor=\\'middle\\' font-size=\\'10\\' fill=\\'%2394a3b8\\'>Before</text></svg>'" />
+          <span style="position: absolute; bottom: 2px; left: 2px; background: rgba(0,0,0,0.68); color: #fff; font-size: 8px; font-weight: 700; padding: 1px 4px; border-radius: 3px;">Before · Awal</span>
         </div>
-        <div style="position: relative; border-radius: 6px; overflow: hidden; aspect-ratio: 3/4; background: #f1f5f9; border: 1px solid #e2e8f0;">
-          <img src="${afterUrl}" alt="After" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'100\\' height=\\'133\\' fill=\\'%23f1f5f9\\'><text x=\\'50%\\' y=\\'50%\\' dominant-baseline=\\'middle\\' text-anchor=\\'middle\\' font-size=\\'10\\' fill=\\'%2394a3b8\\'>After</text></svg>'" />
-          <span style="position: absolute; bottom: 2px; left: 2px; background: rgba(6,63,53,0.85); color: #F4B91F; font-size: 8px; font-weight: 700; padding: 1px 4px; border-radius: 3px;">After</span>
-        </div>
+        ${
+          afterUrl
+            ? `<div style="position: relative; border-radius: 6px; overflow: hidden; aspect-ratio: 3/4; background: #f1f5f9; border: 1px solid #e2e8f0;">
+                <img src="${afterUrl}" alt="After (6 Bulan)" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' width=\\'100\\' height=\\'133\\' fill=\\'%23f1f5f9\\'><text x=\\'50%\\' y=\\'50%\\' dominant-baseline=\\'middle\\' text-anchor=\\'middle\\' font-size=\\'10\\' fill=\\'%2394a3b8\\'>After</text></svg>'" />
+                <span style="position: absolute; bottom: 2px; left: 2px; background: rgba(6,63,53,0.85); color: #F4B91F; font-size: 8px; font-weight: 700; padding: 1px 4px; border-radius: 3px;">After · 6 Bln</span>
+              </div>`
+            : `<div style="position: relative; border-radius: 6px; aspect-ratio: 3/4; background: #f8fafc; border: 1px dashed #cbd5e1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px; text-align: center;">
+                <span style="font-size: 9px; font-weight: 700; color: #475569; line-height: 1.2;">After (6 Bln)</span>
+                <span style="font-size: 8px; color: #94a3b8; margin-top: 3px; line-height: 1.2;">Menunggu update 6 bulan</span>
+              </div>`
+        }
       </div>
 
       <div style="display: flex; align-items: center; justify-content: space-between; font-size: 10px; color: #64748b; padding-top: 4px; border-top: 1px solid #f1f5f9;">
@@ -236,39 +244,55 @@ function AdaptivePhotoPair({
           }}
         />
         <span className="absolute bottom-1.5 left-1.5 bg-black/70 backdrop-blur-xs text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
-          Before (Lahan)
+          Before (Awal)
         </span>
         <span className="absolute top-1.5 right-1.5 bg-black/60 text-white text-[8px] px-1 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5">
           <Eye className="w-2.5 h-2.5" /> Zoom
         </span>
       </div>
 
-      {/* After Photo */}
-      <div
-        onClick={onZoomAfter}
-        className={`relative rounded-xl overflow-hidden bg-gray-100 border border-gray-200 cursor-pointer group shadow-2xs transition-all ${getCardClasses(
-          afterRatio
-        )}`}
-        title="Klik untuk melihat foto bibit tertanam resolusi penuh"
-      >
-        <img
-          src={getAssetUrl(afterUrl)}
-          alt="After Bibit"
-          onLoad={handleAfterLoad}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-          onError={(e) => {
-            e.currentTarget.onerror = null;
-            e.currentTarget.src =
-              'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="400" viewBox="0 0 300 400" fill="%23f1f5f9"><rect width="300" height="400" fill="%23f1f5f9"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="12" fill="%2394a3b8">🌱 Foto Belum Ada</text></svg>';
-          }}
-        />
-        <span className="absolute bottom-1.5 left-1.5 bg-emerald-950/85 backdrop-blur-xs text-[#F4B91F] text-[9px] font-bold px-1.5 py-0.5 rounded">
-          After (Bibit)
-        </span>
-        <span className="absolute top-1.5 right-1.5 bg-black/60 text-white text-[8px] px-1 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5">
-          <Eye className="w-2.5 h-2.5" /> Zoom
-        </span>
-      </div>
+      {/* After Photo (6 Bulan — opsional) */}
+      {afterUrl ? (
+        <div
+          onClick={onZoomAfter}
+          className={`relative rounded-xl overflow-hidden bg-gray-100 border border-gray-200 cursor-pointer group shadow-2xs transition-all ${getCardClasses(
+            afterRatio
+          )}`}
+          title="Klik untuk melihat foto perkembangan 6 bulan resolusi penuh"
+        >
+          <img
+            src={getAssetUrl(afterUrl)}
+            alt="After (6 Bulan)"
+            onLoad={handleAfterLoad}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src =
+                'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="400" viewBox="0 0 300 400" fill="%23f1f5f9"><rect width="300" height="400" fill="%23f1f5f9"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="12" fill="%2394a3b8">🌱 Foto Belum Ada</text></svg>';
+            }}
+          />
+          <span className="absolute bottom-1.5 left-1.5 bg-emerald-950/85 backdrop-blur-xs text-[#F4B91F] text-[9px] font-bold px-1.5 py-0.5 rounded">
+            After (6 Bln)
+          </span>
+          <span className="absolute top-1.5 right-1.5 bg-black/60 text-white text-[8px] px-1 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5">
+            <Eye className="w-2.5 h-2.5" /> Zoom
+          </span>
+        </div>
+      ) : (
+        <div
+          className={`relative rounded-xl bg-slate-50 border-2 border-dashed border-slate-200 flex flex-col items-center justify-center p-2.5 text-center gap-1 shadow-2xs ${getCardClasses(
+            afterRatio
+          )}`}
+        >
+          <Clock className="w-4 h-4 text-slate-400" />
+          <span className="text-[10px] font-bold text-slate-600 leading-tight">
+            After (6 Bulan)
+          </span>
+          <span className="text-[9px] text-slate-400 leading-snug">
+            Menunggu foto perkembangan 6 bulan
+          </span>
+        </div>
+      )}
     </div>
   );
 }

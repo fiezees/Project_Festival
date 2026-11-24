@@ -62,9 +62,11 @@ async function initDatabase() {
     // 3. Ensure columns on titik_tanam for team associations and verification
     const alterTitikQueries = [
       'ALTER TABLE titik_tanam ADD COLUMN tim_id INT UNSIGNED NULL AFTER id',
+      'ALTER TABLE titik_tanam MODIFY COLUMN foto_after_url VARCHAR(500) NULL',
       "ALTER TABLE titik_tanam ADD COLUMN status_verifikasi ENUM('pending', 'approved', 'rejected') NOT NULL DEFAULT 'approved' AFTER foto_after_url",
       'ALTER TABLE titik_tanam ADD COLUMN catatan_verifikasi TEXT NULL AFTER status_verifikasi',
       'ALTER TABLE titik_tanam ADD COLUMN created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP AFTER geom',
+      'ALTER TABLE titik_tanam ADD COLUMN updated_at DATETIME NULL DEFAULT NULL AFTER created_at',
     ];
 
     for (const q of alterTitikQueries) {

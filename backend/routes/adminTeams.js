@@ -115,7 +115,7 @@ router.post('/teams/generate-account', requireAdminAuth, async (req, res) => {
       `1. Buka link portal di atas lewat browser HP kalian.\n` +
       `2. Masuk menggunakan username & sandi tim.\n` +
       `3. Di lokasi penanaman, klik tombol *'Ambil Lokasi Saya'* (GPS langsung terkunci akurat).\n` +
-      `4. Ambil foto *Before* (kondisi lahan) dan foto *After* (bibit tertanam) — sistem otomatis mengompresi & menyesuaikan ukuran foto agar cepat terkirim.\n` +
+      `4. Ambil foto *Before* (kondisi saat pertama ditanam). Foto *After* (perkembangan setelah ±6 bulan) bersifat opsional saat awal dan dapat disusulkan melalui fitur *Edit* dengan kode titik yang sama.\n` +
       `5. Tekan *Kirim*, dan pohon kalian otomatis masuk antrean verifikasi WebGIS!\n\n` +
       `Mohon simpan pesan ini dan bagikan ke kawan-kawan satu tim yaa. Jika ada kendala teknis, tim panitia siap mendampingi teman-teman di lapangan.\n\n` +
       `Mari bersama kita hijaukan kembali hulu sungai kita! Salam lestari! 💚🌿\n\n` +
@@ -190,14 +190,14 @@ router.get('/titik-tanam', requireAdminAuth, async (req, res) => {
       SELECT 
         t.id, t.tim_id, t.nama_peserta, t.lokasi_id, t.lokasi_nama, t.jenis_pohon,
         t.umur_tanam_bulan, t.jangka_hidup_tahun, t.foto_before_url, t.foto_after_url,
-        t.status_verifikasi, t.catatan_verifikasi, t.created_at,
+        t.status_verifikasi, t.catatan_verifikasi, t.created_at, t.updated_at,
         ST_X(t.geom) AS longitude,
         ST_Y(t.geom) AS latitude,
         u.nama_tim, u.telepon, u.nama_ketua
       FROM titik_tanam t
       LEFT JOIN tim_users u ON t.tim_id = u.id
       ${whereClause}
-      ORDER BY t.id DESC
+      ORDER BY COALESCE(t.updated_at, t.created_at) DESC, t.id DESC
     `, params);
 
     res.json({ data: rows });
