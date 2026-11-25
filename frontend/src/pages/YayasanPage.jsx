@@ -103,6 +103,8 @@ function Navbar({ onNavigateTo }) {
     { label: 'Yayasan', id: 'organisasi-yayasan' },
     { label: 'Perkumpulan', id: 'organisasi-perkumpulan' },
     { label: 'SISPALA', id: 'organisasi-sispala' },
+    { label: 'Tentang Kami', scrollTo: 'cerita' },
+    { label: 'Berita', scrollTo: 'kabar' },
   ];
 
   useEffect(() => {
@@ -111,10 +113,15 @@ function Navbar({ onNavigateTo }) {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const handleNav = (id) => {
+  const handleNav = (link) => {
     setMenuOpen(false);
-    setActiveId(id);
-    onNavigateTo(id);
+    const key = link.scrollTo || link.id;
+    setActiveId(key);
+    if (link.scrollTo) {
+      goTo(link.scrollTo);
+      return;
+    }
+    onNavigateTo(link.id);
   };
 
   return (
@@ -143,12 +150,13 @@ function Navbar({ onNavigateTo }) {
         </div>
 
         {/* Desktop links */}
-        <div className="hidden md:flex items-center gap-0.5">
+        <div className="hidden md:flex items-center gap-0.5 lg:gap-1">
           {navLinks.map(link => {
-            const active = activeId === link.id;
+            const key = link.scrollTo || link.id;
+            const active = activeId === key;
             return (
-              <button key={link.id} onClick={() => handleNav(link.id)}
-                className="relative text-sm font-medium px-3 py-1.5 rounded-full transition-all"
+              <button key={key} onClick={() => handleNav(link)}
+                className="relative whitespace-nowrap text-[13px] lg:text-sm font-medium px-2.5 lg:px-3 py-1.5 rounded-full transition-all cursor-pointer"
                 style={{ color: active ? C.forest : C.brown, background: active ? `${C.yellow}22` : 'transparent' }}>
                 {link.label}
                 {active && (
@@ -191,10 +199,10 @@ function Navbar({ onNavigateTo }) {
             style={{ background: 'rgba(247,243,232,0.97)', backdropFilter: 'blur(20px)',
               border: '1px solid rgba(27,50,38,0.10)', boxShadow: '0 20px 40px rgba(27,50,38,0.12)' }}>
             {navLinks.map((link, i) => (
-              <motion.button key={link.id}
+              <motion.button key={link.scrollTo || link.id}
                 initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.05 }}
-                onClick={() => handleNav(link.id)}
+                onClick={() => handleNav(link)}
                 className="flex items-center justify-between w-full px-3 py-3 rounded-2xl hover:bg-black/5 transition-colors"
                 style={{ color: C.forest }}>
                 <span className="font-medium">{link.label}</span>
@@ -343,6 +351,226 @@ function FlyingDryLeaves() {
   );
 }
 
+// ── Detailed botanical & watershed wreath enveloping the HD FTH logo ──────────
+function EnvelopingWreathSide({ side = 'left' }) {
+  const transform = side === 'right' ? 'translate(460 0) scale(-1 1)' : undefined;
+  // Every leaf stays strictly outside the central logo zone (x: 115..345, y: 65..331)
+  const leaves = [
+    // [tx, ty, rot, scale, fill, vein]
+    [194, 400, 162, 0.90, '#2B4A31', '#E8E2CE'],
+    [152, 386, 148, 1.00, '#3F5B35', '#E8E2CE'],
+    [170, 366, 198, 0.76, '#7A8C43', '#F5EED8'],
+    [114, 360, 132, 1.04, '#4C683D', '#E8E2CE'],
+    [126, 344, 174, 0.74, '#D49424', '#FFF3CE'],
+    [78,  316, 108, 1.06, '#355336', '#E8E2CE'],
+    [94,  288, 146, 0.80, '#5C7457', '#E8E2CE'],
+    [56,  262,  82, 1.04, '#48683C', '#E8E2CE'],
+    [80,  238, 126, 0.76, '#C89230', '#FFF3CE'],
+    [48,  206,  64, 1.00, '#2F4D34', '#E8E2CE'],
+    [76,  184, 112, 0.74, '#6E884B', '#F5EED8'],
+    [54,  152,  46, 0.92, '#5C7457', '#E8E2CE'],
+    [82,  134,  92, 0.70, '#D8A234', '#FFF3CE'],
+    [76,  104,  30, 0.84, '#7E8D40', '#F5EED8'],
+    [102,  80,  14, 0.72, '#D49424', '#FFF3CE'],
+  ];
+  const buds = [
+    [164, 378, 3.2, '#E5A93C'],
+    [124, 354, 3.5, '#F4B91F'],
+    [86,  302, 3.2, '#E5A93C'],
+    [64,  226, 3.4, '#F4B91F'],
+    [66,  168, 3.0, '#E5A93C'],
+    [90,  116, 2.8, '#F4B91F'],
+  ];
+
+  return (
+    <g transform={transform}>
+      {/* Main sweeping vine stem */}
+      <path
+        d="M 228 408 C 148 406, 68 358, 52 246 C 41 176, 66 120, 108 78"
+        stroke="#3F5B35"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+        fill="none"
+      />
+      {/* Delicate inner tendril */}
+      <path
+        d="M 184 396 C 128 378, 92 336, 80 276"
+        stroke="#5C7457"
+        strokeOpacity="0.65"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+        fill="none"
+      />
+      {/* Outer fern-like curl */}
+      <path
+        d="M 88 334 C 54 326, 38 302, 38 274"
+        stroke="#5C7457"
+        strokeOpacity="0.55"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+        fill="none"
+      />
+
+      {/* Multi-toned veined leaves */}
+      {leaves.map(([tx, ty, rot, sc, fill, vein], i) => (
+        <g key={i} transform={`translate(${tx} ${ty}) rotate(${rot}) scale(${sc})`}>
+          <path
+            d="M 0 0 C 7 -11, 22 -12, 32 -2 C 23 10, 8 11, 0 0 Z"
+            fill={fill}
+          />
+          <path
+            d="M 1 0 C 11 -1, 21 -1.5, 30 -2"
+            stroke={vein}
+            strokeOpacity="0.55"
+            strokeWidth="0.95"
+            strokeLinecap="round"
+          />
+          <path
+            d="M 10 -0.6 L 14 -5 M 18 -1.2 L 22 -5.2 M 12 0 L 16 4.4 M 20 -0.8 L 24 3.4"
+            stroke={vein}
+            strokeOpacity="0.38"
+            strokeWidth="0.7"
+            strokeLinecap="round"
+          />
+        </g>
+      ))}
+
+      {/* Golden seed berries with soft highlights */}
+      {buds.map(([cx, cy, r, fill], i) => (
+        <g key={i}>
+          <circle cx={cx} cy={cy} r={r} fill={fill} />
+          <circle cx={cx - r * 0.28} cy={cy - r * 0.28} r={r * 0.34} fill="#FFF7DA" />
+        </g>
+      ))}
+    </g>
+  );
+}
+
+function FthLogoEnvelopingFrame() {
+  return (
+    <div className="relative w-full max-w-[445px] mx-auto flex items-center justify-center overflow-visible py-1">
+      {/* Warm radial sunlight glow behind the FTH emblem */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            'radial-gradient(ellipse 68% 64% at 50% 46%, rgba(229,169,60,0.22) 0%, rgba(229,169,60,0.09) 40%, rgba(92,116,87,0.04) 64%, transparent 80%)',
+        }}
+        aria-hidden="true"
+      />
+
+      {/* Crisp HD SVG botanical & watershed frame enveloping the logo */}
+      <svg
+        viewBox="0 0 460 450"
+        fill="none"
+        className="pointer-events-none w-full h-auto overflow-visible select-none"
+        aria-hidden="true"
+      >
+        {/* Outer subtle topographic & compass rings */}
+        <circle
+          cx="230"
+          cy="204"
+          r="196"
+          stroke={C.sage}
+          strokeOpacity="0.24"
+          strokeWidth="1.25"
+          strokeDasharray="3 8"
+        />
+        <path
+          d="M 140 392 A 184 184 0 1 1 320 392"
+          stroke={C.yellow}
+          strokeOpacity="0.45"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+        <path
+          d="M 162 380 A 166 166 0 1 1 298 380"
+          stroke={C.sage}
+          strokeOpacity="0.16"
+          strokeWidth="1"
+          strokeDasharray="6 6"
+        />
+
+        {/* Subtle topographic lereng contour curves behind lower half */}
+        <path
+          d="M 86 270 Q 158 238 230 258 T 374 270"
+          stroke={C.sage}
+          strokeOpacity="0.14"
+          strokeWidth="1.2"
+        />
+        <path
+          d="M 102 292 Q 168 264 230 282 T 358 292"
+          stroke={C.sage}
+          strokeOpacity="0.11"
+          strokeWidth="1.1"
+        />
+
+        {/* Flowing river water swirls cradling the base cleanly below text */}
+        <path
+          d="M 152 356 Q 192 374 230 362 Q 268 350 308 356"
+          stroke="#3B9AE1"
+          strokeOpacity="0.34"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+        />
+        <path
+          d="M 168 368 Q 200 382 230 372 Q 260 362 292 368"
+          stroke="#56B4E9"
+          strokeOpacity="0.26"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+
+        {/* Enveloping left & right botanical branches */}
+        <EnvelopingWreathSide side="left" />
+        <EnvelopingWreathSide side="right" />
+
+        {/* Center bottom symmetrical sprout clasp joining both branches */}
+        <g transform="translate(230 406)">
+          <path d="M 0 2 C -5 -6, -12 -10, -16 -6 C -11 -1, -5 1, 0 2 Z" fill={C.sage} />
+          <path d="M 0 2 C 5 -6, 12 -10, 16 -6 C 11 -1, 5 1, 0 2 Z" fill={C.sage} />
+          <path d="M 0 2 C -4 -9, 0 -18, 0 -20 C 0 -18, 4 -9, 0 2 Z" fill={C.yellowH} />
+          <circle cx="0" cy="3" r="3.5" fill={C.forest} />
+          <circle cx="0" cy="3" r="1.5" fill={C.yellow} />
+        </g>
+
+        {/* Top cardinal diamond & sun flare */}
+        <g transform="translate(230 22)">
+          <path d="M 0 -7 L 5 0 L 0 7 L -5 0 Z" fill={C.yellow} fillOpacity="0.85" />
+          <circle cx="-16" cy="2" r="2" fill={C.sage} fillOpacity="0.5" />
+          <circle cx="16" cy="2" r="2" fill={C.sage} fillOpacity="0.5" />
+        </g>
+
+        {/* Tiny soaring birds echoing natural hillside life */}
+        <g stroke={C.forest} strokeOpacity="0.45" strokeWidth="1.4" strokeLinecap="round" fill="none">
+          <path d="M 68 58 Q 73 52 78 57 Q 83 52 88 58" />
+          <path d="M 92 44 Q 96 40 100 43 Q 104 40 108 44" strokeWidth="1.15" />
+          <path d="M 364 50 Q 369 44 374 49 Q 379 44 384 50" />
+          <path d="M 390 66 Q 394 62 398 65 Q 402 62 406 66" strokeWidth="1.15" />
+        </g>
+      </svg>
+
+      {/* Pure transparent HD Festival Tanam Hulu PNG centered cleanly inside the wreath */}
+      <motion.div
+        animate={{ y: [0, -7, 0] }}
+        transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute inset-0 z-10 flex items-center justify-center pb-10"
+      >
+        <motion.img
+          whileHover={{ scale: 1.025 }}
+          transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+          src="/logo-festival-hero.png"
+          width={1350}
+          height={1563}
+          alt="Logo Resmi Festival Tanam Hulu — DAS Batang Kuranji Padang"
+          className="w-[50%] max-w-[228px] h-auto select-none"
+          style={{ filter: 'drop-shadow(0 8px 18px rgba(27,50,38,0.10))' }}
+        />
+      </motion.div>
+    </div>
+  );
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // HERO SECTION
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -398,10 +626,10 @@ function HeroSection({ onNavigateTo }) {
 
             <FadeIn delay={0.2} className="relative z-20">
               <h1 className="mt-4 font-black tracking-tight" style={{ color: C.forest }}>
-                <span className="block text-[1.85rem] sm:text-4xl lg:text-[2.25rem] xl:text-[2.6rem] leading-[1.12] sm:whitespace-nowrap">
-                  Halo! Kami Perkumpulan
+                <span className="block text-3xl sm:text-4xl lg:text-[2.45rem] xl:text-[2.75rem] leading-[1.12] sm:whitespace-nowrap">
+                  Halo! Kami
                 </span>
-                <span className="relative inline-block text-[2.15rem] sm:text-5xl lg:text-[2.6rem] xl:text-[3rem] leading-[1.1] mt-0.5">
+                <span className="relative inline-block text-4xl sm:text-5xl lg:text-[2.75rem] xl:text-[3.15rem] leading-[1.1] mt-0.5">
                   <span className="relative z-10">Galapagos.</span>
                   <svg className="absolute -bottom-1 left-0 w-full" viewBox="0 0 200 12" fill="none">
                     <path d="M4 8 Q50 2 100 7 Q150 12 196 5"
@@ -448,44 +676,23 @@ function HeroSection({ onNavigateTo }) {
             </motion.div>
           </div>
 
-          {/* ── Right Column: HD Waterfall Island + Tagline Rapat + Tombol Ramping Simetris ── */}
+          {/* ── Right Column: HD Transparent FTH Logo Enveloped in Botanical Wreath + Tagline + CTA ── */}
           <div className="relative overflow-visible flex flex-col items-center">
             <FadeIn delay={0.25} dir="left" className="w-full overflow-visible">
               <div className="relative flex flex-col items-center w-full max-w-[445px] mx-auto overflow-visible">
 
-                {/* HD waterfall island container (978x893 > 2x supersampled HD) */}
+                {/* Enveloped HD FTH Logo Showcase */}
                 <div className="relative w-full overflow-visible">
-                  <div
-                    className="pointer-events-none absolute inset-0"
-                    style={{
-                      background: 'radial-gradient(ellipse 64% 58% at 50% 48%, rgba(229,169,60,0.20) 0%, rgba(229,169,60,0.09) 36%, rgba(229,169,60,0.02) 60%, transparent 78%)',
-                    }}
-                  />
+                  <FthLogoEnvelopingFrame />
 
-                  <motion.div
-                    animate={{ y: [0, -10, 0] }}
-                    transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut' }}
-                    className="relative z-10 overflow-visible flex justify-center"
-                  >
-                    <motion.img
-                      whileHover={{ scale: 1.015 }}
-                      transition={{ type: 'spring', stiffness: 180, damping: 20 }}
-                      src="/lereng-fth.png"
-                      width={978}
-                      height={893}
-                      alt="Kawasan Lereng Festival Tanam Hulu"
-                      className="w-full max-w-[390px] xl:max-w-[435px] h-auto select-none"
-                    />
-                  </motion.div>
-
-                  {/* Grounding ambient shadow synced with floating island motion */}
-                  <div className="relative z-20 -mt-5 pointer-events-none select-none flex flex-col items-center">
+                  {/* Grounding ambient shadow synced with floating logo motion */}
+                  <div className="relative z-20 -mt-3 pointer-events-none select-none flex flex-col items-center">
                     <motion.div
-                      animate={{ scale: [1, 0.91, 1], opacity: [0.95, 0.65, 0.95] }}
+                      animate={{ scale: [1, 0.92, 1], opacity: [0.9, 0.62, 0.9] }}
                       transition={{ duration: 5.5, repeat: Infinity, ease: 'easeInOut' }}
-                      className="w-[54%] h-4 rounded-full"
+                      className="w-[48%] h-3.5 rounded-full"
                       style={{
-                        background: 'radial-gradient(ellipse 50% 50% at 50% 50%, rgba(27,50,38,0.14) 0%, rgba(74,68,59,0.06) 44%, transparent 82%)',
+                        background: 'radial-gradient(ellipse 50% 50% at 50% 50%, rgba(27,50,38,0.13) 0%, rgba(74,68,59,0.05) 45%, transparent 82%)',
                       }}
                     />
                   </div>
@@ -539,7 +746,7 @@ function HeroSection({ onNavigateTo }) {
                       boxShadow: `0 6px 16px ${C.yellow}35`,
                     }}>
                     <img src={festivalLogo} alt=""
-                      className="h-6 w-6 rounded-full bg-white object-contain p-0.5 shadow-sm shrink-0" />
+                      className="h-7 w-7 rounded-full bg-white object-contain p-[1px] shadow-sm shrink-0" />
                     <span className="tracking-[0.01em]">Kunjungi Situs FTH</span>
                     <ArrowUpRight size={15} strokeWidth={2.2} className="shrink-0" />
                   </motion.button>
@@ -1017,9 +1224,12 @@ function CommunitySection() {
               </div>
               <h2 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight italic"
                 style={{ color: C.bgCream }}>
-                BERAWAL DARI SISPALA,<br />
-                <span style={{ color: C.yellow }}>BERAKHIR JADI KELUARGA</span>
+                KELUARGA <span style={{ color: C.yellow }}>GALAPAGOS</span>
               </h2>
+              <p className="mt-2 text-sm sm:text-base max-w-xl leading-relaxed"
+                style={{ color: 'rgba(247,243,232,0.78)' }}>
+                Berawal dari SISPALA, lalu melangkah bersama di Perkumpulan hingga Yayasan sebagai satu keluarga besar.
+              </p>
             </div>
           </FadeIn>
 
